@@ -105,3 +105,13 @@
     filter: sepia(0.5) brightness(1.1); 
     /* Você pode mudar este efeito para o que quiser: borda, sombra, escala, etc. */
 }
+/* No seu style.css */
+
+.estudante-imagem {
+    transition: filter 0.3s ease; /* Para uma transição suave */
+}
+
+/* Classe que o JavaScript adiciona/remove para o efeito */
+.highlight-js {
+    filter: sepia(0.5) brightness(1.1); 
+}
