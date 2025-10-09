@@ -92,3 +92,16 @@
     color: #ffffff;
     text-decoration: none;
     }
+/* Adicione este código ao seu arquivo style.css */
+
+/* Define a cor e a transição suave */
+.estudante-imagem {
+    transition: filter 0.3s ease; /* Transição suave para o efeito */
+}
+
+/* Esta é a classe que o JavaScript vai adicionar e remover */
+.highlight-js {
+    /* Exemplo de animação: Mudar o filtro de cor para um tom sépia e aumentar um pouco o brilho */
+    filter: sepia(0.5) brightness(1.1); 
+    /* Você pode mudar este efeito para o que quiser: borda, sombra, escala, etc. */
+}
