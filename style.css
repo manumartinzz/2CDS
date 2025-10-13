@@ -1,117 +1,260 @@
-*{
+Ótimo\! Aqui está o código do seu arquivo `style.css` totalmente limpo, corrigido e funcional, incluindo as regras para o carrossel da página `turma.html` e a correção do erro de `background-image`.
+
+### `style.css` (Corrigido e Completo)
+
+```css
+/* Configurações Globais */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    }
-    body{
+}
+
+body {
+    /* É necessário importar a fonte 'Poppins' no HTML se ela não for padrão */
     font-family: "Poppins", sans-serif;
-    }
-    header{
+}
+
+/* -------------------- */
+/* CABEÇALHO (HEADER)   */
+/* -------------------- */
+
+header {
     background-color: #424e61;
     color: white;
     width: 100%;
-    padding: 20px;
-    }
-    .cabecalho-itens{
-    max-width: 1980px;
+    padding: 20px 0; /* Ajuste para centralizar o conteúdo com base na div interna */
+}
+
+.cabecalho-itens {
+    max-width: 1200px; /* Um max-width mais comum para layout responsivo */
     margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
-    }
-    .cabecalho-imagem{
-    width: 10%;
+    justify-content: space-between; /* Melhor para distribuir os itens */
+    padding: 0 20px; /* Adiciona padding nas laterais em telas menores */
+}
+
+.cabecalho_imagem {
+    width: 80px; /* Tamanho fixo para o logo */
+    height: auto;
+}
+
+.titulo_site {
+    padding: 0 20px;
+    text-align: center;
+    font-size: 30px; /* Use 'font-size' em vez de apenas 'font' */
+    flex-grow: 1; /* Permite que o título ocupe o espaço central */
+}
+
+.sociais {
     display: flex;
-    justify-content: flex-start;
     align-items: center;
-    }
-    .titulo_site{
-    padding: 50px;
-    text-align: center;
-    width: 50%;
-    font: 30px;
-    }
-    .sociais{
-    display: flex;
-    justify-content: flex-end;
-    width: 25%;
-    padding-right: 30px;
-    }
-    .banner1{
+    gap: 10px; /* Espaçamento entre os ícones */
+}
+
+.sociais img {
+    width: 30px; /* Define um tamanho fixo para os ícones sociais */
+    height: auto;
+    /* A classe 'sociais' estava na div e nas imagens. Aplique o estilo aqui */
+}
+
+/* -------------------- */
+/* BANNER               */
+/* -------------------- */
+
+.banner1 {
     display: flex;
     justify-content: center;
-    }
-    .estudante_titulo{
-    padding: 50px;
+    width: 100%;
+}
+
+/* Corrigido o nome da classe removendo o ponto */
+.escola-image {
+    width: 100%;
+    height: auto;
+    display: block; /* Garante que a imagem se comporte bem no layout */
+}
+
+/* -------------------- */
+/* SEÇÃO ESTUDANTES     */
+/* -------------------- */
+
+.estudante {
+    /* CORREÇÃO: background-image: background-color(#faae43); estava errado. */
+    background-color: #faae43;
+    padding: 50px 20px;
+}
+
+.estudante_titulo {
+    padding-bottom: 30px;
     text-align: center;
-   
-    }
-    .estudante-nome{
-    text-align: center;
-    }
-    .estudante-imagem{
-    width: 120px;
-    }
-    .estudante-icone{
-    width: 38px;
-    padding: 4px 8px;
-    }
-    .estudante{
-    background-image: background-color(#faae43);
-    padding: 24px 0;
-    }
-   
-    .estudante.div{
-    text-align: center;
-    padding: 24px 0;
-    }
-    .estudantes_todos{
+    font-size: 28px;
+    color: #333;
+}
+
+.estudantes_todos {
     display: flex;
+    flex-wrap: wrap; /* Permite que os cards quebrem a linha em telas menores */
     justify-content: space-around;
-    }
-    .escola{
-    background-image: linear-gradient(#40A2E3,#7FC2EF);
-    color: white;
-    display: flex;
-    justify-content:center;
-    padding: 24px 0;
-    text-align:center;
-    display:block;
-    }
-    .escola-titulo{
-    padding: 50px;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 20px; /* Espaço entre os cards */
+}
+
+.estudante-div {
     text-align: center;
-    }
-    .logo_rodape{
+    padding: 20px;
+    /* Adicione uma largura para controlar quantos cabem por linha */
+    flex-basis: 150px; /* Um tamanho base para cada card */
+}
+
+.estudante-imagem {
+    width: 120px;
+    height: 120px;
+    object-fit: cover; /* Garante que a imagem preencha o espaço sem distorcer */
+    border-radius: 50%; /* Deixa a foto redonda */
+    margin-bottom: 10px;
+    /* Transição para o efeito do JavaScript */
+    transition: filter 0.3s ease;
+}
+
+/* Classe que o JavaScript adiciona/remove para o efeito de hover */
+.highlight-js {
+    filter: sepia(0.5) brightness(1.1) drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+}
+
+.estudante-nome {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.estudante-icone {
+    width: 32px; /* Ícones um pouco menores e mais consistentes */
+    padding: 0 5px;
+    vertical-align: middle; /* Alinha ícones com o texto se houver */
+}
+
+/* -------------------- */
+/* BOTÃO TURMA          */
+/* -------------------- */
+#botaoTurma {
+    border: none;
+    background-color: #424e61;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+#botaoTurma:hover {
+    background-color: #55647c;
+    transform: translateY(-2px);
+}
+
+/* -------------------- */
+/* RODAPÉ (FOOTER)      */
+/* -------------------- */
+
+.escola {
+    background-image: linear-gradient(#40A2E3, #7FC2EF);
+    color: white;
+    padding: 24px 20px;
+    text-align: center;
+    /* Removido o 'display: block' e mantido o 'display: flex' */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo_rodape {
     height: 80px;
     padding: 12px 0;
-   
-    }
-   
-    .link{
+}
+
+.escola-título {
+    padding: 10px 0;
+    font-size: 20px;
+}
+
+.link {
     color: #ffffff;
     text-decoration: none;
-    }
-/* Adicione este código ao seu arquivo style.css */
-
-/* Define a cor e a transição suave */
-.estudante-imagem {
-    transition: filter 0.3s ease; /* Transição suave para o efeito */
+    font-weight: bold;
+    margin-left: 5px;
 }
 
-/* Esta é a classe que o JavaScript vai adicionar e remover */
-.highlight-js {
-    /* Exemplo de animação: Mudar o filtro de cor para um tom sépia e aumentar um pouco o brilho */
-    filter: sepia(0.5) brightness(1.1); 
-    /* Você pode mudar este efeito para o que quiser: borda, sombra, escala, etc. */
-}
-/* No seu style.css */
-
-.estudante-imagem {
-    transition: filter 0.3s ease; /* Para uma transição suave */
+/* Seções de Texto do Rodapé */
+.escola p {
+    margin: 5px 0;
+    font-size: 14px;
 }
 
-/* Classe que o JavaScript adiciona/remove para o efeito */
-.highlight-js {
-    filter: sepia(0.5) brightness(1.1); 
+
+/* -------------------- */
+/* PÁGINA TURMA.HTML    */
+/* -------------------- */
+
+.conteudo-turma {
+    min-height: 70vh;
+    padding: 40px 20px;
 }
+
+.cabecalho-turma {
+    max-width: 800px;
+    margin: 0 auto 30px;
+    text-align: center;
+}
+
+.link-voltar {
+    display: block;
+    margin-top: 15px;
+    color: #40A2E3;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+.link-voltar:hover {
+    color: #2a6f9c;
+}
+
+/* Estilos para o Carrossel (Requer JavaScript para funcionar) */
+.carrossel-container {
+    max-width: 700px; /* Largura máxima do carrossel */
+    margin: 0 auto;
+    overflow: hidden; /* Esconde o que estiver fora do contêiner */
+    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.carrossel-galeria {
+    display: flex;
+    transition: transform 0.5s ease; /* Animação suave para a transição */
+    width: 300%; /* Se tiver 3 itens, precisa ser 300% (100% * número de itens) */
+}
+
+.carrossel-item {
+    min-width: 33.33%; /* 100% / 3 itens. Ajuste este valor se mudar a quantidade de fotos */
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.carrossel-imagem {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.legenda {
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    margin: 0;
+}
+```
