@@ -7,7 +7,7 @@ function mostrarTurma() {
     
     // Redireciona o navegador para uma nova página.
     // Substitua 'pagina-da-turma.html' pelo nome real da sua próxima página.
-    window.location.href = 'pagina-da-turma.html'; 
+    window.location.href = 'turma.html'; 
 }
 
 // Observação: Como a função 'mostrarTurma' já está no atributo 'onclick' do HTML, 
@@ -23,3 +23,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 */
+
