@@ -106,3 +106,30 @@
     text-decoration: none;
   }
   
+.escola-título .link {
+    /* Define a transição para que a mudança de cor seja suave */
+    transition: color 0.3s ease; 
+}
+
+/* Estilo que será aplicado quando o mouse passar por cima do link */
+.escola-título .link:hover {
+    color: #ffd700; /* Cor amarela/dourada para destacar */
+}
+
+/* Efeito sutil no título principal do rodapé */
+.escola-título {
+    transition: color 0.3s ease; 
+}
+
+.escola-título:hover {
+    color: #f0f0f0; /* Um branco levemente diferente */
+}
+
+/* Efeito sutil no parágrafo do copyright */
+.escola p {
+    transition: color 0.3s ease;
+}
+
+.escola p:hover {
+    color: #ffd700; /* Cor amarela/dourada para destacar */
+}
