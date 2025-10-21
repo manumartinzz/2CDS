@@ -9,10 +9,10 @@
   }
   
   header {
-    background-color: #424e61;
-    color: white;
-    width: 100%;
-    padding: 20px;
+  background-color: #424e61; 
+  color: white; 
+  width: 100%; 
+  padding: 10px 20px;
   }
   
   .cabecalho-itens {
@@ -30,12 +30,11 @@
     align-items: center;
   }
   
-  .titulo_site {
-    padding: 50px;
-    text-align: center;
-    width: 50%;
-    font-size: 30px;
-  }
+ .titulo_site {
+   padding: 0 20px;
+  text-align: center; 
+  width: 50%; 
+  font-size: 24px; }
   
   .sociais {
     display: flex;
