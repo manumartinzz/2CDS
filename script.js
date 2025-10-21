@@ -132,29 +132,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-let slideAtual = 0;
-const slides = document.querySelectorAll(".carrossel img");
-const totalSlides = slides.length;
-
-// Função para mostrar um slide específico
-function mostrarSlide(index) {
-  slides.forEach((slide, i) => {
-    slide.classList.remove("ativo");
-    if (i === index) slide.classList.add("ativo");
-  });
-}
-
-// Função para mudar de slide (manual)
-function mudarSlide(direcao) {
-  slideAtual += direcao;
-  if (slideAtual < 0) slideAtual = totalSlides - 1;
-  if (slideAtual >= totalSlides) slideAtual = 0;
-  mostrarSlide(slideAtual);
-}
-
-// Troca automática a cada 5 segundos
-setInterval(() => {
-  slideAtual++;
-  if (slideAtual >= totalSlides) slideAtual = 0;
-  mostrarSlide(slideAtual);
-}, 5000);
