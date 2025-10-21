@@ -192,3 +192,88 @@ img:hover {
 .redes-aluno img.estudante-icone:hover {
   transform: scale(1.15);
 }
+
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #2a9d8f;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.menu-container {
+  max-width: 900px;
+  margin: 30px auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: #264653;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 15px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.tabs button:hover,
+.tabs button.active {
+  background-color: #2a9d8f;
+}
+
+.menu-content {
+  display: none;
+  padding: 25px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.menu-content.active {
+  display: block;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th {
+  background-color: #2a9d8f;
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-size: 16px;
+}
+
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+tr:nth-child(even) td {
+  background-color: #f1f1f1;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
