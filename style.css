@@ -50,20 +50,24 @@ header {
     padding: 50px;
     text-align: center;
   }
+.estudante-nome {
+  margin-top: 10px;
+  font-weight: bold;
+}
   
-  .estudante-nome {
-    text-align: center;
-  }
-  
-  .estudante-imagem {
-    width: 120px;
-  }
-  
+.estudante-imagem {
+  width: 120px;
+  display: block;
+  margin: 0 auto;
+}
   .estudante-icone {
     width: 38px;
     padding: 4px 8px;
-  }
-  
+  transition: transform 0.3s ease;
+}
+  .estudante-icone:hover {
+  transform: scale(1.1);
+}
   .estudante {
     background-color: #ffffff;
     padding: 24px 0;
@@ -74,13 +78,12 @@ header {
     text-align: center;
     padding: 24px 0;
   }
-  
-  .estudantes_todos {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-  }
-  
+ .estudantes_todos {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 30px;
+}
   .escola {
     background-image: linear-gradient(#40A2E3, #297bb3);
     color: white;
@@ -143,8 +146,11 @@ img:hover {
     transform: scale(1.1); 
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
 }
+
 .estudante-div {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .estudante-div:hover {
@@ -152,9 +158,11 @@ img:hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     cursor: pointer; 
 }
+
 .redes-aluno {
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    margin-top: 10px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
 }
