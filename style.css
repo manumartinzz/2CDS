@@ -104,29 +104,50 @@ header {
   }
   
 .escola-título .link {
-    /* Define a transição para que a mudança de cor seja suave */
+  
     transition: color 0.3s ease; 
 }
 
-/* Estilo que será aplicado quando o mouse passar por cima do link */
-.escola-título .link:hover {
-    color: #ffd700; /* Cor amarela/dourada para destacar */
-}
 
-/* Efeito sutil no título principal do rodapé */
+.escola-título .link:hover {
+    color: #ffd700; 
+}
 .escola-título {
     transition: color 0.3s ease; 
 }
 
 .escola-título:hover {
-    color: #f0f0f0; /* Um branco levemente diferente */
+    color: #f0f0f0; 
 }
 
-/* Efeito sutil no parágrafo do copyright */
 .escola p {
     transition: color 0.3s ease;
 }
 
 .escola p:hover {
-    color: #ffd700; /* Cor amarela/dourada para destacar */
+    color: #ffd700; 
+}
+img {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block; 
+}
+
+img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); 
+    z-index: 10; 
+}
+
+.logo_rodape:hover {
+    transform: scale(1.1); 
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+}
+.estudante-div {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.estudante-div:hover {
+    transform: scale(1.03); 
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    cursor: pointer; 
 }
