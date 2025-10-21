@@ -277,3 +277,51 @@ tr:nth-child(even) td {
   from {opacity: 0;}
   to {opacity: 1;}
 }
+
+#modo-escuro-toggle {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+#modo-escuro-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+/* ====== MODO ESCURO ====== */
+body.dark-mode {
+  background-color: #121212;
+  color: #f0f0f0;
+}
+
+body.dark-mode header {
+  background-color: #1e3d7b;
+}
+
+body.dark-mode .estudante {
+  background-color: #1a1a1a;
+}
+
+body.dark-mode .escola {
+  background-image: linear-gradient(#1a2a3a, #0d1828);
+}
+
+body.dark-mode .estudante-div:hover {
+  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode a,
+body.dark-mode .link {
+  color: #ffd700;
+}v

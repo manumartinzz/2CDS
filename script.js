@@ -72,3 +72,62 @@ function openMenu(day) {
   document.getElementById(day).classList.add('active');
   event.target.classList.add('active');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const botaoModoEscuro = document.getElementById('modo-escuro-toggle');
+
+  
+  if (!botaoModoEscuro) return;
+
+ 
+  function atualizarBotao() {
+    if (document.body.classList.contains('dark-mode')) {
+      botaoModoEscuro.textContent = '☀️';
+    } else {
+      botaoModoEscuro.textContent = '🌙';
+    }
+  }
+
+
+  const escolhaSalva = localStorage.getItem('modoEscuro'); // "ativado" | "desativado" | null
+
+
+  if (!escolhaSalva) {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.add('dark-mode');
+    }
+  } else {
+    if (escolhaSalva === 'ativado') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }
+
+  atualizarBotao();
+
+
+  botaoModoEscuro.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+
+    if (document.body.classList.contains('dark-mode')) {
+      localStorage.setItem('modoEscuro', 'ativado');
+    } else {
+      localStorage.setItem('modoEscuro', 'desativado');
+    }
+
+    atualizarBotao();
+  });
+
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener?.('change', (e) => {
+      if (!localStorage.getItem('modoEscuro')) {
+        if (e.matches) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+        atualizarBotao();
+      }
+    });
+  }
+});
