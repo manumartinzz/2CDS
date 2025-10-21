@@ -94,9 +94,10 @@ header {
   }
   
   .logo_rodape {
-    height: 80px;
+    height: 80px; 
     padding: 12px 0;
-  }
+    display: inline-block; 
+}
   
   .link {
     color: #ffffff;
@@ -150,4 +151,10 @@ img:hover {
     transform: scale(1.03); 
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     cursor: pointer; 
+}
+.redes-aluno {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    margin-top: 10px; 
 }
