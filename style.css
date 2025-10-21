@@ -22,12 +22,14 @@ header img {
 }
 
   .cabecalho-itens {
-    max-width: 1980px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  max-width: 1980px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 🔹 distribui: logo à esquerda, título no meio, redes à direita */
+  width: 100%;
+  padding: 0 40px; /* 🔹 controla espaçamento lateral */
+}
   
   .cabecalho-imagem {
     width: 2%;
@@ -182,6 +184,6 @@ img:hover {
 }
 
 .redes-aluno .estudante-icone {
-  width: 28px;
+  width: 38px;
   vertical-align: middle;
 }
