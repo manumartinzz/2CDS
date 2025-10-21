@@ -220,7 +220,7 @@ header {
 .tabs {
   display: flex;
   justify-content: space-around;
-  background-color: #264653;
+  background-color: #92bfd1;
 }
 
 .tabs button {
