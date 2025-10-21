@@ -183,7 +183,12 @@ img:hover {
   margin: 0 4px;
 }
 
-.redes-aluno .estudante-icone {
-  width: 38px;
+.redes-aluno img.estudante-icone {
+  width: 45px;      /* 🔹 tamanho levemente maior, mais visível */
+  height: 45px;     /* 🔹 garante proporção */
   vertical-align: middle;
+  flex-shrink: 0;   /* 🔹 impede que o Flex reduza o tamanho */
+}
+.redes-aluno img.estudante-icone:hover {
+  transform: scale(1.15);
 }
