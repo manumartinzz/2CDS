@@ -90,7 +90,7 @@ header img {
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 10px;
 }
   .escola {
     background-image: linear-gradient(#40A2E3, #297bb3);
