@@ -28,6 +28,191 @@ Página">
 
   <footer class="escola">
 
+html <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Variáveis - Cantina</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardápio - Terça da Pizza</title>
+  <style>
+
+    </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍕 Terça da Pizza 🍕</h1>
+    <p>Promoções especiais toda terça-feira!</p>
+  </header>
+
+    <h1>Bem-vindo à Cantina da Escola!</h1>
+    
+    <div class="resultados">
+        <p>Temos <span id="quantidadePizzadeCalebresa">20</span> Pizza de Calabresa.</p>
+        <p>Cada pizza custa R$<span id="precoPizza">6</span>.</p>
+        <p>A cantina vendeu R$<span id="totalVendido">25</span> até agora.</p>
+    </div>
+    
+    <script src="script.js"></script>
+
+     <div class="resultados">
+        <p>Temos <span id="quantidadePizzadeFrango">20</span> Pizza de Frango.</p>
+        <p>Cada pizza custa R$<span id="precoPizza">6</span>.</p>
+        <p>A cantina vendeu R$<span id="totalVendido">20</span> até agora.</p>
+    </div>
+    
+    <script src="script.js"></script>
+
+     <div class="resultados">
+        <p>Temos <span id="quantidadePizzadeLombinho">20</span> Pizza De Lombinho.</p>
+        <p>Cada pizza custa R$<span id="precoPizza">6</span>.</p>
+        <p>A cantina vendeu R$<span id="totalVendido">15</span> até agora.</p>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
+
+<header>
+    <h1>🍽️ Cardápio da Cantina Escolar</h1>
+    <p>Escolha o dia da semana para ver as opções!</p>
+  </header>
+
+  <div class="menu-container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openMenu('segunda')">Segunda</button>
+      <button class="tab-btn" onclick="openMenu('terça')">Terça</button>
+      <button class="tab-btn" onclick="openMenu('quarta')">Quarta</button>
+      <button class="tab-btn" onclick="openMenu('quinta')">Quinta</button>
+      <button class="tab-btn" onclick="openMenu('sexta')">Sexta</button>
+    </div>
+
+    <div id="segunda" class="menu-content active">
+      <div class="menu-section">
+        <h3>🍚 Prato Principal</h3>
+        <ul>
+          <li>Arroz, feijão, frango grelhado e salada</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥪 Lanches</h3>
+        <ul>
+          <li>Pão de queijo</li>
+          <li>Sanduíche natural</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥤 Bebidas</h3>
+        <ul>
+          <li>Suco de laranja</li>
+          <li>Água mineral</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="terça" class="menu-content">
+      <div class="menu-section">
+        <h3>🍝 Prato Principal</h3>
+        <ul>
+          <li>Macarrão ao molho bolonhesa com queijo ralado</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥪 Lanches</h3>
+        <ul>
+          <li>Coxinha</li>
+          <li>Empada de frango</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥤 Bebidas</h3>
+        <ul>
+          <li>Suco de uva</li>
+          <li>Refrigerante</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="quarta" class="menu-content">
+      <div class="menu-section">
+        <h3>🍲 Prato Principal</h3>
+        <ul>
+          <li>Feijoada com arroz e couve refogada</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥪 Lanches</h3>
+        <ul>
+          <li>Pastel de queijo</li>
+          <li>Mini pizza</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥤 Bebidas</h3>
+        <ul>
+          <li>Suco de abacaxi</li>
+          <li>Água de coco</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="quinta" class="menu-content">
+      <div class="menu-section">
+        <h3>🍛 Prato Principal</h3>
+        <ul>
+          <li>Strogonoff de frango com batata palha</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥪 Lanches</h3>
+        <ul>
+          <li>Hambúrguer caseiro</li>
+          <li>Pão com mortadela</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥤 Bebidas</h3>
+        <ul>
+          <li>Suco de maracujá</li>
+          <li>Refrigerante</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="sexta" class="menu-content">
+      <div class="menu-section">
+        <h3>🍕 Prato Principal</h3>
+        <ul>
+          <li>Pizza de mussarela ou calabresa</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🍪 Lanches</h3>
+        <ul>
+          <li>Bolo de chocolate</li>
+          <li>Cookie integral</li>
+        </ul>
+      </div>
+      <div class="menu-section">
+        <h3>🥤 Bebidas</h3>
+        <ul>
+          <li>Suco de morango</li>
+          <li>Leite com chocolate</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
 <img class="logo_rodape" src="logo_nossa_escola.png" alt="Logo
 
 da Escola">
