@@ -52,8 +52,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-
-function mostrarTurma() {
-    // Você pode personalizar esta mensagem!
-    alert('Nossas turmas são de Desenvolvimento de Sistemas e atendem mais de 50 alunos!');
-}
