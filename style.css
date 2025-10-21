@@ -8,11 +8,18 @@
     font-family: "Poppins", sans-serif;
   }
 header {
-    background-color: #2270ee;
-    color: white;
-    width: 100%;
-  padding: 5px 20px;
+  background-color: #2a6acf;
+  color: white;
+  width: 100%;
+  padding: 5px 20px; /* 🔹 diminuído — antes devia ser 20px ou mais */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+header img {
+  max-height: 60px; /* 🔹 diminui o logo */
+}
+
   .cabecalho-itens {
     max-width: 1980px;
     margin: 0 auto;
