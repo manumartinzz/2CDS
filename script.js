@@ -51,4 +51,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function mostrarCantina() {
+    // Esta função redireciona o usuário para a página 'cantina.html'
+    window.location.href = 'cantina.html'; 
+}
 
+// ... Mantenha sua função mostrarTurma() e os outros códigos que já existem ...
+
+function mostrarTurma() {
+    window.location.href = 'turma.html'; 
+}
