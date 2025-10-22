@@ -136,7 +136,7 @@ header img {
 
 
 .escola-título .link:hover {
-    color: #ffd700; 
+    color: #fffffd; 
 }
 .escola-título {
     transition: color 0.3s ease; 
@@ -626,4 +626,44 @@ body.dark-mode .course-page h2,
 body.dark-mode .course-page p,
 body.dark-mode .course-page li {
   color: #000000 !important; /* preto no modo escuro */
+}
+
+body {
+  color: #000000; /* Preto normal para textos */
+}
+
+/* Corrige o link do WhatsApp e textos do rodapé */
+.link {
+  color: #0077b6; /* Azul visível no modo claro */
+  text-decoration: none;
+}
+.link:hover {
+  color: #005f8a;
+}
+
+/* ====== MODO ESCURO ====== */
+body.dark-mode {
+  background-color: #121212;
+  color: #f0f0f0; /* Branco claro para os textos */
+}
+
+/* Deixa o telefone visível no modo escuro */
+body.dark-mode .link {
+  color: #ffd700; /* Amarelo suave no tema escuro */
+}
+body.dark-mode .link:hover {
+  color: #fff5b7;
+}
+
+/* Corrige os textos das páginas de cursos (Saiba Mais) */
+body.dark-mode .course-page h2,
+body.dark-mode .course-page p,
+body.dark-mode .course-page li {
+  color: #f0f0f0 !important; /* texto claro no escuro */
+}
+
+body:not(.dark-mode) .course-page h2,
+body:not(.dark-mode) .course-page p,
+body:not(.dark-mode) .course-page li {
+  color: #000000 !important; /* texto preto no claro */
 }
