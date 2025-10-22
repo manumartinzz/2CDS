@@ -608,3 +608,22 @@ body:not(.dark-mode) .course-page {
 .course-page li {
   color: inherit;
 }
+body.dark-mode .estudante-nome {
+  color: #000000 !important; /* preto no modo escuro */
+}
+
+/* === CORRIGE TEXTOS DA PÁGINA CANTINA === */
+body.dark-mode .menu-container,
+body.dark-mode .menu-content,
+body.dark-mode th,
+body.dark-mode td {
+  color: #000000 !important; /* texto preto */
+}
+
+/* === CORRIGE TEXTOS DAS PÁGINAS “SAIBA MAIS” === */
+body.dark-mode .course-page,
+body.dark-mode .course-page h2,
+body.dark-mode .course-page p,
+body.dark-mode .course-page li {
+  color: #000000 !important; /* preto no modo escuro */
+}
