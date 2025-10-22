@@ -349,3 +349,27 @@ body.dark-mode .estudante-icone {
   filter: brightness(0.8);
 }
 
+body.dark-mode .estudantes_todos {
+  background-color: #1c1c1c; /* fundo escuro */
+}
+
+/* Fundo dos cards individuais (se houver) */
+body.dark-mode .estudante {
+  background-color: #2b2b2b; /* um pouco mais claro que o fundo geral */
+  border-radius: 10px;
+}
+
+/* Nome dos alunos e textos */
+body.dark-mode .estudante h3,
+body.dark-mode .estudante p {
+  color: #f5f5f5; /* texto branco suave */
+}
+
+/* Links ou ícones das redes sociais */
+body.dark-mode .estudante a {
+  color: #f0f0f0;
+}
+
+body.dark-mode .estudante a:hover {
+  color: #87cefa; /* azul clarinho ao passar o mouse */
+}
