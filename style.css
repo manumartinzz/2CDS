@@ -609,21 +609,46 @@ body:not(.dark-mode) .course-page {
   color: inherit;
 }
 body.dark-mode .estudante-nome {
-  color: #000000 !important; /* preto no modo escuro */
+  color: #000 !important; /* preto */
 }
 
-/* === CORRIGE TEXTOS DA PÁGINA CANTINA === */
+/* 🔹 Textos da Cantina */
 body.dark-mode .menu-container,
 body.dark-mode .menu-content,
 body.dark-mode th,
-body.dark-mode td {
-  color: #000000 !important; /* texto preto */
+body.dark-mode td,
+body.dark-mode .tabs button,
+body.dark-mode .tabs button.active {
+  color: #000 !important; /* preto */
+  background-color: inherit !important; /* mantém fundo atual */
 }
 
-/* === CORRIGE TEXTOS DAS PÁGINAS “SAIBA MAIS” === */
+/* 🔹 Páginas dos cursos (Saiba mais) */
 body.dark-mode .course-page,
 body.dark-mode .course-page h2,
 body.dark-mode .course-page p,
-body.dark-mode .course-page li {
-  color: #000000 !important; /* preto no modo escuro */
+body.dark-mode .course-page li,
+body.dark-mode .course-header h1,
+body.dark-mode .course-header p {
+  color: #000 !important; /* preto */
+}
+
+/* 🔹 Botões e links */
+body.dark-mode a,
+body.dark-mode .btn,
+body.dark-mode .btn-back {
+  color: #fff !important; /* branco nos botões */
+  background-color: #0077b6 !important; /* mantém o azul */
+  border: none;
+}
+
+body.dark-mode a:hover,
+body.dark-mode .btn:hover,
+body.dark-mode .btn-back:hover {
+  background-color: #00b4d8 !important;
+}
+
+/* 🔹 Evita que o body aplique cor branca em tudo */
+body.dark-mode {
+  color: inherit !important;
 }
