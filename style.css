@@ -352,3 +352,225 @@ body.dark-mode .estudante-icone {
 body.dark-mode .estudante-nome {
   color: #000000 !important; 
 }
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #f8fafc;
+  color: #333;
+}
+
+/* ====== CABEÇALHO ====== */
+.hero, .course-header {
+  background: linear-gradient(135deg, #0077b6, #00b4d8);
+  color: white;
+  text-align: center;
+  padding: 70px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.hero h1, .course-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+/* ====== CARDS DE CURSOS ====== */
+.courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1100px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.course-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.course-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.course-card h2 {
+  color: #0077b6;
+  margin: 15px 0 5px;
+}
+
+.course-card p {
+  padding: 0 20px;
+  font-size: 0.95em;
+  color: #555;
+}
+
+/* ====== BOTÕES ====== */
+.btn, .btn-back {
+  display: inline-block;
+  background: #0077b6;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  margin: 20px auto;
+  transition: background 0.3s;
+}
+
+.btn:hover, .btn-back:hover {
+  background: #00b4d8;
+}
+
+/* ====== PÁGINA INTERNA ====== */
+.course-page {
+  max-width: 900px;
+  margin: 50px auto;
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.course-page img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.course-page h2 {
+  color: #0077b6;
+  margin-top: 20px;
+}
+
+.course-page ul {
+  margin-left: 20px;
+}
+
+/* ====== RODAPÉ ====== */
+footer {
+  background-color: #0077b6;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+}
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #f8fafc;
+  color: #333;
+}
+
+/* ====== CABEÇALHO ====== */
+.hero, .course-header {
+  background: linear-gradient(135deg, #0077b6, #00b4d8);
+  color: white;
+  text-align: center;
+  padding: 70px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.hero h1, .course-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+/* ====== CARDS DE CURSOS ====== */
+.courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1100px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.course-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.course-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.course-card h2 {
+  color: #0077b6;
+  margin: 15px 0 5px;
+}
+
+.course-card p {
+  padding: 0 20px;
+  font-size: 0.95em;
+  color: #555;
+}
+
+/* ====== BOTÕES ====== */
+.btn, .btn-back {
+  display: inline-block;
+  background: #0077b6;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  margin: 20px auto;
+  transition: background 0.3s;
+}
+
+.btn:hover, .btn-back:hover {
+  background: #00b4d8;
+}
+
+/* ====== PÁGINA INTERNA ====== */
+.course-page {
+  max-width: 900px;
+  margin: 50px auto;
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.course-page img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.course-page h2 {
+  color: #0077b6;
+  margin-top: 20px;
+}
+
+.course-page ul {
+  margin-left: 20px;
+}
+
+/* ====== RODAPÉ ====== */
+footer {
+  background-color: #0077b6;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+}
