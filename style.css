@@ -355,7 +355,7 @@ body.dark-mode .estudantes_todos {
 
 /* Fundo dos cards individuais (se houver) */
 body.dark-mode .estudante {
-  background-color: #2b2b2b; /* um pouco mais claro que o fundo geral */
+  background-color: #1c1c1c; /* um pouco mais claro que o fundo geral */
   border-radius: 10px;
 }
 
