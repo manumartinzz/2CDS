@@ -287,7 +287,15 @@ tr:nth-child(even) td {
   from {opacity: 0;}
   to {opacity: 1;}
 }
+.menu-container, .menu-content {
+  color: #000000; /* texto preto no modo claro */
+}
 
+body.dark-mode .menu-container, 
+body.dark-mode .menu-content {
+  background-color: #1c1c1c; /* fundo escuro */
+  color: #f0f0f0;            /* texto claro */
+}
 #modo-escuro-toggle {
   position: fixed;
   top: 15px;
@@ -573,4 +581,30 @@ footer {
   text-align: center;
   padding: 20px;
   margin-top: 40px;
+}
+
+body:not(.dark-mode) {
+  color: #000000; /* letras pretas no modo claro */
+}
+
+body.dark-mode {
+  color: #f0f0f0; /* letras brancas no modo escuro */
+}
+
+/* ===== GARANTE CONTRASTE NAS PÁGINAS "SAIBA MAIS" ===== */
+body.dark-mode .course-page {
+  background-color: #1c1c1c; /* fundo escuro */
+  color: #f0f0f0;            /* texto claro */
+}
+
+body:not(.dark-mode) .course-page {
+  background-color: #ffffff; /* fundo branco */
+  color: #000000;            /* texto escuro */
+}
+
+/* Corrige cor dos títulos e parágrafos nessas páginas */
+.course-page h2, 
+.course-page p, 
+.course-page li {
+  color: inherit;
 }
