@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acquasafe</title>
   
+  <!-- Tailwind + Lucide -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   
+  <!-- CSS Externo -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="h-full">
+
   <div id="app" class="w-full h-full overflow-auto water-bg text-white">
     
     <!-- Nav -->
@@ -41,15 +45,60 @@
       </div>
     </nav>
 
-    <!-- Hero, Sobre, Funcionalidades, Benefícios, Contato e Footer -->
-    <!-- (Mantive todo o conteúdo HTML igual) -->
+    <!-- Hero -->
     <section class="relative min-h-[90%] flex items-center justify-center px-6 pt-24 pb-16 overflow-hidden">
-      <!-- ... todo o conteúdo do Hero ... -->
-      <!-- Copie todo o conteúdo que estava dentro da <div id="app"> do código original -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+      </div>
+      <div class="relative max-w-5xl mx-auto text-center">
+        <div class="animate-fade-up">
+          <span class="inline-block bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">🌱 Monitoramento Inteligente 24h</span>
+        </div>
+        <h1 id="hero-title" class="font-heading font-900 text-5xl md:text-7xl lg:text-8xl leading-tight mb-6 animate-fade-up delay-1 gradient-text">Acquasafe</h1>
+        <p id="hero-subtitle" class="text-lg md:text-2xl text-gray-300 max-w-3xl mx-auto mb-4 animate-fade-up delay-2">Monitoramento inteligente da água 24h para proteger suas plantações contra contaminação.</p>
+        <p class="text-base text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-up delay-3">Sensores avançados, alertas em tempo real e relatórios detalhados para que você nunca perca uma safra por causa da qualidade da água.</p>
+        
+        <div class="animate-fade-up delay-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="#contato" id="cta-btn" class="bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-lg px-8 py-4 rounded-full hover:shadow-xl hover:shadow-cyan-500/30 hover:scale-105 transition-all">Solicite uma Demonstração</a>
+          <a href="#funcionalidades" class="border border-white/20 text-white font-medium px-8 py-4 rounded-full hover:bg-white/5 transition flex items-center gap-2">
+            <i data-lucide="play-circle" class="w-5 h-5"></i> Como Funciona
+          </a>
+        </div>
+
+        <!-- Floating illustration -->
+        <div class="mt-16 animate-float">
+          <div class="mx-auto w-64 h-64 md:w-80 md:h-80 relative">
+            <svg viewBox="0 0 300 300" class="w-full h-full">
+              <!-- SVG content (mantido igual) -->
+              <defs>
+                <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0.1"/>
+                </linearGradient>
+              </defs>
+              <circle cx="150" cy="150" r="120" fill="url(#wg)" stroke="#06b6d4" stroke-width="1.5" opacity="0.5"/>
+              <circle cx="150" cy="150" r="80" fill="none" stroke="#06b6d4" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+              <path d="M150 80 C150 80 110 130 110 160 C110 185 128 200 150 200 C172 200 190 185 190 160 C190 130 150 80 150 80Z" fill="#06b6d4" fill-opacity="0.4" stroke="#22d3ee" stroke-width="2"/>
+              <circle cx="140" cy="155" r="6" fill="white" opacity="0.6"/>
+              <circle cx="155" cy="145" r="3" fill="white" opacity="0.4"/>
+              <circle cx="90" cy="110" r="5" fill="#10b981">
+                <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="210" cy="110" r="5" fill="#10b981">
+                <animate attributeName="opacity" values="1;0.3;1" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="150" cy="240" r="5" fill="#10b981">
+                <animate attributeName="opacity" values="1;0.3;1" dur="2s" begin="1s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Stats, Sobre, Funcionalidades, Benefícios, Contato e Footer -->
-    <!-- (Você deve copiar todo o restante do HTML que estava dentro de <div id="app">) -->
+    <!-- O resto das seções (Stats, Sobre, Funcionalidades, Benefícios, Contato e Footer) -->
+    <!-- Copie o restante do HTML original dentro da div #app aqui -->
 
   </div>
 
