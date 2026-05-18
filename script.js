@@ -37,7 +37,7 @@ function applyConfig(config) {
   document.getElementById('nav-brand').textContent = c.hero_title;
 
   document.getElementById('app').style.background = `linear-gradient(180deg, ${c.background_color} 0%, ${adjustColor(c.background_color, 20)} 100%)`;
-  
+
   document.querySelectorAll('.font-heading').forEach(el => {
     el.style.fontFamily = `${c.font_family}, sans-serif`;
   });
@@ -45,11 +45,11 @@ function applyConfig(config) {
 }
 
 function adjustColor(hex, amount) {
-  let r = parseInt(hex.slice(1,3),16), 
-      g = parseInt(hex.slice(3,5),16), 
+  let r = parseInt(hex.slice(1,3),16),
+      g = parseInt(hex.slice(3,5),16),
       b = parseInt(hex.slice(5,7),16);
-  r = Math.min(255, r + amount); 
-  g = Math.min(255, g + amount); 
+  r = Math.min(255, r + amount);
+  g = Math.min(255, g + amount);
   b = Math.min(255, b + amount);
   return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
 }
