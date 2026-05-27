@@ -1,42 +1,12 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body { font-family: 'DM Sans', sans-serif; }
 
-html, body {
-  height: 100%;
-}
+.font-heading { font-family: 'Outfit', sans-serif; }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-}
-
-.font-heading {
-  font-family: 'Outfit', sans-serif;
-}
-
-/* Animações */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes pulse-ring { 0%{transform:scale(0.8);opacity:1} 100%{transform:scale(2.2);opacity:0} }
+@keyframes fade-up { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
 
 .animate-float { animation: float 4s ease-in-out infinite; }
 .animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }
@@ -47,7 +17,6 @@ body {
 .delay-3 { animation-delay: 0.45s; opacity: 0; }
 .delay-4 { animation-delay: 0.6s; opacity: 0; }
 
-/* Cores e Gradientes */
 .gradient-text {
   background: linear-gradient(135deg, #0ea5e9, #06b6d4, #10b981);
   -webkit-background-clip: text;
@@ -60,25 +29,9 @@ body {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255,255,255,0.05);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Melhorias de cores para ficar fiel ao original */
-.text-cyan-400 { color: #22d3ee; }
-.text-emerald-400 { color: #34d399; }
-.text-cyan-500 { color: #06b6d4; }
-.bg-cyan-500 { background-color: #06b6d4; }
-.from-cyan-500 { --tw-gradient-from: #06b6d4; }
-.to-emerald-500 { --tw-gradient-to: #10b981; }
-
-.hover\:text-cyan-400:hover { color: #22d3ee; }
-.hover\:bg-cyan-500\/20:hover { background-color: rgba(6, 182, 212, 0.2); }
-
-/* Garantia de estilos do Tailwind */
-.max-w-7xl { max-width: 80rem; }
-.max-w-6xl { max-width: 72rem; }
-.max-w-5xl { max-width: 64rem; }
-.max-w-3xl { max-width: 48rem; }
-.max-w-md { max-width: 28rem; }
+body { box-sizing: border-box; }
