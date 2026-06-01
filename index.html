@@ -1,316 +1,142 @@
-<!doctype html>
-<html lang="pt-BR" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acquasafe</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body { font-family: 'DM Sans', sans-serif; }
-    .font-heading { font-family: 'Outfit', sans-serif; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    @keyframes pulse-ring { 0%{transform:scale(0.8);opacity:1} 100%{transform:scale(2.2);opacity:0} }
-    @keyframes fade-up { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-    .animate-float { animation: float 4s ease-in-out infinite; }
-    .animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }
-    .animate-fade-up { animation: fade-up 0.8s ease-out forwards; }
-    .delay-1 { animation-delay: 0.15s; opacity: 0; }
-    .delay-2 { animation-delay: 0.3s; opacity: 0; }
-    .delay-3 { animation-delay: 0.45s; opacity: 0; }
-    .delay-4 { animation-delay: 0.6s; opacity: 0; }
-    .gradient-text { background: linear-gradient(135deg, #0ea5e9, #06b6d4, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .water-bg { background: linear-gradient(180deg, #0c1a2e 0%, #0f2b4a 40%, #134e6f 100%); }
-    .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-  </style>
-  <style>body { box-sizing: border-box; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
- </head>
- <body class="h-full">
-  <div id="app" class="w-full h-full overflow-auto water-bg text-white"><!-- Nav -->
-   <nav class="fixed top-0 left-0 w-full z-50 glass">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-     <div class="flex items-center gap-2">
-      <div class="relative">
-       <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-400 flex items-center justify-center"><i data-lucide="droplets" class="w-5 h-5 text-white"></i>
-       </div>
-       <div class="absolute inset-0 rounded-full bg-cyan-400 animate-pulse-ring opacity-0"></div>
-      </div><span id="nav-brand" class="font-heading font-bold text-xl">Acquasafe</span>
-     </div>
-     <div class="hidden md:flex items-center gap-8 text-sm text-gray-300"><a href="#sobre" class="hover:text-cyan-400 transition">Sobre</a> <a href="#funcionalidades" class="hover:text-cyan-400 transition">Funcionalidades</a> <a href="#beneficios" class="hover:text-cyan-400 transition">Benefícios</a> <a href="#contato" class="hover:text-cyan-400 transition">Contato</a>
-     </div><a href="#contato" class="hidden md:block bg-gradient-to-r from-cyan-500 to-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-cyan-500/30 transition">Fale Conosco</a>
-    </div>
-   </nav><!-- Hero -->
-   <section class="relative min-h-[90%] flex items-center justify-center px-6 pt-24 pb-16 overflow-hidden">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-     <div class="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl"></div>
-     <div class="absolute bottom-20 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
-    </div>
-    <div class="relative max-w-5xl mx-auto text-center">
-     <div class="animate-fade-up"><span class="inline-block bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">🌱 Monitoramento Inteligente 24h</span>
-     </div>
-     <h1 id="hero-title" class="font-heading font-900 text-5xl md:text-7xl lg:text-8xl leading-tight mb-6 animate-fade-up delay-1 gradient-text">Acquasafe</h1>
-     <p id="hero-subtitle" class="text-lg md:text-2xl text-gray-300 max-w-3xl mx-auto mb-4 animate-fade-up delay-2">Monitoramento inteligente da água 24h para proteger suas plantações contra contaminação.</p>
-     <p class="text-base text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-up delay-3">Sensores avançados, alertas em tempo real e relatórios detalhados para que você nunca perca uma safra por causa da qualidade da água.</p>
-     <div class="animate-fade-up delay-4 flex flex-col sm:flex-row items-center justify-center gap-4"><a href="#contato" id="cta-btn" class="bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-lg px-8 py-4 rounded-full hover:shadow-xl hover:shadow-cyan-500/30 hover:scale-105 transition-all">Solicite uma Demonstração</a> <a href="#funcionalidades" class="border border-white/20 text-white font-medium px-8 py-4 rounded-full hover:bg-white/5 transition flex items-center gap-2"> <i data-lucide="play-circle" class="w-5 h-5"></i> Como Funciona </a>
-     </div><!-- Floating illustration -->
-     <div class="mt-16 animate-float">
-      <div class="mx-auto w-64 h-64 md:w-80 md:h-80 relative">
-       <svg viewbox="0 0 300 300" class="w-full h-full"><defs>
-         <lineargradient id="wg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0.3" />
-          <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.1" />
-         </lineargradient>
-        </defs> <circle cx="150" cy="150" r="120" fill="url(#wg)" stroke="#06b6d4" stroke-width="1.5" opacity="0.5" /> <circle cx="150" cy="150" r="80" fill="none" stroke="#06b6d4" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4" /> <path d="M150 80 C150 80 110 130 110 160 C110 185 128 200 150 200 C172 200 190 185 190 160 C190 130 150 80 150 80Z" fill="#06b6d4" fill-opacity="0.4" stroke="#22d3ee" stroke-width="2" /> <circle cx="140" cy="155" r="6" fill="white" opacity="0.6" /> <circle cx="155" cy="145" r="3" fill="white" opacity="0.4" /> <!-- sensor dots --> <circle cx="90" cy="110" r="5" fill="#10b981">
-         <animate attributename="opacity" values="1;0.3;1" dur="2s" repeatcount="indefinite" />
-        </circle> <circle cx="210" cy="110" r="5" fill="#10b981">
-         <animate attributename="opacity" values="1;0.3;1" dur="2s" begin="0.5s" repeatcount="indefinite" />
-        </circle> <circle cx="150" cy="240" r="5" fill="#10b981">
-         <animate attributename="opacity" values="1;0.3;1" dur="2s" begin="1s" repeatcount="indefinite" />
-        </circle>
-       </svg>
-      </div>
-     </div>
-    </div>
-   </section><!-- Stats -->
-   <section class="py-16 px-6">
-    <div class="flex justify-center">
-     <div class="grid grid-cols-3 gap-8 md:gap-12">
-      <div class="glass rounded-2xl p-6 text-center">
-       <div class="text-3xl md:text-4xl font-heading font-bold text-cyan-400">
-        24h
-       </div>
-       <div class="text-sm text-gray-400 mt-1">
-        Monitoramento
-       </div>
-      </div>
-      <div class="glass rounded-2xl p-6 text-center">
-       <div class="text-3xl md:text-4xl font-heading font-bold text-emerald-400">
-        99.7%
-       </div>
-       <div class="text-sm text-gray-400 mt-1">
-        Precisão
-       </div>
-      </div>
-      <div class="glass rounded-2xl p-6 text-center">
-       <div class="text-3xl md:text-4xl font-heading font-bold text-cyan-400">
-        &lt;5min
-       </div>
-       <div class="text-sm text-gray-400 mt-1">
-        Tempo de Alerta
-       </div>
-      </div>
-     </div>
-    </div>
-   </section><!-- Sobre -->
-   <section id="sobre" class="py-20 px-6">
-    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-     <div><span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Sobre Nós</span>
-      <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3 mb-6">Água segura,<br>
-        colheita garantida.</h2>
-      <p class="text-gray-300 text-lg leading-relaxed mb-6">A Acquasafe nasceu da necessidade real dos agricultores brasileiros: saber se a água que irriga suas plantações está livre de contaminantes prejudiciais.</p>
-      <p class="text-gray-400 leading-relaxed">Nossos sensores IoT analisam parâmetros como pH, turbidez, metais pesados e agrotóxicos em tempo real, enviando alertas instantâneos caso algo fora do padrão seja detectado.</p>
-     </div>
-     <div class="flex justify-center">
-      <div class="relative w-72 h-72 md:w-80 md:h-80">
-       <div class="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-500/20"></div>
-       <div class="absolute inset-4 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-        <svg viewbox="0 0 200 200" class="w-48 h-48"><rect x="40" y="30" width="120" height="140" rx="10" fill="none" stroke="#22d3ee" stroke-width="2" /> <line x1="60" y1="60" x2="140" y2="60" stroke="#334155" stroke-width="1" /> <line x1="60" y1="85" x2="140" y2="85" stroke="#334155" stroke-width="1" /> <line x1="60" y1="110" x2="140" y2="110" stroke="#334155" stroke-width="1" /> <!-- chart line --> <polyline points="60,130 80,115 100,120 120,95 140,100" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" /> <circle cx="60" cy="130" r="3" fill="#10b981" /> <circle cx="80" cy="115" r="3" fill="#10b981" /> <circle cx="100" cy="120" r="3" fill="#10b981" /> <circle cx="120" cy="95" r="3" fill="#10b981" /> <circle cx="140" cy="100" r="3" fill="#10b981" /> <!-- wifi icon --> <path d="M90 45 Q100 38 110 45" fill="none" stroke="#06b6d4" stroke-width="1.5" /> <path d="M85 50 Q100 40 115 50" fill="none" stroke="#06b6d4" stroke-width="1.5" /> <circle cx="100" cy="52" r="2" fill="#06b6d4" />
-        </svg>
-       </div>
-      </div>
-     </div>
-    </div>
-   </section><!-- Funcionalidades -->
-   <section id="funcionalidades" class="py-20 px-6">
-    <div class="max-w-6xl mx-auto text-center mb-14"><span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Funcionalidades</span>
-     <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">Tecnologia que protege sua lavoura</h2>
-    </div>
-    <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
-     <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-      <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition"><i data-lucide="activity" class="w-7 h-7 text-cyan-400"></i>
-      </div>
-      <h3 class="font-heading font-semibold text-xl mb-3">Sensores IoT</h3>
-      <p class="text-gray-400 text-sm leading-relaxed">Sensores submersos analisam pH, turbidez, temperatura e presença de contaminantes continuamente.</p>
-     </div>
-     <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-      <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition"><i data-lucide="bell-ring" class="w-7 h-7 text-emerald-400"></i>
-      </div>
-      <h3 class="font-heading font-semibold text-xl mb-3">Alertas Instantâneos</h3>
-      <p class="text-gray-400 text-sm leading-relaxed">Receba notificações no celular em menos de 5 minutos quando qualquer parâmetro sair do normal.</p>
-     </div>
-     <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-      <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition"><i data-lucide="bar-chart-3" class="w-7 h-7 text-cyan-400"></i>
-      </div>
-      <h3 class="font-heading font-semibold text-xl mb-3">Relatórios Detalhados</h3>
-      <p class="text-gray-400 text-sm leading-relaxed">Dashboards intuitivos com histórico completo, gráficos e recomendações de ação.</p>
-     </div>
-     <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-      <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition"><i data-lucide="shield-check" class="w-7 h-7 text-emerald-400"></i>
-      </div>
-      <h3 class="font-heading font-semibold text-xl mb-3">Conformidade Legal</h3>
-      <p class="text-gray-400 text-sm leading-relaxed">Relatórios prontos para atender normas da ANVISA e do CONAMA sobre qualidade da água.</p>
-     </div>
-     <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-      <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition"><i data-lucide="smartphone" class="w-7 h-7 text-cyan-400"></i>
-      </div>
-      <h3 class="font-heading font-semibold text-xl mb-3">App Mobile</h3>
-      <p class="text-gray-400 text-sm leading-relaxed">Acompanhe tudo pelo celular. Interface simples pensada para o dia a dia do agricultor.</p>
-     </div>
-     <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-      <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition"><i data-lucide="zap" class="w-7 h-7 text-emerald-400"></i>
-      </div>
-      <h3 class="font-heading font-semibold text-xl mb-3">Instalação Rápida</h3>
-      <p class="text-gray-400 text-sm leading-relaxed">Equipamentos plug-and-play. Nossa equipe instala em menos de 1 dia na sua propriedade.</p>
-     </div>
-    </div>
-   </section><!-- Benefícios -->
-   <section id="beneficios" class="py-20 px-6">
-    <div class="max-w-6xl mx-auto">
-     <div class="text-center mb-14"><span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Benefícios</span>
-      <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">Por que escolher a Acquasafe?</h2>
-     </div>
-     <div class="grid md:grid-cols-2 gap-8">
-      <div class="flex gap-4 items-start">
-       <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
-       </div>
-       <div>
-        <h4 class="font-heading font-semibold text-lg mb-1">Reduza perdas em até 40%</h4>
-        <p class="text-gray-400 text-sm">Detecte contaminação antes que ela chegue às raízes, evitando perdas massivas de safra.</p>
-       </div>
-      </div>
-      <div class="flex gap-4 items-start">
-       <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
-       </div>
-       <div>
-        <h4 class="font-heading font-semibold text-lg mb-1">Tranquilidade 24 horas</h4>
-        <p class="text-gray-400 text-sm">Durma tranquilo sabendo que seus sensores estão vigilantes mesmo de madrugada.</p>
-       </div>
-      </div>
-      <div class="flex gap-4 items-start">
-       <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
-       </div>
-       <div>
-        <h4 class="font-heading font-semibold text-lg mb-1">Valorize seu produto</h4>
-        <p class="text-gray-400 text-sm">Certificação de qualidade da água agrega valor e diferencia seu produto no mercado.</p>
-       </div>
-      </div>
-      <div class="flex gap-4 items-start">
-       <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1"><i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
-       </div>
-       <div>
-        <h4 class="font-heading font-semibold text-lg mb-1">Suporte técnico dedicado</h4>
-        <p class="text-gray-400 text-sm">Equipe especializada pronta para atender você por telefone, chat ou presencialmente.</p>
-       </div>
-      </div>
-     </div>
-    </div>
-   </section><!-- CTA / Contato -->
-   <section id="contato" class="py-20 px-6">
-    <div class="max-w-3xl mx-auto glass rounded-3xl p-10 md:p-14 text-center">
-     <h2 class="font-heading font-bold text-3xl md:text-4xl mb-4">Pronto para proteger sua lavoura?</h2>
-     <p class="text-gray-300 mb-8 max-w-xl mx-auto">Entre em contato e descubra como a Acquasafe pode transformar a segurança hídrica da sua propriedade.</p>
-     <form id="contact-form" class="max-w-md mx-auto space-y-4 text-left">
-      <div><label for="name" class="text-sm text-gray-400 block mb-1">Nome</label> <input id="name" type="text" placeholder="Seu nome" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition">
-      </div>
-      <div><label for="email" class="text-sm text-gray-400 block mb-1">E-mail</label> <input id="email" type="email" placeholder="seu@email.com" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition">
-      </div>
-      <div><label for="msg" class="text-sm text-gray-400 block mb-1">Mensagem</label> <textarea id="msg" rows="3" placeholder="Como podemos ajudar?" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition resize-none"></textarea>
-      </div><button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold py-3.5 rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 transition">Enviar Mensagem</button>
-      <p id="form-success" class="text-emerald-400 text-sm text-center hidden">✓ Mensagem enviada com sucesso! Entraremos em contato em breve.</p>
-     </form>
-    </div>
-   </section><!-- Footer -->
-   <footer class="border-t border-white/10 py-10 px-6">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-400 flex items-center justify-center"><i data-lucide="droplets" class="w-4 h-4 text-white"></i>
-      </div><span class="font-heading font-bold">Acquasafe</span>
-     </div>
-     <p class="text-gray-500 text-sm">© 2025 Acquasafe. Todos os direitos reservados.</p>
-    </div>
-   </footer>
-  </div>
-  <script>
-  // Form handler
-  document.getElementById('contact-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    document.getElementById('form-success').classList.remove('hidden');
-    this.reset();
-    setTimeout(() => document.getElementById('form-success').classList.add('hidden'), 4000);
-  });
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acquasafe - Monitoramento Inteligente da Água</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">Acquasafe</div>
+            <nav>
+                <a href="#sobre">Sobre</a>
+                <a href="#funcionalidades">Funcionalidades</a>
+                <a href="#beneficios">Benefícios</a>
+                <a href="#contato">Contato</a>
+                <a href="#" class="btn-entrar">Entrar</a>
+            </nav>
+        </div>
+    </header>
 
-  // Smooth scroll
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      const t = document.querySelector(a.getAttribute('href'));
-      if (t) t.scrollIntoView({ behavior: 'smooth' });
-    });
-  });
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>🌱 Monitoramento Inteligente 24h</h1>
+            <h2>Acquasafe</h2>
+            <p>Monitoramento inteligente da água 24h para proteger suas plantações contra contaminação.</p>
+            <p class="subtitulo">Sensores avançados, alertas em tempo real e relatórios detalhados.</p>
+            
+            <div class="stats">
+                <div><strong>24h</strong><span>Monitoramento</span></div>
+                <div><strong>99.7%</strong><span>Precisão</span></div>
+                <div><strong>&lt;5min</strong><span>Tempo de Alerta</span></div>
+            </div>
 
-  // Element SDK
-  const defaultConfig = {
-    hero_title: 'Acquasafe',
-    hero_subtitle: 'Monitoramento inteligente da água 24h para proteger suas plantações contra contaminação.',
-    cta_button: 'Solicite uma Demonstração',
-    background_color: '#0c1a2e',
-    surface_color: '#ffffff0d',
-    text_color: '#ffffff',
-    primary_action: '#06b6d4',
-    secondary_action: '#10b981',
-    font_family: 'Outfit',
-    font_size: 16
-  };
+            <a href="#contato" class="btn-primary">Entre em contato pelo WhatsApp</a>
+        </div>
+    </section>
 
-  function applyConfig(config) {
-    const c = { ...defaultConfig, ...config };
-    document.getElementById('hero-title').textContent = c.hero_title;
-    document.getElementById('hero-subtitle').textContent = c.hero_subtitle;
-    document.getElementById('cta-btn').textContent = c.cta_button;
-    document.getElementById('nav-brand').textContent = c.hero_title;
+    <!-- Sobre Nós -->
+    <section id="sobre" class="sobre">
+        <div class="container">
+            <h2>Sobre Nós</h2>
+            <h3>Água segura, colheita garantida.</h3>
+            <p>A Acquasafe nasceu da necessidade real dos agricultores brasileiros: saber se a água que irriga suas plantações está livre de contaminantes prejudiciais.</p>
+            <p>Nossos sensores IoT analisam parâmetros como pH, turbidez, metais pesados e agrotóxicos em tempo real, enviando alertas instantâneos caso algo fora do padrão seja detectado.</p>
+        </div>
+    </section>
 
-    // Colors
-    document.getElementById('app').style.background = `linear-gradient(180deg, ${c.background_color} 0%, ${adjustColor(c.background_color, 20)} 100%)`;
-    document.querySelectorAll('.font-heading').forEach(el => {
-      el.style.fontFamily = `${c.font_family}, sans-serif`;
-    });
-    document.body.style.fontSize = c.font_size + 'px';
-  }
+    <!-- Funcionalidades -->
+    <section id="funcionalidades" class="funcionalidades">
+        <div class="container">
+            <h2>Funcionalidades</h2>
+            <h3>Tecnologia que protege sua lavoura</h3>
+            
+            <div class="cards">
+                <div class="card">
+                    <h4>Sensores IoT</h4>
+                    <p>Sensores submersos analisam pH, turbidez, temperatura e presença de contaminantes continuamente.</p>
+                </div>
+                <div class="card">
+                    <h4>Alertas Instantâneos</h4>
+                    <p>Receba notificações no celular em menos de 5 minutos quando qualquer parâmetro sair do normal.</p>
+                </div>
+                <div class="card">
+                    <h4>Relatórios Detalhados</h4>
+                    <p>Dashboards intuitivos com histórico completo, gráficos e recomendações de ação.</p>
+                </div>
+                <div class="card">
+                    <h4>Conformidade Legal</h4>
+                    <p>Relatórios prontos para atender normas da ANVISA e do CONAMA.</p>
+                </div>
+                <div class="card">
+                    <h4>App Mobile</h4>
+                    <p>Acompanhe tudo pelo celular. Interface simples pensada para o agricultor.</p>
+                </div>
+                <div class="card">
+                    <h4>Instalação Rápida</h4>
+                    <p>Equipamentos plug-and-play. Instalação em menos de 1 dia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  function adjustColor(hex, amount) {
-    let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-    r = Math.min(255, r + amount); g = Math.min(255, g + amount); b = Math.min(255, b + amount);
-    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-  }
+    <!-- Benefícios -->
+    <section id="beneficios" class="beneficios">
+        <div class="container">
+            <h2>Benefícios</h2>
+            <h3>Por que escolher a Acquasafe?</h3>
+            
+            <div class="cards">
+                <div class="card">Reduza perdas em até 40%</div>
+                <div class="card">Tranquilidade 24 horas</div>
+                <div class="card">Valorize seu produto</div>
+                <div class="card">Suporte técnico dedicado</div>
+            </div>
+        </div>
+    </section>
 
-  window.elementSdk.init({
-    defaultConfig,
-    onConfigChange: async (config) => applyConfig(config),
-    mapToCapabilities: (config) => ({
-      recolorables: [
-        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
-        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
-        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
-        { get: () => config.primary_action || defaultConfig.primary_action, set: (v) => { config.primary_action = v; window.elementSdk.setConfig({ primary_action: v }); } },
-        { get: () => config.secondary_action || defaultConfig.secondary_action, set: (v) => { config.secondary_action = v; window.elementSdk.setConfig({ secondary_action: v }); } }
-      ],
-      borderables: [],
-      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
-      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
-    }),
-    mapToEditPanelValues: (config) => new Map([
-      ['hero_title', config.hero_title || defaultConfig.hero_title],
-      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
-      ['cta_button', config.cta_button || defaultConfig.cta_button]
-    ])
-  });
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Pronto para proteger sua lavoura?</h2>
+            <p>Entre em contato e descubra como a Acquasafe pode transformar a segurança hídrica da sua propriedade.</p>
+        </div>
+    </section>
 
-  lucide.createIcons();
-</script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a01db5851f7a5402',t:'MTc3OTgwODI1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    <!-- Formulário de Contato -->
+    <section id="contato" class="contato">
+        <div class="container">
+            <h2>Entre em Contato</h2>
+            <form id="contactForm">
+                <input type="text" id="nome" placeholder="Nome" required>
+                <input type="email" id="email" placeholder="E-mail" required>
+                <textarea id="mensagem" placeholder="Mensagem" required></textarea>
+                <button type="submit">Enviar Mensagem</button>
+            </form>
+            <p id="successMessage" class="success hidden">✓ Mensagem enviada com sucesso! Entraremos em contato em breve.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo">Acquasafe</div>
+                <nav>
+                    <a href="#sobre">Sobre</a>
+                    <a href="#funcionalidades">Funcionalidades</a>
+                    <a href="#beneficios">Benefícios</a>
+                    <a href="#contato">Contato</a>
+                </nav>
+            </div>
+            <p>&copy; 2025 Acquasafe. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
 </html>
