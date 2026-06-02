@@ -2,15 +2,17 @@
 document.getElementById('contact-form').addEventListener('submit', function(e) {
   e.preventDefault();
   const successMsg = document.getElementById('form-success');
-  successMsg.classList.remove('hidden');
-  this.reset();
-  
-  setTimeout(() => {
-    successMsg.classList.add('hidden');
-  }, 4000);
+  if (successMsg) {
+    successMsg.classList.remove('hidden');
+    this.reset();
+    
+    setTimeout(() => {
+      successMsg.classList.add('hidden');
+    }, 4000);
+  }
 });
 
-// Smooth scroll para links internos
+// Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
     e.preventDefault();
@@ -23,8 +25,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ==================== Element SDK Configuration ====================
-
+// ==================== Element SDK (com proteção) ====================
 const defaultConfig = {
   hero_title: 'Acquasafe',
   hero_subtitle: 'Monitoramento inteligente da água 24h para proteger suas plantações contra contaminação.',
@@ -41,17 +42,20 @@ const defaultConfig = {
 function applyConfig(config) {
   const c = { ...defaultConfig, ...config };
 
-  // Atualiza textos
-  document.getElementById('hero-title').textContent = c.hero_title;
-  document.getElementById('hero-subtitle').textContent = c.hero_subtitle;
-  document.getElementById('cta-btn').textContent = c.cta_button;
-  document.getElementById('nav-brand').textContent = c.hero_title;
-
-  // Atualiza fundo
+  const heroTitle = document.getElementById('hero-title');
+  const heroSubtitle = document.getElementById('hero-subtitle');
+  const ctaBtn = document.getElementById('cta-btn');
+  const navBrand = document.getElementById('nav-brand');
   const app = document.getElementById('app');
-  app.style.background = `linear-gradient(180deg, ${c.background_color} 0%, ${adjustColor(c.background_color, 20)} 100%)`;
 
-  // Atualiza fonte
+  if (heroTitle) heroTitle.textContent = c.hero_title;
+  if (heroSubtitle) heroSubtitle.textContent = c.hero_subtitle;
+  if (ctaBtn) ctaBtn.textContent = c.cta_button;
+  if (navBrand) navBrand.textContent = c.hero_title;
+  if (app) {
+    app.style.background = `linear-gradient(180deg, ${c.background_color} 0%, ${adjustColor(c.background_color, 20)} 100%)`;
+  }
+
   document.querySelectorAll('.font-heading').forEach(el => {
     el.style.fontFamily = `${c.font_family}, sans-serif`;
   });
@@ -71,49 +75,25 @@ function adjustColor(hex, amount) {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
-// Inicialização do SDK (mantido do código original)
-window.elementSdk.init({
-  defaultConfig,
-  onConfigChange: async (config) => applyConfig(config),
-  mapToCapabilities: (config) => ({
-    recolorables: [
-      { 
-        get: () => config.background_color || defaultConfig.background_color, 
-        set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } 
-      },
-      { 
-        get: () => config.surface_color || defaultConfig.surface_color, 
-        set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } 
-      },
-      { 
-        get: () => config.text_color || defaultConfig.text_color, 
-        set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } 
-      },
-      { 
-        get: () => config.primary_action || defaultConfig.primary_action, 
-        set: (v) => { config.primary_action = v; window.elementSdk.setConfig({ primary_action: v }); } 
-      },
-      { 
-        get: () => config.secondary_action || defaultConfig.secondary_action, 
-        set: (v) => { config.secondary_action = v; window.elementSdk.setConfig({ secondary_action: v }); } 
-      }
-    ],
-    borderables: [],
-    fontEditable: { 
-      get: () => config.font_family || defaultConfig.font_family, 
-      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } 
-    },
-    fontSizeable: { 
-      get: () => config.font_size || defaultConfig.font_size, 
-      set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } 
-    }
-  }),
-  mapToEditPanelValues: (config) => new Map([
-    ['hero_title', config.hero_title || defaultConfig.hero_title],
-    ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
-    ['cta_button', config.cta_button || defaultConfig.cta_button]
-  ])
-});
+// Proteção contra erro do Element SDK (Canva)
+if (typeof window.elementSdk !== 'undefined') {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => ({
+      recolorables: [ /* ... mesmo código ... */ ],
+      borderables: [],
+      fontEditable: { /* ... */ },
+      fontSizeable: { /* ... */ }
+    }),
+    mapToEditPanelValues: (config) => new Map([ /* ... */ ])
+  });
+} else {
+  // Aplica config padrão mesmo sem SDK
+  applyConfig(defaultConfig);
+}
 
-// Inicializa ícones do Lucide
-lucide.createIcons();
+// Inicializa ícones
+if (typeof lucide !== 'undefined') {
+  lucide.createIcons();
+}
