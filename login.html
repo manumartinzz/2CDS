@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AcquaSafe - Login</title>
-    
+
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
     <!-- <script src="/_sdk/element_sdk.js"></script> -->
-    
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="login.css">
 </head>
 <body class="h-full w-full bg-[#0a0f1a] text-white overflow-auto">
     <div class="h-full w-full flex flex-col">
-        
+
         <!-- Background Gradient Elements -->
         <div class="fixed inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
@@ -23,7 +23,7 @@
 
         <!-- Content -->
         <div class="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
-            
+
             <!-- Header -->
             <div class="text-center mb-12">
                 <div class="flex items-center justify-center gap-3 mb-6">
@@ -42,12 +42,12 @@
                     <form class="space-y-5" onsubmit="handleLogin(event)">
                         <div>
                             <label class="block text-sm font-medium text-white mb-2">Email ou CPF</label>
-                            <input type="text" id="login-usuario" placeholder="seu.email@exemplo.com" 
+                            <input type="text" id="login-usuario" placeholder="seu.email@exemplo.com"
                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-white mb-2">Senha</label>
-                            <input type="password" id="login-senha" placeholder="••••••••" 
+                            <input type="password" id="login-senha" placeholder="••••••••"
                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
                         </div>
                         <div class="flex items-center justify-between text-sm">
@@ -60,10 +60,12 @@
                         <button type="submit" class="w-full btn-gradient text-white font-semibold py-3 rounded-lg">
                             <span id="btn-text">Acessar Painel</span>
                         </button>
+                        <!-- Mensagem de erro — preenchida via login.js -->
+                        <p id="login-error" class="text-red-400 text-sm text-center hidden"></p>
                     </form>
 
                     <p class="text-center text-white/60 text-sm">
-                        Não tem conta? 
+                        Não tem conta?
                         <a href="cadastro.html" class="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Criar conta</a>
                     </p>
                 </div>
