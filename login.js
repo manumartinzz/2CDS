@@ -22,7 +22,7 @@ function handleLogin(e) {
         btn.textContent = '✓ Acesso concedido';
 
         setTimeout(() => {
-            window.location.href = 'portal.html';
+            window.location.href = 'painel.html'; // ← LINHA CORRIGIDA
         }, 800);
     }, 1200);
 }
@@ -70,13 +70,9 @@ function applyConfig(config) {
 
 // ─── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializa ícones Lucide
     lucide.createIcons();
-
-    // Aplica config padrão na carga da página
     applyConfig(defaultConfig);
 
-    // Integração com Element SDK (opcional — só ativa se o SDK estiver carregado)
     if (window.elementSdk) {
         window.elementSdk.init({
             defaultConfig,
