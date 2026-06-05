@@ -12,9 +12,9 @@ body { font-family: 'DM Sans', sans-serif; }
 .animate-fade-up { animation: fade-up 0.8s ease-out forwards; }
 
 .delay-1 { animation-delay: 0.15s; opacity: 0; }
-.delay-2 { animation-delay: 0.3s; opacity: 0; }
+.delay-2 { animation-delay: 0.3s;  opacity: 0; }
 .delay-3 { animation-delay: 0.45s; opacity: 0; }
-.delay-4 { animation-delay: 0.6s; opacity: 0; }
+.delay-4 { animation-delay: 0.6s;  opacity: 0; }
 
 .gradient-text {
   background: linear-gradient(135deg, #0ea5e9, #06b6d4, #10b981);
