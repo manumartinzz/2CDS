@@ -1,1 +1,112 @@
+<!doctype html>
+<html lang="pt-br" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcquaSafe - Login</title>
+    
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <!-- <script src="/_sdk/element_sdk.js"></script> -->
+    
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body class="h-full w-full bg-[#0a0f1a] text-white overflow-auto">
+    <div class="h-full w-full flex flex-col">
+        
+        <!-- Background Gradient Elements -->
+        <div class="fixed inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+        </div>
 
+        <!-- Content -->
+        <div class="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
+            
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div class="flex items-center justify-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                        <i data-lucide="droplets" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold gradient-text">AcquaSafe</span>
+                </div>
+                <h1 id="page-title" class="text-3xl sm:text-4xl font-bold mb-3">Bem-vindo ao AcquaSafe</h1>
+                <p id="page-subtitle" class="text-slate-400 text-lg">Monitoramento de qualidade de água em tempo real</p>
+            </div>
+
+            <!-- Main Card -->
+            <div class="w-full max-w-md">
+                <div class="glass-card glow-border rounded-2xl p-8 space-y-6">
+                    <form class="space-y-5" onsubmit="handleLogin(event)">
+                        <div>
+                            <label class="block text-sm font-medium text-white mb-2">Email ou CPF</label>
+                            <input type="text" id="login-usuario" placeholder="seu.email@exemplo.com" 
+                                   class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-white mb-2">Senha</label>
+                            <input type="password" id="login-senha" placeholder="••••••••" 
+                                   class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 rounded accent-cyan-400">
+                                <span class="text-white/70">Lembrar-me</span>
+                            </label>
+                            <a href="#" class="text-cyan-400 hover:text-cyan-300 transition-colors">Esqueci a senha</a>
+                        </div>
+                        <button type="submit" class="w-full btn-gradient text-white font-semibold py-3 rounded-lg">
+                            <span id="btn-text">Acessar Painel</span>
+                        </button>
+                    </form>
+
+                    <p class="text-center text-white/60 text-sm">
+                        Não tem conta? 
+                        <a href="cadastro.html" class="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Criar conta</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-16 w-full max-w-4xl">
+                <div class="glass-card rounded-xl p-6 text-center feature-item">
+                    <div class="flex justify-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-cyan-400 feature-icon"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Seguro</h3>
+                    <p class="text-sm text-white/50">Criptografia de ponta a ponta</p>
+                </div>
+                <div class="glass-card rounded-xl p-6 text-center feature-item">
+                    <div class="flex justify-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                            <i data-lucide="zap" class="w-6 h-6 text-blue-400 feature-icon"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Rápido</h3>
+                    <p class="text-sm text-white/50">Monitoramento em tempo real</p>
+                </div>
+                <div class="glass-card rounded-xl p-6 text-center feature-item">
+                    <div class="flex justify-center mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                            <i data-lucide="activity" class="w-6 h-6 text-emerald-400 feature-icon"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-semibold text-white mb-1">Confiável</h3>
+                    <p class="text-sm text-white/50">Parâmetros certificados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative py-6 border-t border-white/5 text-center text-sm text-white/50">
+            <p>© 2026 AcquaSafe. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
