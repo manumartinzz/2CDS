@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt-br" class="h-full">
 <head>
@@ -15,7 +16,7 @@
 <body class="h-full bg-[#0a0f1a] text-white overflow-auto">
 
   <!-- Navbar -->
-  <header class="w-full px-6 py-4 flex items-center justify-between border-b border-white/10 bg-[#0a0f1a]/95 backdrop-blur-md sticky top-0 z-50">
+  <header class="w-full px-6 py-4 flex items-center justify-between border-b border-white/10 bg-[#0a0f1a]/95 backdrop-blur-md">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
         <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
@@ -38,27 +39,26 @@
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
-  <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+  <div class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
-    <!-- Cabeçalho da Seção -->
+    <!-- Header Section -->
     <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
       <div>
-        <h1 id="page-title" class="text-3xl font-bold text-white">Painel de Controle</h1>
-        <p id="page-subtitle" class="text-slate-400">Monitoramento técnico e parâmetros de referência</p>
+        <h1 class="text-3xl font-bold text-white">Painel de Controle</h1>
+        <p class="text-slate-400">Monitoramento técnico e parâmetros de referência</p>
       </div>
       <div class="flex items-center gap-3">
-        <span class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+        <span class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           Sistema Ativo
         </span>
       </div>
     </section>
 
-    <!-- Grid Principal -->
+    <!-- Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- Gráfico de Qualidade -->
+      <!-- Chart -->
       <div class="lg:col-span-2 glass-card glow-border rounded-3xl p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="font-semibold text-lg flex items-center gap-2">
@@ -72,87 +72,60 @@
         </div>
       </div>
 
-      <!-- Cards Laterais -->
+      <!-- Sidebar Cards -->
       <aside class="flex flex-col gap-4">
 
-        <!-- Card Patógenos -->
         <div onclick="window.location.href='patógenos.html'" 
-             class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all info-card-hover">
+             class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center">
               <i data-lucide="bug" class="w-6 h-6 text-rose-400"></i>
             </div>
             <div>
               <h4 class="font-semibold">Patógenos</h4>
               <p class="text-sm text-slate-400">Catálogo Técnico</p>
             </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 ml-auto"></i>
           </div>
         </div>
 
-        <!-- Card Soluções -->
         <div onclick="window.location.href='solucoes.html'" 
-             class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all info-card-hover">
+             class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
               <i data-lucide="flask-conical" class="w-6 h-6 text-emerald-400"></i>
             </div>
             <div>
               <h4 class="font-semibold">Soluções</h4>
               <p class="text-sm text-slate-400">Guia de Manejo</p>
             </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 ml-auto"></i>
           </div>
         </div>
 
-        <!-- Card Periculosidade -->
         <div onclick="window.location.href='periculosidade.html'" 
-             class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all info-card-hover">
+             class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center">
               <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-400"></i>
             </div>
             <div>
               <h4 class="font-semibold">Periculosidade</h4>
               <p class="text-sm text-slate-400">Níveis de Risco</p>
             </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 ml-auto"></i>
           </div>
         </div>
 
-        <!-- Botão Admin -->
-        <div class="mt-2">
-          <button onclick="window.location.href='loginadmin.html'" 
+        <!-- === BOTÃO ADMIN ABAIXO DOS BLOCOS === -->
+        <div class="mt-6">
+          <button onclick="window.location.href='admin.html'" 
                   id="btn-go-admin"
-                  class="w-full bg-[#22c55e] hover:bg-[#16a34a] text-[#0f1a2e] font-semibold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-[#22c55e]/30 text-base">
-            <i data-lucide="shield" class="w-5 h-5"></i>
+                  class="w-full bg-[#22c55e] hover:bg-[#16a34a] text-[#0f1a2e] font-semibold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-[#22c55e]/30 text-lg">
+            <i data-lucide="shield" class="w-6 h-6"></i>
             Acessar Painel Admin
           </button>
         </div>
 
       </aside>
     </div>
-
-    <!-- Cards de Estatísticas Rápidas -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-      <div class="glass-card rounded-2xl p-4 text-center">
-        <p class="text-2xl font-bold text-cyan-400">7.2</p>
-        <p class="text-xs text-slate-400 mt-1">pH Atual</p>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center">
-        <p class="text-2xl font-bold text-emerald-400">3.5</p>
-        <p class="text-xs text-slate-400 mt-1">Turbidez (NTU)</p>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center">
-        <p class="text-2xl font-bold text-blue-400">1.8</p>
-        <p class="text-xs text-slate-400 mt-1">Cloro (mg/L)</p>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center">
-        <p class="text-2xl font-bold text-amber-400">4.2</p>
-        <p class="text-xs text-slate-400 mt-1">DBO (mg/L)</p>
-      </div>
-    </div>
-
   </div>
 
   <script src="script.js"></script>
