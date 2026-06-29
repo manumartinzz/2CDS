@@ -49,7 +49,7 @@
                             <input type="password" id="login-senha" placeholder="••••••••"
                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
                         </div>
-                        
+
                         <!-- NOVO CAMPO: Código de Confirmação -->
                         <div>
                             <label class="block text-sm font-medium text-white mb-2">Código de Confirmação</label>
@@ -83,6 +83,14 @@
                         Não tem conta?
                         <a href="pagamento.html" class="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Assinar agora</a>
                     </p>
+
+                    <!-- NOVO: Botão para Acessar como Administrador -->
+                    <div class="text-center pt-2 border-t border-white/10">
+                        <button type="button" onclick="openAdminModal()" class="text-slate-400 hover:text-cyan-400 text-xs transition-colors flex items-center justify-center gap-1 mx-auto">
+                            <i data-lucide="lock" class="w-3 h-3"></i>
+                            Acessar como Administrador
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -124,6 +132,38 @@
         </footer>
     </div>
 
+    <!-- NOVO: Modal de Login Admin -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+        <div class="glass-card glow-border rounded-2xl p-8 w-full max-w-md">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="lock" class="w-5 h-5 text-cyan-400"></i>
+                <h2 class="text-xl font-bold text-white">Acesso de Administrador</h2>
+            </div>
+            <p class="text-slate-400 text-sm mb-6">Insira a senha de administrador para acessar o painel</p>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <!-- Mensagem de erro admin -->
+                <p id="admin-error" class="text-red-400 text-sm hidden"></p>
+
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">Senha de Administrador</label>
+                    <input type="password" id="admin-password" placeholder="••••••••"
+                           class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required autofocus>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeAdminModal()" class="flex-1 px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 btn-gradient text-white font-semibold py-2 rounded-lg">
+                        <span id="admin-btn-text">Acessar como Admin</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
     <script src="login.js"></script>
 </body>
 </html>
