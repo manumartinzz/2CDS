@@ -49,6 +49,87 @@ function showError(msg) {
     }, 3000);
 }
 
+// ─── Admin Login Functions ──────────────────────────────────────────────────────
+function openAdminModal() {
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Inicializa lucide icons no modal
+        if (window.lucide) window.lucide.createIcons();
+    }
+}
+
+function closeAdminModal() {
+    const modal = document.getElementById('adminModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        // Limpar campos
+        document.getElementById('admin-password').value = '';
+        document.getElementById('admin-error').classList.add('hidden');
+    }
+}
+
+function handleAdminLogin(e) {
+    e.preventDefault();
+
+    const adminPassword = document.getElementById('admin-password').value.trim();
+    const adminBtn = document.getElementById('admin-btn-text');
+    const submitBtn = adminBtn.closest('button');
+    const errorEl = document.getElementById('admin-error');
+
+    // Validação
+    if (!adminPassword) {
+        showAdminError('Por favor, insira a senha de administrador');
+        return;
+    }
+
+    // Desabilita o botão
+    submitBtn.disabled = true;
+    adminBtn.textContent = 'Validando…';
+
+    // Simula validação de senha
+    setTimeout(() => {
+        // MUDE ESSA SENHA PARA A SUA SENHA REAL
+        const ADMIN_PASSWORD = 'admin123';
+
+        if (adminPassword === ADMIN_PASSWORD) {
+            // Senha correta - redireciona para painel admin
+            adminBtn.textContent = '✓ Acesso concedido';
+            localStorage.setItem('isAdmin', 'true');
+            localStorage.setItem('adminLoggedIn', 'true');
+
+            setTimeout(() => {
+                window.location.href = 'admin.html';
+            }, 800);
+        } else {
+            // Senha incorreta
+            showAdminError('Senha de administrador incorreta');
+            submitBtn.disabled = false;
+            adminBtn.textContent = 'Acessar como Admin';
+        }
+    }, 1000);
+}
+
+function showAdminError(msg) {
+    const el = document.getElementById('admin-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => {
+        el.classList.add('hidden');
+    }, 3000);
+}
+
+// ─── Fechar modal ao clicar fora ────────────────────────────────────────────────
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('adminModal');
+    if (modal && e.target === modal) {
+        closeAdminModal();
+    }
+});
+
 // ─── Config padrão ─────────────────────────────────────────────────────────────
 const defaultConfig = {
     page_title:           'Bem-vindo ao AcquaSafe',
@@ -79,6 +160,6 @@ function applyConfig(config) {
 
 // ─── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
     applyConfig(defaultConfig);
 });
