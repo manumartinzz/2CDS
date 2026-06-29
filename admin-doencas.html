@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcquaSafe – Doenças</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; }
+
+        .input-field {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            border-radius: 0.6rem;
+            padding: 0.6rem 1rem;
+            outline: none;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        .input-field::placeholder { color: rgba(255,255,255,0.35); }
+        .input-field:focus { border-color: rgba(6,182,212,0.5); }
+
+        .input-search {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            border-radius: 0.6rem;
+            padding: 0.55rem 1rem 0.55rem 2.5rem;
+            outline: none;
+            width: 100%;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .input-search::placeholder { color: rgba(255,255,255,0.35); }
+        .input-search:focus { border-color: rgba(6,182,212,0.5); }
+
+        .badge-cat {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(6,182,212,0.15);
+            color: #67e8f9;
+            border: 1px solid rgba(6,182,212,0.25);
+        }
+
+        .doenca-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.875rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .doenca-card:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.14);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: #0f1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            width: 100%; max-width: 500px;
+            transform: translateY(20px);
+            transition: transform 0.25s;
+        }
+        .modal-overlay.open .modal-box { transform: translateY(0); }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 2rem; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.7rem 1.4rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem; font-weight: 500;
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s, opacity 0.3s;
+            opacity: 0; z-index: 9999; white-space: nowrap;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #86efac; }
+        #toast.error   { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.4);  color: #fca5a5; }
+    </style>
+</head>
+<body class="admin-bg min-h-screen">
+
+<script>
+    if (sessionStorage.getItem('adminLogado') !== 'true') {
+        alert('Acesso negado. Faça login como administrador.');
+        window.location.href = 'login-admin.html';
+    }
+</script>
+
+<div id="toast"></div>
+
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+</div>
+
+<!-- Navbar -->
+<header class="relative z-10 border-b border-white/10 backdrop-blur-sm bg-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="text-xl font-bold gradient-text">AcquaSafe</span>
+            <span class="text-white/30 mx-2">/</span>
+            <span class="text-white/70 text-sm">Doenças</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="admin-clientes.html"
+               class="text-xs text-white/60 hover:text-cyan-400 transition-colors flex items-center gap-1">
+                <i data-lucide="users" class="w-4 h-4"></i> Clientes
+            </a>
+            <a href="admin-bloqueios.html"
+               class="text-xs text-white/60 hover:text-red-400 transition-colors flex items-center gap-1">
+                <i data-lucide="ban" class="w-4 h-4"></i> Bloqueios
+            </a>
+            <button onclick="sair()"
+                    class="text-xs text-white/50 hover:text-white transition-colors flex items-center gap-1 ml-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="relative z-10 max-w-5xl mx-auto px-6 py-8">
+
+    <!-- Cabeçalho -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h2 class="text-2xl font-bold">Gerenciar Doenças</h2>
+            <p class="text-white/50 text-sm mt-1">Adicione ou remova doenças do sistema.</p>
+        </div>
+        <button onclick="abrirModalAdicionar()"
+                class="btn-gradient px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 self-start sm:self-auto">
+            <i data-lucide="plus" class="w-4 h-4"></i> Nova Doença
+        </button>
+    </div>
+
+    <!-- Barra de busca -->
+    <div class="glass-card rounded-xl p-4 mb-6 flex flex-col sm:flex-row gap-3 items-center">
+        <div class="relative flex-1 w-full">
+            <i data-lucide="search" class="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="busca" class="input-search" placeholder="Buscar doença…" oninput="renderLista()">
+        </div>
+        <select id="filtro-cat" onchange="renderLista()"
+                class="input-search sm:w-48 pl-3">
+            <option value="">Todas as categorias</option>
+        </select>
+    </div>
+
+    <!-- Contador -->
+    <p id="contador" class="text-white/40 text-xs mb-4"></p>
+
+    <!-- Lista -->
+    <div id="lista-doencas" class="space-y-3"></div>
+
+    <div id="empty-state" class="hidden text-center py-16 text-white/40">
+        <i data-lucide="shield-alert" class="w-10 h-10 mx-auto mb-3 opacity-40"></i>
+        <p>Nenhuma doença encontrada.</p>
+    </div>
+</main>
+
+<!-- Modal: adicionar / editar -->
+<div id="modal" class="modal-overlay" onclick="fecharModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between mb-5">
+            <h3 id="modal-titulo" class="text-lg font-bold">Nova Doença</h3>
+            <button onclick="fecharModal()" class="text-white/40 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm text-white/60 mb-1">Nome da doença <span class="text-red-400">*</span></label>
+                <input type="text" id="f-nome" class="input-field" placeholder="Ex.: Diabetes tipo 2">
+            </div>
+            <div>
+                <label class="block text-sm text-white/60 mb-1">Categoria</label>
+                <input type="text" id="f-cat" class="input-field" placeholder="Ex.: Metabólica, Cardiovascular…">
+            </div>
+            <div>
+                <label class="block text-sm text-white/60 mb-1">Descrição / observações</label>
+                <textarea id="f-desc" rows="3" class="input-field resize-none"
+                          placeholder="Informações adicionais sobre a doença…"></textarea>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="salvarDoenca()"
+                    class="flex-1 btn-gradient py-2.5 rounded-lg text-sm font-semibold">
+                Salvar
+            </button>
+            <button onclick="fecharModal()"
+                    class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/15 transition-colors">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: confirmar exclusão -->
+<div id="modal-del" class="modal-overlay" onclick="fecharModalDel(event)">
+    <div class="modal-box max-w-sm" onclick="event.stopPropagation()">
+        <div class="text-center mb-5">
+            <div class="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="trash-2" class="w-7 h-7 text-red-400"></i>
+            </div>
+            <h3 class="text-lg font-bold">Remover Doença</h3>
+            <p class="text-white/50 text-sm mt-2">
+                Tem certeza que deseja remover <strong id="del-nome" class="text-white"></strong>?
+                Esta ação não pode ser desfeita.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="confirmarRemocao()"
+                    class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-red-500/20 hover:bg-red-500/30 text-red-300 transition-colors">
+                Sim, remover
+            </button>
+            <button onclick="fecharModalDel()"
+                    class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/15 transition-colors">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── Dados ─────────────────────────────────────────────────────────────────────
+let doencas = JSON.parse(localStorage.getItem('acqua_doencas') || 'null') || [
+    { id: 1, nome: 'Diabetes tipo 1',       categoria: 'Metabólica',      descricao: 'Doença autoimune que afeta a produção de insulina.' },
+    { id: 2, nome: 'Diabetes tipo 2',       categoria: 'Metabólica',      descricao: 'Resistência à insulina associada a hábitos de vida.' },
+    { id: 3, nome: 'Hipertensão arterial',  categoria: 'Cardiovascular',  descricao: 'Pressão arterial cronicamente elevada.' },
+    { id: 4, nome: 'Insuficiência renal',   categoria: 'Renal',           descricao: 'Redução da função dos rins.' },
+    { id: 5, nome: 'Dermatite atópica',     categoria: 'Dermatológica',   descricao: 'Inflamação crônica da pele.' },
+    { id: 6, nome: 'Asma',                  categoria: 'Respiratória',    descricao: 'Obstrução reversível das vias aéreas.' },
+];
+let nextId = Math.max(...doencas.map(d => d.id), 0) + 1;
+let editandoId = null;
+let removendoId = null;
+
+function salvarStorage() {
+    localStorage.setItem('acqua_doencas', JSON.stringify(doencas));
+}
+
+// ── Categorias dinâmicas ──────────────────────────────────────────────────────
+function atualizarCategorias() {
+    const sel = document.getElementById('filtro-cat');
+    const atual = sel.value;
+    const cats = [...new Set(doencas.map(d => d.categoria).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">Todas as categorias</option>' +
+        cats.map(c => `<option value="${c}" ${c === atual ? 'selected' : ''}>${c}</option>`).join('');
+}
+
+// ── Renderização ──────────────────────────────────────────────────────────────
+function renderLista() {
+    const busca  = document.getElementById('busca').value.toLowerCase();
+    const filtro = document.getElementById('filtro-cat').value;
+
+    const filtrados = doencas.filter(d => {
+        const match = d.nome.toLowerCase().includes(busca) ||
+                      (d.categoria || '').toLowerCase().includes(busca) ||
+                      (d.descricao || '').toLowerCase().includes(busca);
+        const catOk = !filtro || d.categoria === filtro;
+        return match && catOk;
+    });
+
+    const lista  = document.getElementById('lista-doencas');
+    const empty  = document.getElementById('empty-state');
+    const cont   = document.getElementById('contador');
+
+    cont.textContent = `${filtrados.length} de ${doencas.length} doença(s)`;
+
+    if (filtrados.length === 0) {
+        lista.innerHTML = '';
+        empty.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+    }
+    empty.classList.add('hidden');
+
+    lista.innerHTML = filtrados.map(d => `
+        <div class="doenca-card">
+            <div class="w-9 h-9 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-semibold text-sm">${d.nome}</span>
+                    ${d.categoria ? `<span class="badge-cat">${d.categoria}</span>` : ''}
+                </div>
+                ${d.descricao ? `<p class="text-white/50 text-xs mt-1 leading-relaxed">${d.descricao}</p>` : ''}
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button onclick="abrirModalEditar(${d.id})"
+                        class="p-1.5 rounded-lg text-white/40 hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors"
+                        title="Editar">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button onclick="pedirRemocao(${d.id})"
+                        class="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                        title="Remover">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+
+// ── Modal adicionar / editar ──────────────────────────────────────────────────
+function abrirModalAdicionar() {
+    editandoId = null;
+    document.getElementById('modal-titulo').textContent = 'Nova Doença';
+    document.getElementById('f-nome').value = '';
+    document.getElementById('f-cat').value  = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('modal').classList.add('open');
+    setTimeout(() => document.getElementById('f-nome').focus(), 100);
+    lucide.createIcons();
+}
+
+function abrirModalEditar(id) {
+    const d = doencas.find(x => x.id === id);
+    if (!d) return;
+    editandoId = id;
+    document.getElementById('modal-titulo').textContent = 'Editar Doença';
+    document.getElementById('f-nome').value = d.nome;
+    document.getElementById('f-cat').value  = d.categoria || '';
+    document.getElementById('f-desc').value = d.descricao || '';
+    document.getElementById('modal').classList.add('open');
+    setTimeout(() => document.getElementById('f-nome').focus(), 100);
+    lucide.createIcons();
+}
+
+function fecharModal(e) {
+    if (e && e.target !== document.getElementById('modal')) return;
+    document.getElementById('modal').classList.remove('open');
+}
+
+function salvarDoenca() {
+    const nome = document.getElementById('f-nome').value.trim();
+    const cat  = document.getElementById('f-cat').value.trim();
+    const desc = document.getElementById('f-desc').value.trim();
+
+    if (!nome) {
+        showToast('Informe o nome da doença.', 'error');
+        document.getElementById('f-nome').focus();
+        return;
+    }
+
+    if (editandoId) {
+        const d = doencas.find(x => x.id === editandoId);
+        d.nome = nome; d.categoria = cat; d.descricao = desc;
+        showToast('Doença atualizada com sucesso!', 'success');
+    } else {
+        doencas.push({ id: nextId++, nome, categoria: cat, descricao: desc });
+        showToast('Doença adicionada com sucesso!', 'success');
+    }
+
+    salvarStorage();
+    atualizarCategorias();
+    renderLista();
+    document.getElementById('modal').classList.remove('open');
+}
+
+// ── Modal remover ─────────────────────────────────────────────────────────────
+function pedirRemocao(id) {
+    removendoId = id;
+    const d = doencas.find(x => x.id === id);
+    document.getElementById('del-nome').textContent = d ? d.nome : '';
+    document.getElementById('modal-del').classList.add('open');
+    lucide.createIcons();
+}
+
+function fecharModalDel(e) {
+    if (e && e.target !== document.getElementById('modal-del')) return;
+    document.getElementById('modal-del').classList.remove('open');
+    removendoId = null;
+}
+
+function confirmarRemocao() {
+    doencas = doencas.filter(x => x.id !== removendoId);
+    salvarStorage();
+    atualizarCategorias();
+    renderLista();
+    fecharModalDel();
+    showToast('Doença removida.', 'success');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, tipo) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + tipo;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Sair ──────────────────────────────────────────────────────────────────────
+function sair() {
+    sessionStorage.removeItem('adminLogado');
+    sessionStorage.removeItem('adminUsuario');
+    window.location.href = 'login-admin.html';
+}
+
+// Init
+atualizarCategorias();
+renderLista();
+</script>
+</body>
+</html>
