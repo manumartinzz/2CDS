@@ -12,19 +12,61 @@
 <body class="h-full bg-slate-950 text-white overflow-auto">
 <div class="w-full min-h-full flex flex-col">
 
-  <!-- Header -->
-  <header class="w-full px-6 py-4 flex items-center justify-between border-b border-slate-800/50">
+  <!-- Header / Rodapé Superior com Botão Código -->
+  <header class="w-full px-6 py-4 flex items-center justify-between border-b border-slate-800/50 bg-slate-900/50 sticky top-0 z-50">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
         <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
       </div>
       <span class="text-lg font-bold tracking-tight">AcquaSafe</span>
     </div>
-    <div class="flex items-center gap-2 text-xs text-slate-400">
-      <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-      <span>Pagamento Seguro</span>
+    
+    <div class="flex items-center gap-4">
+      <button onclick="toggleCodeModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-all text-sm font-semibold">
+        <i data-lucide="key" class="w-4 h-4 text-cyan-400"></i>
+        <span>Código</span>
+      </button>
+      <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        <span>Pagamento Seguro</span>
+      </div>
     </div>
   </header>
+
+  <!-- Modal de Código -->
+  <div id="code-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleCodeModal()"></div>
+    <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl animate-fade-in">
+      <button onclick="toggleCodeModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="mail" class="w-6 h-6 text-cyan-400"></i>
+        </div>
+        <h3 class="text-xl font-bold">Solicitar Código de Acesso</h3>
+        <p class="text-slate-400 text-sm mt-2">Insira seus dados para receber o código de confirmação após o pagamento.</p>
+      </div>
+
+      <form onsubmit="handleCodeRequest(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Nome Completo</label>
+          <input type="text" required placeholder="Seu nome" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">E-mail</label>
+          <input type="email" required placeholder="seu@email.com" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+        </div>
+        <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
+          Enviar Dados
+        </button>
+      </form>
+      <div id="code-success" class="hidden mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm text-center">
+        Dados enviados! Você receberá o código após a confirmação do pagamento.
+      </div>
+    </div>
+  </div>
 
   <!-- Main -->
   <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 md:py-12">
@@ -110,7 +152,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Número do Cartão</label>
-              <input id="card-number" type="text" placeholder="0000 0000 0000 0000" maxlength="19"
+              <input id="card-num" type="text" placeholder="0000 0000 0000 0000" maxlength="19"
                      class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                      oninput="formatCard(this)">
             </div>
@@ -155,7 +197,7 @@
 
       <!-- Resumo -->
       <aside class="md:col-span-2">
-        <div class="sticky top-8 rounded-2xl bg-slate-800/80 border border-slate-700 p-6 space-y-5">
+        <div class="sticky top-24 rounded-2xl bg-slate-800/80 border border-slate-700 p-6 space-y-5">
           <h2 class="font-bold text-lg">Resumo</h2>
           <div class="space-y-3 text-sm">
             <div class="flex justify-between text-slate-300">
