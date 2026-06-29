@@ -1,131 +1,103 @@
-// ====================== CONFIG & SDK ======================
-const defaultConfig = {
-    background_color: '#0a0f1a',
-    surface_color: '#ffffff0f',
-    text_color: '#ffffff',
-    primary_action_color: '#22d3ee',
-    secondary_action_color: '#94a3b8',
-    font_family: 'DM Sans',
-    font_size: 16,
-    page_title: 'Painel de Controle',
-    page_subtitle: 'Monitoramento técnico e parâmetros de referência.'
-};
+/* portal.js – AcquaSafe – Painel Principal */
 
-function applyConfig(config) {
-    const titleEl = document.getElementById('page-title');
-    const subtitleEl = document.getElementById('page-subtitle');
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ Portal AcquaSafe carregado com sucesso");
 
-    if (titleEl) titleEl.textContent = config.page_title || defaultConfig.page_title;
-    if (subtitleEl) subtitleEl.textContent = config.page_subtitle || defaultConfig.page_subtitle;
+    // Inicializa ícones Lucide
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
 
-    document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
-    document.body.style.color = config.text_color || defaultConfig.text_color;
+    // Configuração do Gráfico
+    initQualityChart();
 
-    const font = config.font_family || defaultConfig.font_family;
-    const size = config.font_size || defaultConfig.font_size;
+    // Adiciona efeito de hover nos cards de navegação
+    enhanceNavCards();
+});
 
-    document.body.style.fontFamily = `${font}, DM Sans, sans-serif`;
+/**
+ * Inicializa o gráfico de qualidade da água
+ */
+function initQualityChart() {
+    const ctx = document.getElementById("qualityChart");
+    if (!ctx) {
+        console.warn("Canvas #qualityChart não encontrado");
+        return;
+    }
 
-    if (titleEl) titleEl.style.fontSize = `${size * 1.8}px`;
-    if (subtitleEl) subtitleEl.style.fontSize = `${size}px`;
-}
-
-// Inicialização do SDK
-if (window.element) {
-    window.element.init({
-        defaultConfig,
-        onConfigChange: async (config) => applyConfig(config),
-        mapToCapabilities: (config) => ({
-            recolorables: [
-                { 
-                    get: () => config.background_color || defaultConfig.background_color, 
-                    set: (v) => { config.background_color = v; window.element.setConfig({ background_color: v }); } 
+    new Chart(ctx.getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: ["pH", "Turbidez", "Cloro", "Coliformes", "Flúor", "DBO"],
+            datasets: [
+                {
+                    label: "Valor Atual",
+                    data: [7.2, 3.5, 1.8, 0, 0.7, 4.2],
+                    backgroundColor: "rgba(34, 211, 238, 0.85)",
+                    borderColor: "#22d3ee",
+                    borderWidth: 1,
+                    borderRadius: 6,
                 },
-                { 
-                    get: () => config.surface_color || defaultConfig.surface_color, 
-                    set: (v) => { config.surface_color = v; window.element.setConfig({ surface_color: v }); } 
-                },
-                { 
-                    get: () => config.text_color || defaultConfig.text_color, 
-                    set: (v) => { config.text_color = v; window.element.setConfig({ text_color: v }); } 
-                },
-                { 
-                    get: () => config.primary_action_color || defaultConfig.primary_action_color, 
-                    set: (v) => { config.primary_action_color = v; window.element.setConfig({ primary_action_color: v }); } 
-                },
-                { 
-                    get: () => config.secondary_action_color || defaultConfig.secondary_action_color, 
-                    set: (v) => { config.secondary_action_color = v; window.element.setConfig({ secondary_action_color: v }); } 
+                {
+                    label: "Limite Máximo",
+                    data: [9.5, 5, 5, 1, 1.5, 5],
+                    backgroundColor: "rgba(148, 163, 184, 0.3)",
+                    borderColor: "#94a3b8",
+                    borderWidth: 1,
+                    borderRadius: 6,
                 }
-            ],
-            borderables: [],
-            fontEditable: {
-                get: () => config.font_family || defaultConfig.font_family,
-                set: (v) => { config.font_family = v; window.element.setConfig({ font_family: v }); }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#94a3b8",
+                        font: {
+                            family: "DM Sans",
+                            size: 13
+                        },
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
             },
-            fontSizeable: {
-                get: () => config.font_size || defaultConfig.font_size,
-                set: (v) => { config.font_size = v; window.element.setConfig({ font_size: v }); }
+            scales: {
+                x: {
+                    ticks: { color: "#64748b" },
+                    grid: { color: "rgba(255,255,255,0.05)" }
+                },
+                y: {
+                    ticks: { color: "#64748b" },
+                    grid: { color: "rgba(255,255,255,0.05)" }
+                }
             }
-        }),
-        mapToEditPanelValues: (config) => new Map([
-            ['page_title', config.page_title || defaultConfig.page_title],
-            ['page_subtitle', config.page_subtitle || defaultConfig.page_subtitle]
-        ])
+        }
     });
 }
 
-// ====================== CHART ======================
-document.addEventListener('DOMContentLoaded', () => {
-    const ctx = document.getElementById('qualityChart');
+/**
+ * Melhora interatividade dos cards de navegação
+ */
+function enhanceNavCards() {
+    const cards = document.querySelectorAll('.glass-card[onclick]');
     
-    if (ctx) {
-        new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['pH', 'Turbidez', 'Cloro', 'Coliformes', 'Flúor', 'DBO'],
-                datasets: [
-                    {
-                        label: 'Valor Atual',
-                        data: [7.2, 3.5, 1.8, 0, 0.7, 4.2],
-                        backgroundColor: 'rgba(34,211,238,0.7)',
-                        borderRadius: 6,
-                        borderSkipped: false
-                    },
-                    {
-                        label: 'Limite Máximo',
-                        data: [9.5, 5, 5, 1, 1.5, 5],
-                        backgroundColor: 'rgba(99,102,241,0.3)',
-                        borderRadius: 6,
-                        borderSkipped: false
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { 
-                        labels: { 
-                            color: '#94a3b8', 
-                            font: { family: 'DM Sans' } 
-                        } 
-                    }
-                },
-                scales: {
-                    x: { 
-                        ticks: { color: '#64748b' }, 
-                        grid: { color: 'rgba(255,255,255,0.04)' } 
-                    },
-                    y: { 
-                        ticks: { color: '#64748b' }, 
-                        grid: { color: 'rgba(255,255,255,0.04)' } 
-                    }
-                }
-            }
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transition = 'all 0.3s ease';
         });
-    }
+    });
+}
 
-    // Criar ícones do Lucide
-    lucide.createIcons();
-});
+// Função auxiliar para logout (caso queira usar)
+function logout() {
+    if (confirm("Deseja realmente sair?")) {
+        localStorage.removeItem("usuarioAcquaSafe");
+        window.location.href = "index.html";
+    }
+}
