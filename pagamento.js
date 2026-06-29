@@ -58,6 +58,23 @@ function handlePayment() {
     }, 2000);
 }
 
+// Funções para o Modal de Código
+function toggleCodeModal() {
+    const modal = document.getElementById('code-modal');
+    modal.classList.toggle('hidden');
+}
+
+function handleCodeRequest(e) {
+    e.preventDefault();
+    const successMsg = document.getElementById('code-success');
+    successMsg.classList.remove('hidden');
+    e.target.reset();
+    setTimeout(() => {
+        successMsg.classList.add('hidden');
+        toggleCodeModal();
+    }, 3000);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     lucide.createIcons();
 });
