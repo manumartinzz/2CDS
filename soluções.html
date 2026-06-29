@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluções – AcquaSafe</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="style-dark.css">
+</head>
+<body class="h-full bg-[#0a0f1a] text-white overflow-auto">
+
+<nav class="py-5 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="text-2xl font-bold gradient-text">AcquaSafe</span>
+        </div>
+        <div class="flex gap-8 text-sm">
+            <a href="solucoes.html"       class="text-cyan-400 font-medium">Soluções</a>
+            <a href="pat%C3%B3genos.html"      class="hover:text-cyan-400 transition-colors">Patógenos</a>
+            <a href="periculosidade.html" class="hover:text-cyan-400 transition-colors">Periculosidade</a>
+            <a href="index.html"          class="text-red-400 hover:text-red-300">Sair</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <header class="mb-10">
+        <h2 class="text-4xl font-bold text-white mb-2">Soluções Químicas</h2>
+        <p class="text-slate-400">Gerenciamento de soluções, concentrações e aplicações laboratoriais</p>
+    </header>
+
+    <div class="flex flex-wrap gap-4 mb-6">
+        <input id="search" type="text" placeholder="Buscar solução…"
+               class="px-4 py-3 w-80 rounded-lg bg-white/5 border border-white/10 focus:border-cyan-400 outline-none text-white placeholder-white/40">
+        <button onclick="limparFiltros()"
+                class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
+            Limpar
+        </button>
+    </div>
+
+    <div class="glass-card rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-white/5">
+                    <th class="px-6 py-5 text-left">Nome da Solução</th>
+                    <th class="px-6 py-5 text-left">Concentração</th>
+                    <th class="px-6 py-5 text-left">Solvente</th>
+                    <th class="px-6 py-5 text-left">Uso Principal</th>
+                    <th class="px-6 py-5 text-left">Validade (dias)</th>
+                    <th class="px-6 py-5 text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaSolucoes" class="text-slate-300"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+const solucoes = [
+    { nome: "Hipoclorito de Sódio", concentracao: "10–15%", solvente: "Água", uso: "Desinfecção", validade: "180" },
+    { nome: "Sulfato de Cobre",     concentracao: "0,1%",   solvente: "Água", uso: "Algicida",     validade: "365" },
+    { nome: "Ácido Peracético",     concentracao: "5%",     solvente: "Água", uso: "Esterilização", validade: "90" },
+    { nome: "Cloreto de Cálcio",    concentracao: "2%",     solvente: "Água", uso: "Tratamento",   validade: "240" },
+];
+
+function renderSolucoes(lista) {
+    document.getElementById("tabelaSolucoes").innerHTML = lista.map(s => `
+        <tr class="border-t border-white/10 hover:bg-white/5">
+            <td class="px-6 py-4 font-medium">${s.nome}</td>
+            <td class="px-6 py-4">${s.concentracao}</td>
+            <td class="px-6 py-4">${s.solvente}</td>
+            <td class="px-6 py-4">${s.uso}</td>
+            <td class="px-6 py-4">${s.validade}</td>
+            <td class="px-6 py-4 text-center">
+                <button class="text-cyan-400 hover:text-cyan-300 text-xs font-medium">Editar</button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+document.getElementById("search").addEventListener("input", (e) => {
+    const t = e.target.value.toLowerCase();
+    renderSolucoes(t ? solucoes.filter(s =>
+        Object.values(s).some(v => v.toLowerCase().includes(t))
+    ) : solucoes);
+});
+
+function limparFiltros() {
+    document.getElementById("search").value = "";
+    renderSolucoes(solucoes);
+}
+
+window.onload = () => renderSolucoes(solucoes);
+</script>
+</body>
+</html>
