@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcquaSafe – Administração</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-bg">
+
+    <header class="glass-card header-admin">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+            </div>
+            <h1 class="gradient-text text-xl font-bold">AcquaSafe – Administração</h1>
+        </div>
+        <button class="btn-gradient" onclick="logout()">Sair</button>
+    </header>
+
+    <main class="dashboard">
+
+        <!-- Gerenciar Doenças -->
+        <section class="glass-card painel">
+            <h2>Gerenciar Doenças</h2>
+            <div class="add-box">
+                <input type="text" id="novaDoenca" class="input-field" placeholder="Nova doença">
+                <button class="btn-gradient" onclick="adicionarDoenca()">Adicionar</button>
+            </div>
+            <ul id="listaDoencas"></ul>
+        </section>
+
+        <!-- Clientes -->
+        <section class="glass-card painel">
+            <h2>Clientes</h2>
+            <ul id="listaClientes"></ul>
+        </section>
+
+    </main>
+
+    <script src="admin.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
