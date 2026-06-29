@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periculosidade – AcquaSafe</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="style-dark.css">
+</head>
+<body class="h-full bg-[#0a0f1a] text-white overflow-auto">
+
+<nav class="py-5 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="text-2xl font-bold gradient-text">AcquaSafe</span>
+        </div>
+        <div class="flex gap-8 text-sm">
+            <a href="solucoes.html"       class="hover:text-cyan-400 transition-colors">Soluções</a>
+            <a href="pat%C3%B3genos.html"      class="hover:text-cyan-400 transition-colors">Patógenos</a>
+            <a href="periculosidade.html" class="text-cyan-400 font-medium">Periculosidade</a>
+            <a href="index.html"          class="text-red-400 hover:text-red-300">Sair</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <header class="mb-10">
+        <h2 class="text-4xl font-bold text-white mb-2">Níveis de Periculosidade</h2>
+        <p class="text-slate-400">Classificação de risco biológico (BSL) e medidas de contenção</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Tabela BSL -->
+        <div class="glass-card rounded-2xl overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-white/5">
+                        <th class="px-6 py-5 text-left">Nível</th>
+                        <th class="px-6 py-5 text-left">Descrição</th>
+                        <th class="px-6 py-5 text-left">Exemplo</th>
+                        <th class="px-6 py-5 text-center">EPI Recomendado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaPerigo" class="text-slate-300"></tbody>
+            </table>
+        </div>
+
+        <!-- Legenda -->
+        <div class="glass-card p-6 rounded-2xl">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+                Legenda de Risco
+            </h3>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 p-4 bg-red-500/10 rounded-xl">
+                    <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">4</div>
+                    <div><strong class="text-white">Risco Muito Alto</strong> – Patógenos letais sem tratamento disponível</div>
+                </div>
+                <div class="flex items-center gap-3 p-4 bg-orange-500/10 rounded-xl">
+                    <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">3</div>
+                    <div><strong class="text-white">Risco Alto</strong> – Agentes infecciosos graves / transmissíveis</div>
+                </div>
+                <div class="flex items-center gap-3 p-4 bg-yellow-500/10 rounded-xl">
+                    <div class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                    <div><strong class="text-white">Risco Moderado</strong> – Patógenos com tratamento disponível</div>
+                </div>
+                <div class="flex items-center gap-3 p-4 bg-green-500/10 rounded-xl">
+                    <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                    <div><strong class="text-white">Risco Mínimo</strong> – Sem risco ao ser humano saudável</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+const perigos = [
+    { nivel: "BSL-1", desc: "Risco mínimo",       exemplo: "Bactérias não patogênicas",      epi: "Luvas, jaleco" },
+    { nivel: "BSL-2", desc: "Risco moderado",      exemplo: "E. coli patogênica, Phakopsora", epi: "Luvas, jaleco, óculos" },
+    { nivel: "BSL-3", desc: "Risco alto",           exemplo: "Heterodera glycines, M. tuberculosis", epi: "Respirador N95, roupa completa" },
+    { nivel: "BSL-4", desc: "Risco muito alto",     exemplo: "Vírus Ebola",                    epi: "Traje pressurizado" },
+];
+
+window.onload = () => {
+    document.getElementById("tabelaPerigo").innerHTML = perigos.map(p => `
+        <tr class="border-t border-white/10 hover:bg-white/5">
+            <td class="px-6 py-4 font-bold text-cyan-400">${p.nivel}</td>
+            <td class="px-6 py-4">${p.desc}</td>
+            <td class="px-6 py-4">${p.exemplo}</td>
+            <td class="px-6 py-4 text-sm text-center">${p.epi}</td>
+        </tr>
+    `).join("");
+};
+</script>
+</body>
+</html>
