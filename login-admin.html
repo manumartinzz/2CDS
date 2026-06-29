@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcquaSafe – Admin Login</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            backdrop-filter: blur(12px);
+            transition: transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.35s;
+            opacity: 0;
+            z-index: 9999;
+            white-space: nowrap;
+        }
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Botões dos cards clicáveis */
+        .nav-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(6, 182, 212, 0.18);
+        }
+        .nav-card:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="admin-bg">
+
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+</div>
+
+<!-- Toast de aviso -->
+<div id="toast">
+    <span id="toast-msg">Faça login antes de acessar esta área.</span>
+</div>
+
+<div class="relative min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md">
+
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                    <i data-lucide="shield" class="w-8 h-8 text-white"></i>
+                </div>
+                <span class="text-3xl font-bold gradient-text">AcquaSafe</span>
+            </div>
+            <h1 class="text-3xl font-bold">Painel Administrativo</h1>
+            <p class="text-white/60 mt-2">Acesso restrito a administradores</p>
+        </div>
+
+        <!-- Card -->
+        <div class="glass-card glow-border rounded-2xl p-8">
+            <form onsubmit="event.preventDefault(); loginAdmin();" class="space-y-4">
+                <div>
+                    <label class="block mb-2 text-sm font-medium">Usuário (login)</label>
+                    <input type="text" id="usuario" class="input-field w-full px-4 py-3 rounded-lg"
+                           placeholder="Digite seu login" required>
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium">Senha Administrativa</label>
+                    <input type="password" id="senha" class="input-field w-full px-4 py-3 rounded-lg"
+                           placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="w-full btn-gradient py-3 rounded-lg font-semibold">
+                    Entrar no Painel
+                </button>
+            </form>
+
+            <!-- Mensagem de erro de login -->
+            <div id="login-error" class="hidden mt-4 text-center text-red-400 text-sm font-medium
+                 bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4">
+                Usuário ou senha incorretos.
+            </div>
+
+            <p class="text-center text-white/50 text-sm mt-6">
+                <a href="index.html" class="hover:text-cyan-400 transition-colors">← Voltar ao login</a>
+            </p>
+        </div>
+
+        <!-- Info cards / navegação -->
+        <div class="grid grid-cols-3 gap-3 mt-6">
+            <div class="glass-card rounded-xl p-4 text-center nav-card" onclick="navAdmin('admin-clientes.html', 'Clientes')">
+                <i data-lucide="users" class="w-6 h-6 mx-auto text-cyan-400 mb-2"></i>
+                <p class="text-xs text-white/70">Clientes</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center nav-card" onclick="navAdmin('admin-doencas.html', 'Doenças')">
+                <i data-lucide="shield-alert" class="w-6 h-6 mx-auto text-blue-400 mb-2"></i>
+                <p class="text-xs text-white/70">Doenças</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center nav-card" onclick="navAdmin('admin-bloqueios.html', 'Bloqueios')">
+                <i data-lucide="ban" class="w-6 h-6 mx-auto text-red-400 mb-2"></i>
+                <p class="text-xs text-white/70">Bloqueios</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="login.js"></script>
+<script>
+    lucide.createIcons();
+
+    // ── Autenticação admin ──────────────────────────────────────────────
+    // Credenciais padrão (altere conforme necessário ou integre ao seu backend)
+    const ADMIN_USER = 'admin';
+    const ADMIN_PASS = 'admin123';
+
+    function loginAdmin() {
+        const usuario = document.getElementById('usuario').value.trim();
+        const senha   = document.getElementById('senha').value;
+        const errEl   = document.getElementById('login-error');
+
+        if (usuario === ADMIN_USER && senha === ADMIN_PASS) {
+            // Salva sessão no sessionStorage
+            sessionStorage.setItem('adminLogado', 'true');
+            sessionStorage.setItem('adminUsuario', usuario);
+            errEl.classList.add('hidden');
+            showToast('Login realizado com sucesso! Redirecionando…', 'success');
+            setTimeout(() => window.location.href = 'admin-clientes.html', 1200);
+        } else {
+            errEl.classList.remove('hidden');
+        }
+    }
+
+    // ── Navegação protegida ─────────────────────────────────────────────
+    function navAdmin(pagina, nome) {
+        const logado = sessionStorage.getItem('adminLogado') === 'true';
+        if (!logado) {
+            showToast('Faça login para acessar a área de ' + nome + '.');
+        } else {
+            window.location.href = pagina;
+        }
+    }
+
+    // ── Toast helper ────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg, tipo) {
+        const toast  = document.getElementById('toast');
+        const msgEl  = document.getElementById('toast-msg');
+        msgEl.textContent = msg;
+
+        if (tipo === 'success') {
+            toast.style.background = 'rgba(34,197,94,0.15)';
+            toast.style.borderColor = 'rgba(34,197,94,0.4)';
+            toast.style.color = '#86efac';
+        } else {
+            toast.style.background = 'rgba(239,68,68,0.15)';
+            toast.style.borderColor = 'rgba(239,68,68,0.4)';
+            toast.style.color = '#fca5a5';
+        }
+
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+</body>
+</html>
