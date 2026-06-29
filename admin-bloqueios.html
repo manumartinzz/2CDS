@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcquaSafe – Bloqueios</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; }
+
+        .input-search {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            border-radius: 0.6rem;
+            padding: 0.55rem 1rem 0.55rem 2.5rem;
+            outline: none;
+            width: 100%;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .input-search::placeholder { color: rgba(255,255,255,0.35); }
+        .input-search:focus { border-color: rgba(239,68,68,0.5); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-ativo   { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+        .badge-bloq    { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-pend    { background: rgba(234,179,8,0.15);  color: #fde047; border: 1px solid rgba(234,179,8,0.3); }
+
+        .table-row {
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: background 0.15s;
+        }
+        .table-row:hover { background: rgba(255,255,255,0.04); }
+
+        /* Stat cards */
+        .stat-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: #0f1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            width: 100%; max-width: 440px;
+            transform: translateY(20px);
+            transition: transform 0.25s;
+        }
+        .modal-overlay.open .modal-box { transform: translateY(0); }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 2rem; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.7rem 1.4rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem; font-weight: 500;
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s, opacity 0.3s;
+            opacity: 0; z-index: 9999; white-space: nowrap;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #86efac; }
+        #toast.error   { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.4);  color: #fca5a5; }
+        #toast.info    { background: rgba(6,182,212,0.15);  border: 1px solid rgba(6,182,212,0.4);  color: #67e8f9; }
+    </style>
+</head>
+<body class="admin-bg min-h-screen">
+
+<script>
+    if (sessionStorage.getItem('adminLogado') !== 'true') {
+        alert('Acesso negado. Faça login como administrador.');
+        window.location.href = 'login-admin.html';
+    }
+</script>
+
+<div id="toast"></div>
+
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-red-500/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+</div>
+
+<!-- Navbar -->
+<header class="relative z-10 border-b border-white/10 backdrop-blur-sm bg-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="text-xl font-bold gradient-text">AcquaSafe</span>
+            <span class="text-white/30 mx-2">/</span>
+            <span class="text-white/70 text-sm">Bloqueios</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="admin-clientes.html"
+               class="text-xs text-white/60 hover:text-cyan-400 transition-colors flex items-center gap-1">
+                <i data-lucide="users" class="w-4 h-4"></i> Clientes
+            </a>
+            <a href="admin-doencas.html"
+               class="text-xs text-white/60 hover:text-blue-400 transition-colors flex items-center gap-1">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i> Doenças
+            </a>
+            <button onclick="sair()"
+                    class="text-xs text-white/50 hover:text-white transition-colors flex items-center gap-1 ml-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="relative z-10 max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Cabeçalho -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold">Gerenciar Bloqueios</h2>
+        <p class="text-white/50 text-sm mt-1">Bloqueie ou desbloqueie clientes inadimplentes.</p>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card">
+            <p class="text-white/50 text-xs mb-1">Total de clientes</p>
+            <p id="stat-total" class="text-2xl font-bold">0</p>
+        </div>
+        <div class="stat-card">
+            <p class="text-white/50 text-xs mb-1">Ativos</p>
+            <p id="stat-ativo" class="text-2xl font-bold text-green-400">0</p>
+        </div>
+        <div class="stat-card">
+            <p class="text-white/50 text-xs mb-1">Pendentes</p>
+            <p id="stat-pend" class="text-2xl font-bold text-yellow-400">0</p>
+        </div>
+        <div class="stat-card">
+            <p class="text-white/50 text-xs mb-1">Bloqueados</p>
+            <p id="stat-bloq" class="text-2xl font-bold text-red-400">0</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="glass-card rounded-xl p-4 mb-6 flex flex-col sm:flex-row gap-3 items-center">
+        <div class="relative flex-1 w-full">
+            <i data-lucide="search" class="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="busca" class="input-search" placeholder="Buscar por nome, CPF ou e-mail…"
+                   oninput="renderTabela()">
+        </div>
+        <select id="filtro-status" onchange="renderTabela()"
+                class="input-search sm:w-48 pl-3">
+            <option value="">Todos os status</option>
+            <option value="ativo">Ativo</option>
+            <option value="pendente">Pendente</option>
+            <option value="bloqueado">Bloqueado</option>
+        </select>
+        <button onclick="bloquearTodosPendentes()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                       bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 transition-colors whitespace-nowrap">
+            <i data-lucide="ban" class="w-4 h-4"></i> Bloquear pendentes
+        </button>
+    </div>
+
+    <!-- Tabela -->
+    <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-white/10 text-white/50 text-xs uppercase tracking-wider">
+                        <th class="px-5 py-4 text-left">Nome</th>
+                        <th class="px-5 py-4 text-left">CPF</th>
+                        <th class="px-5 py-4 text-left">Plano</th>
+                        <th class="px-5 py-4 text-left">Situação</th>
+                        <th class="px-5 py-4 text-left">Status</th>
+                        <th class="px-5 py-4 text-center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-body"></tbody>
+            </table>
+        </div>
+        <div id="empty-state" class="hidden text-center py-16 text-white/40">
+            <i data-lucide="ban" class="w-10 h-10 mx-auto mb-3 opacity-40"></i>
+            <p>Nenhum cliente encontrado.</p>
+        </div>
+    </div>
+</main>
+
+<!-- Modal de confirmação de bloqueio/desbloqueio -->
+<div id="modal" class="modal-overlay" onclick="fecharModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="text-center mb-5">
+            <div id="modal-icon-wrap"
+                 class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i id="modal-icon" data-lucide="ban" class="w-7 h-7"></i>
+            </div>
+            <h3 id="modal-titulo" class="text-lg font-bold"></h3>
+            <p id="modal-desc" class="text-white/50 text-sm mt-2"></p>
+        </div>
+
+        <!-- Motivo (somente ao bloquear) -->
+        <div id="motivo-wrap" class="mb-4">
+            <label class="block text-sm text-white/60 mb-1">Motivo do bloqueio</label>
+            <select id="motivo-sel"
+                    class="w-full bg-white/7 border border-white/12 text-white rounded-lg px-3 py-2 text-sm outline-none"
+                    style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);">
+                <option value="Inadimplência">Inadimplência</option>
+                <option value="Pagamento atrasado">Pagamento atrasado</option>
+                <option value="Fraude">Fraude</option>
+                <option value="Solicitação do cliente">Solicitação do cliente</option>
+                <option value="Outro">Outro</option>
+            </select>
+        </div>
+
+        <div class="flex gap-3">
+            <button id="btn-confirmar" onclick="confirmarAcao()"
+                    class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors"></button>
+            <button onclick="fecharModal()"
+                    class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/15 transition-colors">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── Dados compartilhados com admin-clientes.html ──────────────────────────────
+let clientes = JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || [
+    { id: 1, nome: 'Ana Paula Ferreira',  cpf: '123.456.789-00', email: 'ana@email.com',    tel: '(11) 98765-4321', plano: 'Premium', status: 'ativo',     motivo: '' },
+    { id: 2, nome: 'Carlos Mendes',       cpf: '234.567.890-11', email: 'carlos@email.com', tel: '(21) 91234-5678', plano: 'Básico',  status: 'pendente',  motivo: 'Pagamento atrasado' },
+    { id: 3, nome: 'Fernanda Lima',       cpf: '345.678.901-22', email: 'fer@email.com',    tel: '(31) 99876-5432', plano: 'Premium', status: 'ativo',     motivo: '' },
+    { id: 4, nome: 'João Victor Santos',  cpf: '456.789.012-33', email: 'joao@email.com',   tel: '(41) 97654-3210', plano: 'Básico',  status: 'bloqueado', motivo: 'Inadimplência' },
+    { id: 5, nome: 'Mariana Costa',       cpf: '567.890.123-44', email: 'mari@email.com',   tel: '(51) 96543-2109', plano: 'Premium', status: 'ativo',     motivo: '' },
+    { id: 6, nome: 'Roberto Alves',       cpf: '678.901.234-55', email: 'rob@email.com',    tel: '(61) 95432-1098', plano: 'Básico',  status: 'pendente',  motivo: 'Inadimplência' },
+];
+
+let clienteAtivo = null;
+
+function salvar() {
+    localStorage.setItem('acqua_clientes', JSON.stringify(clientes));
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function atualizarStats() {
+    document.getElementById('stat-total').textContent = clientes.length;
+    document.getElementById('stat-ativo').textContent = clientes.filter(c => c.status === 'ativo').length;
+    document.getElementById('stat-pend').textContent  = clientes.filter(c => c.status === 'pendente').length;
+    document.getElementById('stat-bloq').textContent  = clientes.filter(c => c.status === 'bloqueado').length;
+}
+
+// ── Tabela ────────────────────────────────────────────────────────────────────
+function renderTabela() {
+    const busca  = document.getElementById('busca').value.toLowerCase();
+    const filtro = document.getElementById('filtro-status').value;
+
+    const filtrados = clientes.filter(c => {
+        const match = c.nome.toLowerCase().includes(busca) ||
+                      c.cpf.includes(busca) ||
+                      c.email.toLowerCase().includes(busca);
+        const statusOk = !filtro || c.status === filtro;
+        return match && statusOk;
+    });
+
+    const tbody = document.getElementById('tabela-body');
+    const empty = document.getElementById('empty-state');
+
+    atualizarStats();
+
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+    }
+    empty.classList.add('hidden');
+
+    tbody.innerHTML = filtrados.map(c => {
+        const isBloq = c.status === 'bloqueado';
+        const btnClass = isBloq
+            ? 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500/20 hover:bg-green-500/30 text-green-300 transition-colors flex items-center gap-1'
+            : 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/20 hover:bg-red-500/30 text-red-300 transition-colors flex items-center gap-1';
+        const btnIcon  = isBloq ? 'unlock' : 'ban';
+        const btnLabel = isBloq ? 'Desbloquear' : 'Bloquear';
+
+        const situacao = c.motivo
+            ? `<span class="text-white/50 text-xs">${c.motivo}</span>`
+            : `<span class="text-white/25 text-xs">—</span>`;
+
+        return `
+        <tr class="table-row">
+            <td class="px-5 py-3.5 font-medium">${c.nome}</td>
+            <td class="px-5 py-3.5 text-white/60">${c.cpf}</td>
+            <td class="px-5 py-3.5">${c.plano}</td>
+            <td class="px-5 py-3.5">${situacao}</td>
+            <td class="px-5 py-3.5">${badgeStatus(c.status)}</td>
+            <td class="px-5 py-3.5">
+                <div class="flex justify-center">
+                    <button onclick="abrirModal(${c.id})" class="${btnClass}">
+                        <i data-lucide="${btnIcon}" class="w-3.5 h-3.5"></i>
+                        ${btnLabel}
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+    lucide.createIcons();
+}
+
+function badgeStatus(s) {
+    const map = {
+        ativo:     '<span class="badge badge-ativo">● Ativo</span>',
+        bloqueado: '<span class="badge badge-bloq">● Bloqueado</span>',
+        pendente:  '<span class="badge badge-pend">● Pendente</span>',
+    };
+    return map[s] || s;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function abrirModal(id) {
+    clienteAtivo = clientes.find(c => c.id === id);
+    if (!clienteAtivo) return;
+
+    const isBloq = clienteAtivo.status === 'bloqueado';
+    const iconWrap = document.getElementById('modal-icon-wrap');
+    const icon     = document.getElementById('modal-icon');
+    const titulo   = document.getElementById('modal-titulo');
+    const desc     = document.getElementById('modal-desc');
+    const btnConf  = document.getElementById('btn-confirmar');
+    const motivoW  = document.getElementById('motivo-wrap');
+
+    if (isBloq) {
+        iconWrap.className = 'w-14 h-14 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-4';
+        icon.setAttribute('data-lucide', 'unlock');
+        titulo.textContent = 'Desbloquear Cliente';
+        desc.textContent   = `Deseja desbloquear ${clienteAtivo.nome}? O acesso será restaurado imediatamente.`;
+        btnConf.textContent = 'Sim, desbloquear';
+        btnConf.className   = 'flex-1 py-2.5 rounded-lg text-sm font-semibold bg-green-500/20 hover:bg-green-500/30 text-green-300 transition-colors';
+        motivoW.classList.add('hidden');
+    } else {
+        iconWrap.className = 'w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4';
+        icon.setAttribute('data-lucide', 'ban');
+        titulo.textContent = 'Bloquear Cliente';
+        desc.textContent   = `Deseja bloquear ${clienteAtivo.nome}? O acesso será suspenso até novo aviso.`;
+        btnConf.textContent = 'Sim, bloquear';
+        btnConf.className   = 'flex-1 py-2.5 rounded-lg text-sm font-semibold bg-red-500/20 hover:bg-red-500/30 text-red-300 transition-colors';
+        motivoW.classList.remove('hidden');
+        document.getElementById('motivo-sel').value = 'Inadimplência';
+    }
+
+    document.getElementById('modal').classList.add('open');
+    lucide.createIcons();
+}
+
+function fecharModal(e) {
+    if (e && e.target !== document.getElementById('modal')) return;
+    document.getElementById('modal').classList.remove('open');
+    clienteAtivo = null;
+}
+
+function confirmarAcao() {
+    if (!clienteAtivo) return;
+    const c = clientes.find(x => x.id === clienteAtivo.id);
+    if (c.status === 'bloqueado') {
+        c.status = 'ativo';
+        c.motivo = '';
+        showToast(`${c.nome} foi desbloqueado.`, 'success');
+    } else {
+        c.status = 'bloqueado';
+        c.motivo = document.getElementById('motivo-sel').value;
+        showToast(`${c.nome} foi bloqueado por ${c.motivo}.`, 'info');
+    }
+    salvar();
+    document.getElementById('modal').classList.remove('open');
+    clienteAtivo = null;
+    renderTabela();
+}
+
+// ── Bloquear todos os pendentes ───────────────────────────────────────────────
+function bloquearTodosPendentes() {
+    const pendentes = clientes.filter(c => c.status === 'pendente');
+    if (pendentes.length === 0) {
+        showToast('Não há clientes pendentes.', 'info');
+        return;
+    }
+    pendentes.forEach(c => {
+        c.status = 'bloqueado';
+        c.motivo = c.motivo || 'Inadimplência';
+    });
+    salvar();
+    renderTabela();
+    showToast(`${pendentes.length} cliente(s) bloqueado(s) por inadimplência.`, 'info');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, tipo) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + tipo;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Sair ──────────────────────────────────────────────────────────────────────
+function sair() {
+    sessionStorage.removeItem('adminLogado');
+    sessionStorage.removeItem('adminUsuario');
+    window.location.href = 'login-admin.html';
+}
+
+// Init
+renderTabela();
+</script>
+</body>
+</html>
