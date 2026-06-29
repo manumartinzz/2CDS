@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AcquaSafe - Login</title>
-
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="login.css">
 </head>
 <body class="h-full w-full bg-[#0a0f1a] text-white overflow-auto">
     <div class="h-full w-full flex flex-col">
-
+        
         <!-- Background Gradient Elements -->
         <div class="fixed inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
@@ -22,7 +20,7 @@
 
         <!-- Content -->
         <div class="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
-
+            
             <!-- Header -->
             <div class="text-center mb-12">
                 <div class="flex items-center justify-center gap-3 mb-6">
@@ -49,8 +47,7 @@
                             <input type="password" id="login-senha" placeholder="••••••••"
                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
                         </div>
-
-                        <!-- NOVO CAMPO: Código de Confirmação -->
+                        <!-- Código de Confirmação -->
                         <div>
                             <label class="block text-sm font-medium text-white mb-2">Código de Confirmação</label>
                             <div class="relative">
@@ -64,7 +61,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="flex items-center justify-between text-sm">
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 rounded accent-cyan-400">
@@ -75,18 +71,25 @@
                         <button type="submit" class="w-full btn-gradient text-white font-semibold py-3 rounded-lg">
                             <span id="btn-text">Acessar Painel</span>
                         </button>
-                        <!-- Mensagem de erro — preenchida via login.js -->
                         <p id="login-error" class="text-red-400 text-sm text-center hidden"></p>
                     </form>
 
-                    <p class="text-center text-white/60 text-sm">
-                        Não tem conta?
-                        <a href="pagamento.html" class="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Assinar agora</a>
-                    </p>
+                    <!-- Botões de Ação (Novo layout) -->
+                    <div class="flex gap-3 pt-4">
+                        <a href="pagamento.html" 
+                           class="flex-1 text-center bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold py-3 rounded-lg transition-all">
+                            Assinar Plano
+                        </a>
+                        <a href="cadastro.html" 
+                           class="flex-1 text-center border border-white/30 hover:bg-white/10 text-white font-semibold py-3 rounded-lg transition-all">
+                            Criar Conta
+                        </a>
+                    </div>
 
-                    <!-- NOVO: Botão para Acessar como Administrador -->
-                    <div class="text-center pt-2 border-t border-white/10">
-                        <button type="button" onclick="openAdminModal()" class="text-slate-400 hover:text-cyan-400 text-xs transition-colors flex items-center justify-center gap-1 mx-auto">
+                    <!-- Link Admin -->
+                    <div class="text-center pt-4 border-t border-white/10">
+                        <button type="button" onclick="openAdminModal()" 
+                                class="text-slate-400 hover:text-cyan-400 text-xs transition-colors flex items-center justify-center gap-1 mx-auto">
                             <i data-lucide="lock" class="w-3 h-3"></i>
                             Acessar como Administrador
                         </button>
@@ -132,7 +135,7 @@
         </footer>
     </div>
 
-    <!-- NOVO: Modal de Login Admin -->
+    <!-- Modal de Login Admin -->
     <div id="adminModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
         <div class="glass-card glow-border rounded-2xl p-8 w-full max-w-md">
             <div class="flex items-center gap-2 mb-4">
@@ -140,19 +143,16 @@
                 <h2 class="text-xl font-bold text-white">Acesso de Administrador</h2>
             </div>
             <p class="text-slate-400 text-sm mb-6">Insira a senha de administrador para acessar o painel</p>
-
             <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-                <!-- Mensagem de erro admin -->
                 <p id="admin-error" class="text-red-400 text-sm hidden"></p>
-
                 <div>
                     <label class="block text-sm font-medium text-white mb-2">Senha de Administrador</label>
                     <input type="password" id="admin-password" placeholder="••••••••"
                            class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required autofocus>
                 </div>
-
                 <div class="flex gap-3">
-                    <button type="button" onclick="closeAdminModal()" class="flex-1 px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors">
+                    <button type="button" onclick="closeAdminModal()" 
+                            class="flex-1 px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 btn-gradient text-white font-semibold py-2 rounded-lg">
@@ -163,7 +163,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
     <script src="login.js"></script>
 </body>
 </html>
