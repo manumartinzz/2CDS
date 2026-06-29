@@ -31,7 +31,7 @@ function handleLogin(e) {
         btn.textContent = '✓ Acesso concedido';
 
         setTimeout(() => {
-            window.location.href = 'painel.html';
+            window.location.href = 'portal.html';
         }, 800);
     }, 1200);
 }
