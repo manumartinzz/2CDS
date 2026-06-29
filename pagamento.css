@@ -1,0 +1,14 @@
+/* pagamento.css – AcquaSafe */
+* { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+
+.plan-card { transition: all 0.3s ease; }
+.plan-card.selected { transform: scale(1.02); }
+
+.payment-method { transition: all 0.2s ease; }
+.payment-method.active { transform: translateY(-2px); }
+
+.fade-in { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+@keyframes fadeIn { to { opacity: 1; } }
+
+.pulse-dot { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
