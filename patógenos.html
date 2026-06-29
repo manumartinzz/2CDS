@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patógenos – AcquaSafe</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="style-dark.css">
+</head>
+<body class="h-full bg-[#0a0f1a] text-white overflow-auto">
+
+<nav class="py-5 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="text-2xl font-bold gradient-text">AcquaSafe</span>
+        </div>
+        <div class="flex gap-8 text-sm">
+            <a href="solucoes.html"     class="hover:text-cyan-400 transition-colors">Soluções</a>
+            <a href="patogenos.html"    class="text-cyan-400 font-medium">Patógenos</a>
+            <a href="periculosidade.html" class="hover:text-cyan-400 transition-colors">Periculosidade</a>
+            <a href="index.html"        class="text-red-400 hover:text-red-300">Sair</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+    <header class="mb-8">
+        <h2 class="text-4xl font-bold text-white mb-2">Patógenos da Soja</h2>
+        <p class="text-slate-400">Banco de dados completo de agentes causais de doenças em <em>Glycine max</em> — fonte: Embrapa / literatura científica.</p>
+    </header>
+
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-4 mb-6">
+        <input id="searchPat" type="text" placeholder="Buscar patógeno, doença ou tipo…"
+               class="px-4 py-3 w-80 rounded-lg bg-white/5 border border-white/10 focus:border-cyan-400 outline-none text-white placeholder-white/40">
+        <select id="filterTipo" class="px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-cyan-400 outline-none text-white">
+            <option value="">Todos os tipos</option>
+            <option value="Fungo">Fungo</option>
+            <option value="Oomiceto">Oomiceto</option>
+            <option value="Bactéria">Bactéria</option>
+            <option value="Vírus">Vírus</option>
+            <option value="Nematoide">Nematoide</option>
+        </select>
+        <button onclick="limparFiltros()"
+                class="px-5 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
+            Limpar filtros
+        </button>
+    </div>
+
+    <!-- Contagem -->
+    <p id="contagem" class="text-slate-400 text-sm mb-4"></p>
+
+    <!-- Tabela -->
+    <div class="glass-card rounded-2xl overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-white/5 text-left">
+                    <th class="px-5 py-4">Patógeno</th>
+                    <th class="px-5 py-4">Tipo</th>
+                    <th class="px-5 py-4">Grupo de Risco</th>
+                    <th class="px-5 py-4">Doença Associada</th>
+                    <th class="px-5 py-4">Órgão Afetado</th>
+                    <th class="px-5 py-4 text-center">Nível BSL</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaPatogenos" class="text-slate-300"></tbody>
+        </table>
+    </div>
+
+    <p class="text-xs text-slate-600 mt-4">
+        Fontes: Embrapa Soja – Manual de Identificação de Doenças de Soja (2014); Henning et al. (2014); Godoy et al. (2014); FEIS/UNESP; ResearchGate.
+    </p>
+</div>
+
+<script>
+lucide.createIcons();
+
+/* =====================================================
+   BANCO DE DADOS – PATÓGENOS DA SOJA
+   Fonte: Embrapa + literatura científica brasileira
+   ===================================================== */
+const patogenos = [
+
+    /* ── FUNGOS ──────────────────────────────────── */
+    { nome: "Phakopsora pachyrhizi",          tipo: "Fungo",    risco: "2", doenca: "Ferrugem asiática da soja",              orgao: "Folhas / vagens",       bsl: "BSL-2" },
+    { nome: "Phakopsora meibomiae",           tipo: "Fungo",    risco: "2", doenca: "Ferrugem americana da soja",             orgao: "Folhas",                bsl: "BSL-2" },
+    { nome: "Sclerotinia sclerotiorum",       tipo: "Fungo",    risco: "2", doenca: "Mofo-branco / podridão branca da haste", orgao: "Hastes / vagens",       bsl: "BSL-2" },
+    { nome: "Colletotrichum truncatum",       tipo: "Fungo",    risco: "2", doenca: "Antracnose",                             orgao: "Vagens / hastes / folhas", bsl: "BSL-2" },
+    { nome: "Rhizoctonia solani AG1",         tipo: "Fungo",    risco: "2", doenca: "Mela / requeima / tombamento",           orgao: "Folhas / colo / raízes", bsl: "BSL-2" },
+    { nome: "Macrophomina phaseolina",        tipo: "Fungo",    risco: "2", doenca: "Podridão de carvão da raiz",             orgao: "Raízes / colo",         bsl: "BSL-2" },
+    { nome: "Cercospora kikuchii",            tipo: "Fungo",    risco: "2", doenca: "Crestamento foliar de Cercospora / mancha púrpura", orgao: "Folhas / sementes", bsl: "BSL-2" },
+    { nome: "Cercospora sojina",              tipo: "Fungo",    risco: "2", doenca: "Mancha olho-de-rã",                      orgao: "Folhas",                bsl: "BSL-2" },
+    { nome: "Septoria glycines",              tipo: "Fungo",    risco: "2", doenca: "Mancha parda / septoriose",              orgao: "Folhas",                bsl: "BSL-2" },
+    { nome: "Diaporthe aspalathi",            tipo: "Fungo",    risco: "2", doenca: "Cancro da haste",                        orgao: "Hastes",                bsl: "BSL-2" },
+    { nome: "Diaporthe caulivora",            tipo: "Fungo",    risco: "2", doenca: "Cancro da haste",                        orgao: "Hastes",                bsl: "BSL-2" },
+    { nome: "Phomopsis longicolla",           tipo: "Fungo",    risco: "2", doenca: "Seca da haste e da vagem",               orgao: "Hastes / vagens / sementes", bsl: "BSL-2" },
+    { nome: "Corynespora cassiicola",         tipo: "Fungo",    risco: "2", doenca: "Mancha alvo / podridão radicular de Corynespora", orgao: "Folhas / raízes", bsl: "BSL-2" },
+    { nome: "Microsphaera diffusa",           tipo: "Fungo",    risco: "1", doenca: "Oídio da soja",                          orgao: "Folhas / hastes",       bsl: "BSL-1" },
+    { nome: "Sclerotium rolfsii",             tipo: "Fungo",    risco: "2", doenca: "Tombamento e murcha de Sclerotium",      orgao: "Colo / raízes",         bsl: "BSL-2" },
+    { nome: "Cadophora gregata",              tipo: "Fungo",    risco: "2", doenca: "Podridão parda da haste",                 orgao: "Hastes / raízes",       bsl: "BSL-2" },
+    { nome: "Fusarium virguliforme",          tipo: "Fungo",    risco: "2", doenca: "Síndrome da morte súbita (SMS)",          orgao: "Raízes / hastes",       bsl: "BSL-2" },
+    { nome: "Fusarium solani f. sp. glycines",tipo: "Fungo",    risco: "2", doenca: "Podridão radicular de Fusarium",          orgao: "Raízes",                bsl: "BSL-2" },
+    { nome: "Fusarium semitectum",            tipo: "Fungo",    risco: "2", doenca: "Podridão de sementes / tombamento",       orgao: "Sementes / plântulas",  bsl: "BSL-2" },
+    { nome: "Rosellinia necatrix",            tipo: "Fungo",    risco: "2", doenca: "Podridão radicular de Rosellinia",        orgao: "Raízes",                bsl: "BSL-2" },
+    { nome: "Calonectria ilicicola",          tipo: "Fungo",    risco: "2", doenca: "Podridão vermelha da coroa",              orgao: "Raízes / colo",         bsl: "BSL-2" },
+    { nome: "Ascochyta sojae",               tipo: "Fungo",    risco: "2", doenca: "Mancha foliar de Ascochyta",              orgao: "Folhas",                bsl: "BSL-2" },
+    { nome: "Myrothecium roridum",            tipo: "Fungo",    risco: "2", doenca: "Mancha foliar de Myrothecium",            orgao: "Folhas",                bsl: "BSL-2" },
+    { nome: "Alternaria alternata",           tipo: "Fungo",    risco: "1", doenca: "Mancha de Alternaria / deterioração",     orgao: "Sementes / folhas",     bsl: "BSL-1" },
+
+    /* ── OOMICETOS ───────────────────────────────── */
+    { nome: "Phytophthora sojae",             tipo: "Oomiceto", risco: "2", doenca: "Podridão radicular e da haste de Phytophthora", orgao: "Raízes / hastes",  bsl: "BSL-2" },
+    { nome: "Peronospora manshurica",         tipo: "Oomiceto", risco: "2", doenca: "Míldio da soja",                         orgao: "Folhas / sementes",     bsl: "BSL-2" },
+    { nome: "Pythium spp.",                   tipo: "Oomiceto", risco: "2", doenca: "Tombamento de plântulas / podridão radicular", orgao: "Raízes / plântulas", bsl: "BSL-2" },
+
+    /* ── BACTÉRIAS ───────────────────────────────── */
+    { nome: "Pseudomonas savastanoi pv. glycinea",         tipo: "Bactéria", risco: "2", doenca: "Crestamento bacteriano",     orgao: "Folhas",   bsl: "BSL-2" },
+    { nome: "Pseudomonas syringae pv. tabaci",             tipo: "Bactéria", risco: "2", doenca: "Fogo selvagem",              orgao: "Folhas",   bsl: "BSL-2" },
+    { nome: "Xanthomonas axonopodis pv. glycines",         tipo: "Bactéria", risco: "2", doenca: "Pústula bacteriana",         orgao: "Folhas / vagens", bsl: "BSL-2" },
+    { nome: "Curtobacterium flaccumfaciens pv. flaccumfaciens", tipo: "Bactéria", risco: "2", doenca: "Murcha bacteriana / mancha bacteriana marrom", orgao: "Sistema vascular", bsl: "BSL-2" },
+
+    /* ── VÍRUS ───────────────────────────────────── */
+    { nome: "Soybean Mosaic Virus (SMV)",                  tipo: "Vírus",    risco: "2", doenca: "Mosaico comum da soja",       orgao: "Folhas / plantas",      bsl: "BSL-2" },
+    { nome: "Bean Pod Mottle Virus (BPMV)",                tipo: "Vírus",    risco: "2", doenca: "Mosqueado do feijão / soja",  orgao: "Folhas / vagens",       bsl: "BSL-2" },
+    { nome: "Alfalfa Mosaic Virus (AMV)",                  tipo: "Vírus",    risco: "2", doenca: "Mosaico cálico",              orgao: "Folhas",                bsl: "BSL-2" },
+    { nome: "Cowpea Mild Mottle Virus (CPMMV)",            tipo: "Vírus",    risco: "2", doenca: "Necrose da haste",            orgao: "Hastes / folhas",       bsl: "BSL-2" },
+    { nome: "Tobacco Streak Virus (TSV)",                  tipo: "Vírus",    risco: "2", doenca: "Queima do broto",             orgao: "Brotos / folhas",       bsl: "BSL-2" },
+
+    /* ── NEMATOIDES ──────────────────────────────── */
+    { nome: "Heterodera glycines",            tipo: "Nematoide", risco: "3", doenca: "Nematoide de cisto da soja (NCS)",       orgao: "Raízes",   bsl: "BSL-3" },
+    { nome: "Meloidogyne incognita",          tipo: "Nematoide", risco: "2", doenca: "Nematoide de galhas",                    orgao: "Raízes",   bsl: "BSL-2" },
+    { nome: "Meloidogyne javanica",           tipo: "Nematoide", risco: "2", doenca: "Nematoide de galhas",                    orgao: "Raízes",   bsl: "BSL-2" },
+    { nome: "Pratylenchus brachyurus",        tipo: "Nematoide", risco: "2", doenca: "Nematoide das lesões radiculares",       orgao: "Raízes",   bsl: "BSL-2" },
+    { nome: "Rotylenchulus reniformis",       tipo: "Nematoide", risco: "2", doenca: "Nematoide reniforme",                    orgao: "Raízes",   bsl: "BSL-2" },
+];
+
+/* ── Tipo → cor badge ── */
+const corTipo = {
+    "Fungo":     "bg-purple-500/20 text-purple-300",
+    "Oomiceto":  "bg-blue-500/20 text-blue-300",
+    "Bactéria":  "bg-yellow-500/20 text-yellow-300",
+    "Vírus":     "bg-red-500/20 text-red-300",
+    "Nematoide": "bg-orange-500/20 text-orange-300",
+};
+
+let filtroAtual = [];
+
+function renderPatogenos(lista) {
+    const tbody = document.getElementById("tabelaPatogenos");
+    const cont  = document.getElementById("contagem");
+
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Nenhum resultado encontrado.</td></tr>`;
+        cont.textContent = "0 patógenos";
+        return;
+    }
+
+    tbody.innerHTML = lista.map(p => `
+        <tr class="border-t border-white/10 hover:bg-white/5 transition-colors">
+            <td class="px-5 py-4 font-medium italic">${p.nome}</td>
+            <td class="px-5 py-4">
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${corTipo[p.tipo] || "bg-white/10 text-white"}">
+                    ${p.tipo}
+                </span>
+            </td>
+            <td class="px-5 py-4">
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400">
+                    GR${p.risco}
+                </span>
+            </td>
+            <td class="px-5 py-4">${p.doenca}</td>
+            <td class="px-5 py-4 text-slate-400">${p.orgao}</td>
+            <td class="px-5 py-4 text-center font-mono font-bold text-cyan-400">${p.bsl}</td>
+        </tr>
+    `).join("");
+
+    cont.textContent = `${lista.length} patógeno${lista.length !== 1 ? "s" : ""} encontrado${lista.length !== 1 ? "s" : ""}`;
+}
+
+function filtrar() {
+    const termo = document.getElementById("searchPat").value.toLowerCase();
+    const tipo  = document.getElementById("filterTipo").value;
+
+    const resultado = patogenos.filter(p => {
+        const matchTipo  = !tipo || p.tipo === tipo;
+        const matchBusca = !termo ||
+            p.nome.toLowerCase().includes(termo) ||
+            p.doenca.toLowerCase().includes(termo) ||
+            p.tipo.toLowerCase().includes(termo) ||
+            p.orgao.toLowerCase().includes(termo);
+        return matchTipo && matchBusca;
+    });
+
+    renderPatogenos(resultado);
+}
+
+function limparFiltros() {
+    document.getElementById("searchPat").value = "";
+    document.getElementById("filterTipo").value = "";
+    renderPatogenos(patogenos);
+}
+
+document.getElementById("searchPat").addEventListener("input", filtrar);
+document.getElementById("filterTipo").addEventListener("change", filtrar);
+
+window.onload = () => renderPatogenos(patogenos);
+</script>
+</body>
+</html>
