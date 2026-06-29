@@ -4,12 +4,13 @@ function handleLogin(e) {
 
     const usuario = document.getElementById('login-usuario').value.trim();
     const senha   = document.getElementById('login-senha').value.trim();
+    const codigo  = document.getElementById('login-codigo').value.trim();
     const btn     = document.getElementById('btn-text');
     const submitBtn = btn.closest('button');
 
     // Validação: campos não podem estar vazios
-    if (!usuario || !senha) {
-        showError('Preencha todos os campos.');
+    if (!usuario || !senha || !codigo) {
+        showError('Preencha todos os campos, incluindo o código de confirmação.');
         return;
     }
 
@@ -17,12 +18,20 @@ function handleLogin(e) {
     submitBtn.disabled = true;
     btn.textContent = 'Acessando…';
 
-    // Simulação de autenticação (substitua pelo fetch à sua API quando disponível)
+    // Simulação de autenticação
     setTimeout(() => {
+        // Exemplo simples de validação de código (opcional)
+        if (codigo.length < 4) {
+            showError('Código de confirmação inválido.');
+            submitBtn.disabled = false;
+            btn.textContent = 'Acessar Painel';
+            return;
+        }
+
         btn.textContent = '✓ Acesso concedido';
 
         setTimeout(() => {
-            window.location.href = 'painel.html'; // ← LINHA CORRIGIDA
+            window.location.href = 'painel.html';
         }, 800);
     }, 1200);
 }
@@ -72,36 +81,4 @@ function applyConfig(config) {
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
     applyConfig(defaultConfig);
-
-    if (window.elementSdk) {
-        window.elementSdk.init({
-            defaultConfig,
-            onConfigChange: (config) => applyConfig(config),
-            mapToCapabilities: (config) => ({
-                recolorables: [
-                    {
-                        get: () => config.background_color,
-                        set: (v) => {
-                            config.background_color = v;
-                            window.elementSdk.setConfig({ background_color: v });
-                        }
-                    },
-                    {
-                        get: () => config.text_color,
-                        set: (v) => {
-                            config.text_color = v;
-                            window.elementSdk.setConfig({ text_color: v });
-                        }
-                    }
-                ],
-                fontEditable: {
-                    get: () => config.font_family,
-                    set: (v) => {
-                        config.font_family = v;
-                        window.elementSdk.setConfig({ font_family: v });
-                    }
-                }
-            })
-        });
-    }
 });
