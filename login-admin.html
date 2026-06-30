@@ -17,7 +17,7 @@
             font-size: 0.875rem; font-weight: 500;
             backdrop-filter: blur(12px);
             transition: all 0.35s;
-            opacity: 0; z-index: 9999;
+            opacity: 0; z-index: 9999; white-space: nowrap;
         }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
@@ -32,7 +32,6 @@
 <div class="relative min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md">
 
-        <!-- Logo -->
         <div class="text-center mb-8">
             <div class="flex items-center justify-center gap-3 mb-4">
                 <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
@@ -41,10 +40,9 @@
                 <span class="text-3xl font-bold gradient-text">AcquaSafe</span>
             </div>
             <h1 class="text-3xl font-bold">Painel Administrativo</h1>
-            <p class="text-white/60 mt-2">Acesso restrito</p>
+            <p class="text-white/60 mt-2">Acesso restrito a administradores</p>
         </div>
 
-        <!-- Card de Login -->
         <div class="glass-card glow-border rounded-2xl p-8">
             <form onsubmit="loginAdmin(event)" class="space-y-5">
                 <div>
@@ -80,22 +78,15 @@
 <script>
     lucide.createIcons();
 
-    // Banco de dados dos administradores (mesmo do login.js)
-    const adminUsers = [
-        { email: "milenakachimarck@gmail.com", senha: "123456", nome: "Milena Kachimarck" },
-        { email: "mayracalegario@gmail.com",   senha: "123456", nome: "Mayra Calegario" },
-        { email: "manucordeiro326@gmail.com",  senha: "123456", nome: "Manu Cordeiro" }
-    ];
-
     function loginAdmin(e) {
         e.preventDefault();
 
-        const email = document.getElementById('admin-email').value.trim();
+        const email = document.getElementById('admin-email').value.trim().toLowerCase();
         const senha = document.getElementById('admin-senha').value.trim();
         const errorEl = document.getElementById('login-error');
 
         const userFound = adminUsers.find(user => 
-            user.email.toLowerCase() === email.toLowerCase() && user.senha === senha
+            user.email.toLowerCase() === email && user.senha === senha
         );
 
         if (userFound) {
@@ -108,7 +99,7 @@
             
             setTimeout(() => {
                 window.location.href = 'admin-clientes.html';
-            }, 1000);
+            }, 900);
         } else {
             errorEl.classList.remove('hidden');
         }
@@ -118,9 +109,8 @@
         const toast = document.createElement('div');
         toast.id = 'toast';
         toast.textContent = msg;
-        toast.className = `show ${tipo === 'success' ? 'bg-green-500/20 border-green-500 text-green-300' : 'bg-red-500/20 border-red-500 text-red-300'}`;
+        toast.className = `show ${tipo === 'success' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-red-500/20 border-red-500 text-red-300'}`;
         document.body.appendChild(toast);
-
         setTimeout(() => toast.remove(), 3000);
     }
 </script>
