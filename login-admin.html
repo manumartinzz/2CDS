@@ -9,42 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
     <style>
-        /* Toast notification */
         #toast {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
+            position: fixed; bottom: 2rem; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #fca5a5;
             padding: 0.75rem 1.5rem;
             border-radius: 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-size: 0.875rem; font-weight: 500;
             backdrop-filter: blur(12px);
-            transition: transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.35s;
-            opacity: 0;
-            z-index: 9999;
-            white-space: nowrap;
+            transition: all 0.35s;
+            opacity: 0; z-index: 9999;
         }
-        #toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        /* Botões dos cards clicáveis */
-        .nav-card {
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .nav-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 32px rgba(6, 182, 212, 0.18);
-        }
-        .nav-card:active {
-            transform: translateY(0);
-        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="admin-bg">
@@ -52,11 +27,6 @@
 <div class="fixed inset-0 overflow-hidden pointer-events-none">
     <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
     <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-</div>
-
-<!-- Toast de aviso -->
-<div id="toast">
-    <span id="toast-msg">Faça login antes de acessar esta área.</span>
 </div>
 
 <div class="relative min-h-screen flex items-center justify-center px-4">
@@ -71,54 +41,38 @@
                 <span class="text-3xl font-bold gradient-text">AcquaSafe</span>
             </div>
             <h1 class="text-3xl font-bold">Painel Administrativo</h1>
-            <p class="text-white/60 mt-2">Acesso restrito a administradores</p>
+            <p class="text-white/60 mt-2">Acesso restrito</p>
         </div>
 
-        <!-- Card -->
+        <!-- Card de Login -->
         <div class="glass-card glow-border rounded-2xl p-8">
-            <form onsubmit="event.preventDefault(); loginAdmin();" class="space-y-4">
+            <form onsubmit="loginAdmin(event)" class="space-y-5">
                 <div>
-                    <label class="block mb-2 text-sm font-medium">Usuário (login)</label>
-                    <input type="text" id="usuario" class="input-field w-full px-4 py-3 rounded-lg"
-                           placeholder="Digite seu login" required>
+                    <label class="block mb-2 text-sm font-medium">E-mail</label>
+                    <input type="email" id="admin-email" 
+                           class="input-field w-full px-4 py-3 rounded-lg" 
+                           placeholder="milenakachimarck@gmail.com" required>
                 </div>
                 <div>
-                    <label class="block mb-2 text-sm font-medium">Senha Administrativa</label>
-                    <input type="password" id="senha" class="input-field w-full px-4 py-3 rounded-lg"
+                    <label class="block mb-2 text-sm font-medium">Senha</label>
+                    <input type="password" id="admin-senha" 
+                           class="input-field w-full px-4 py-3 rounded-lg" 
                            placeholder="••••••••" required>
                 </div>
+
                 <button type="submit" class="w-full btn-gradient py-3 rounded-lg font-semibold">
                     Entrar no Painel
                 </button>
             </form>
 
-            <!-- Mensagem de erro de login -->
-            <div id="login-error" class="hidden mt-4 text-center text-red-400 text-sm font-medium
-                 bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4">
-                Usuário ou senha incorretos.
+            <div id="login-error" class="hidden mt-4 text-center text-red-400 text-sm font-medium bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4">
+                E-mail ou senha incorretos.
             </div>
 
             <p class="text-center text-white/50 text-sm mt-6">
-                <a href="index.html" class="hover:text-cyan-400 transition-colors">← Voltar ao login</a>
+                <a href="login.html" class="hover:text-cyan-400 transition-colors">← Voltar ao login principal</a>
             </p>
         </div>
-
-        <!-- Info cards / navegação -->
-        <div class="grid grid-cols-3 gap-3 mt-6">
-            <div class="glass-card rounded-xl p-4 text-center nav-card" onclick="navAdmin('admin-clientes.html', 'Clientes')">
-                <i data-lucide="users" class="w-6 h-6 mx-auto text-cyan-400 mb-2"></i>
-                <p class="text-xs text-white/70">Clientes</p>
-            </div>
-            <div class="glass-card rounded-xl p-4 text-center nav-card" onclick="navAdmin('admin-doencas.html', 'Doenças')">
-                <i data-lucide="shield-alert" class="w-6 h-6 mx-auto text-blue-400 mb-2"></i>
-                <p class="text-xs text-white/70">Doenças</p>
-            </div>
-            <div class="glass-card rounded-xl p-4 text-center nav-card" onclick="navAdmin('admin-bloqueios.html', 'Bloqueios')">
-                <i data-lucide="ban" class="w-6 h-6 mx-auto text-red-400 mb-2"></i>
-                <p class="text-xs text-white/70">Bloqueios</p>
-            </div>
-        </div>
-
     </div>
 </div>
 
@@ -126,58 +80,48 @@
 <script>
     lucide.createIcons();
 
-    // ── Autenticação admin ──────────────────────────────────────────────
-    // Credenciais padrão (altere conforme necessário ou integre ao seu backend)
-    const ADMIN_USER = 'admin';
-    const ADMIN_PASS = 'admin123';
+    // Banco de dados dos administradores (mesmo do login.js)
+    const adminUsers = [
+        { email: "milenakachimarck@gmail.com", senha: "123456", nome: "Milena Kachimarck" },
+        { email: "mayracalegario@gmail.com",   senha: "123456", nome: "Mayra Calegario" },
+        { email: "manucordeiro326@gmail.com",  senha: "123456", nome: "Manu Cordeiro" }
+    ];
 
-    function loginAdmin() {
-        const usuario = document.getElementById('usuario').value.trim();
-        const senha   = document.getElementById('senha').value;
-        const errEl   = document.getElementById('login-error');
+    function loginAdmin(e) {
+        e.preventDefault();
 
-        if (usuario === ADMIN_USER && senha === ADMIN_PASS) {
-            // Salva sessão no sessionStorage
+        const email = document.getElementById('admin-email').value.trim();
+        const senha = document.getElementById('admin-senha').value.trim();
+        const errorEl = document.getElementById('login-error');
+
+        const userFound = adminUsers.find(user => 
+            user.email.toLowerCase() === email.toLowerCase() && user.senha === senha
+        );
+
+        if (userFound) {
             sessionStorage.setItem('adminLogado', 'true');
-            sessionStorage.setItem('adminUsuario', usuario);
-            errEl.classList.add('hidden');
-            showToast('Login realizado com sucesso! Redirecionando…', 'success');
-            setTimeout(() => window.location.href = 'admin-clientes.html', 1200);
+            sessionStorage.setItem('adminUsuario', userFound.email);
+            sessionStorage.setItem('adminNome', userFound.nome);
+
+            errorEl.classList.add('hidden');
+            showToast('Login realizado com sucesso! Redirecionando...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'admin-clientes.html';
+            }, 1000);
         } else {
-            errEl.classList.remove('hidden');
+            errorEl.classList.remove('hidden');
         }
     }
 
-    // ── Navegação protegida ─────────────────────────────────────────────
-    function navAdmin(pagina, nome) {
-        const logado = sessionStorage.getItem('adminLogado') === 'true';
-        if (!logado) {
-            showToast('Faça login para acessar a área de ' + nome + '.');
-        } else {
-            window.location.href = pagina;
-        }
-    }
-
-    // ── Toast helper ────────────────────────────────────────────────────
-    let toastTimer = null;
     function showToast(msg, tipo) {
-        const toast  = document.getElementById('toast');
-        const msgEl  = document.getElementById('toast-msg');
-        msgEl.textContent = msg;
+        const toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.textContent = msg;
+        toast.className = `show ${tipo === 'success' ? 'bg-green-500/20 border-green-500 text-green-300' : 'bg-red-500/20 border-red-500 text-red-300'}`;
+        document.body.appendChild(toast);
 
-        if (tipo === 'success') {
-            toast.style.background = 'rgba(34,197,94,0.15)';
-            toast.style.borderColor = 'rgba(34,197,94,0.4)';
-            toast.style.color = '#86efac';
-        } else {
-            toast.style.background = 'rgba(239,68,68,0.15)';
-            toast.style.borderColor = 'rgba(239,68,68,0.4)';
-            toast.style.color = '#fca5a5';
-        }
-
-        toast.classList.add('show');
-        if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+        setTimeout(() => toast.remove(), 3000);
     }
 </script>
 </body>
