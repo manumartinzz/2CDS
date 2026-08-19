@@ -18,7 +18,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 // ─── Config padrão ─────────────────────────────────────────────────────────────
 const defaultConfig = {
   hero_title:       'Acquasafe',
-  hero_subtitle:    'Monitoramento inteligente da água 24h para proteger suas plantações contra contaminação.',
+  hero_subtitle:    'Sensores inteligentes monitoram sua água 24h por dia e protegem sua lavoura contra contaminação — em tempo real.',
   cta_button:       'Entre em contato pelo email',
   background_color: '#0c1a2e',
   surface_color:    '#ffffff0d',
@@ -52,6 +52,27 @@ function adjustColor(hex, amount) {
   b = Math.min(255, b + amount);
   return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
 }
+
+// ─── Legendas do "comercial" animado do Hero ───────────────────────────────────
+const heroCaptions = [
+  'Água monitorada em tempo real.',
+  'Alertas antes do problema acontecer.',
+  'Sua colheita, protegida 24h por dia.'
+];
+let heroCaptionIndex = 0;
+
+function cycleHeroCaption() {
+  const el = document.getElementById('hero-caption');
+  if (!el) return;
+  el.style.opacity = 0;
+  setTimeout(() => {
+    heroCaptionIndex = (heroCaptionIndex + 1) % heroCaptions.length;
+    el.textContent = heroCaptions[heroCaptionIndex];
+    el.style.opacity = 1;
+  }, 500);
+}
+
+setInterval(cycleHeroCaption, 3200);
 
 // ─── Init ──────────────────────────────────────────────────────────────────────
 lucide.createIcons();
