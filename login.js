@@ -1,4 +1,4 @@
-// login.js – AcquaSafe (Banco de Dados Admin)
+// login.js – AcquaSafe
 
 const adminUsers = [
     { email: "milenakachimarck@gmail.com", senha: "123456", nome: "Milena Kachimarck" },
@@ -6,27 +6,45 @@ const adminUsers = [
     { email: "manucordeiro326@gmail.com",  senha: "123456", nome: "Manu Cordeiro" }
 ];
 
-/* ==================== LOGIN NORMAL ==================== */
+/* ==================== LOGIN NORMAL (cliente) ==================== */
 function handleLogin(e) {
     e.preventDefault();
-    const usuario = document.getElementById('login-usuario').value.trim();
-    const senha = document.getElementById('login-senha').value.trim();
+    const login  = document.getElementById('login-usuario').value.trim();
+    const senha  = document.getElementById('login-senha').value.trim();
     const codigo = document.getElementById('login-codigo').value.trim();
     const btn = document.getElementById('btn-text');
     const submitBtn = btn.closest('button');
 
-    if (!usuario || !senha || !codigo) {
+    if (!login || !senha || !codigo) {
         showError('Preencha todos os campos.');
+        return;
+    }
+
+    const resultado = dbValidarLogin(login, senha, codigo);
+
+    if (!resultado.ok) {
+        const mensagens = {
+            usuario:   'Não encontramos cadastro com este e-mail/CPF.',
+            senha:     'Senha incorreta.',
+            sem_plano: 'Você ainda não tem um plano ativo. Assine para receber seu código de acesso.',
+            expirado:  'Seu código de acesso expirou (validade de 30 dias). Assine novamente para gerar um novo.',
+            codigo:    'Código de confirmação incorreto.'
+        };
+        showError(mensagens[resultado.motivo] || 'Não foi possível entrar. Verifique seus dados.');
         return;
     }
 
     submitBtn.disabled = true;
     btn.textContent = 'Acessando…';
 
+    sessionStorage.setItem('usuarioLogado', 'true');
+    sessionStorage.setItem('usuarioEmail', resultado.usuario.emailOuCpf);
+    sessionStorage.setItem('usuarioNome', resultado.usuario.nome);
+
     setTimeout(() => {
         btn.textContent = '✓ Acesso concedido';
         setTimeout(() => window.location.href = 'portal.html', 800);
-    }, 1200);
+    }, 900);
 }
 
 /* ==================== LOGIN ADMIN (Modal) ==================== */
@@ -57,7 +75,7 @@ function showError(msg) {
     if (el) {
         el.textContent = msg;
         el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 3000);
+        setTimeout(() => el.classList.add('hidden'), 4000);
     }
 }
 
