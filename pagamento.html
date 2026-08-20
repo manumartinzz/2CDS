@@ -23,8 +23,8 @@
     
     <div class="flex items-center gap-4">
       <button onclick="toggleCodeModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-all text-sm font-semibold">
-        <i data-lucide="key" class="w-4 h-4 text-cyan-400"></i>
-        <span>Código</span>
+        <i data-lucide="rotate-cw" class="w-4 h-4 text-cyan-400"></i>
+        <span>Reenviar código</span>
       </button>
       <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
         <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
@@ -33,7 +33,7 @@
     </div>
   </header>
 
-  <!-- Modal de Código -->
+  <!-- Modal de Reenvio de Código -->
   <div id="code-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleCodeModal()"></div>
     <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl animate-fade-in">
@@ -45,26 +45,21 @@
         <div class="w-12 h-12 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <i data-lucide="mail" class="w-6 h-6 text-cyan-400"></i>
         </div>
-        <h3 class="text-xl font-bold">Solicitar Código de Acesso</h3>
-        <p class="text-slate-400 text-sm mt-2">Insira seus dados para receber o código de confirmação após o pagamento.</p>
+        <h3 class="text-xl font-bold">Reenviar Código de Acesso</h3>
+        <p class="text-slate-400 text-sm mt-2">Informe o e-mail ou CPF já cadastrado para reenviarmos seu código de acesso ativo.</p>
       </div>
 
       <form onsubmit="handleCodeRequest(event)" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Nome Completo</label>
-          <input type="text" required placeholder="Seu nome" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">E-mail ou CPF cadastrado</label>
+          <input id="reenvio-login" type="text" required placeholder="seu@email.com ou CPF" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
         </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">E-mail</label>
-          <input type="email" required placeholder="seu@email.com" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
-        </div>
+        <p id="code-erro" class="hidden text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4"></p>
         <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
-          Enviar Dados
+          Reenviar Código
         </button>
       </form>
-      <div id="code-success" class="hidden mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm text-center">
-        Dados enviados! Você receberá o código após a confirmação do pagamento.
-      </div>
+      <div id="code-success" class="hidden mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm text-center"></div>
     </div>
   </div>
 
@@ -77,6 +72,21 @@
 
       <!-- Esquerda -->
       <div class="md:col-span-3 space-y-6">
+
+        <!-- Identificação -->
+        <section>
+          <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Identificação</h2>
+          <div class="p-5 rounded-xl bg-slate-800/50 border border-slate-700">
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">E-mail ou CPF cadastrado</label>
+            <input id="pay-login" type="text" required placeholder="seu@email.com ou CPF"
+                   class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+            <p class="text-xs text-slate-500 mt-2">
+              Seu código de acesso será gerado e enviado para esta conta após a confirmação do pagamento.
+              Ainda não tem conta? <a href="cadastro.html" class="text-cyan-400 hover:underline">Cadastre-se aqui</a>.
+            </p>
+            <p id="pay-login-erro" class="hidden text-red-400 text-sm mt-3 bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-3"></p>
+          </div>
+        </section>
 
         <!-- Planos -->
         <section>
@@ -224,7 +234,20 @@
           <div id="success-msg" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
             <i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mx-auto mb-2"></i>
             <p class="text-emerald-300 font-semibold text-sm">Pagamento confirmado!</p>
-            <p class="text-slate-400 text-xs mt-1">Você receberá um e-mail de confirmação</p>
+            <p class="text-slate-400 text-xs mt-1">Enviamos seu código de acesso por e-mail.</p>
+          </div>
+
+          <!-- Código gerado (confirmação visual / fallback caso o e-mail não seja confirmado) -->
+          <div id="codigo-gerado-box" class="hidden p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-center space-y-2">
+            <p class="text-xs text-cyan-300 uppercase tracking-wider font-semibold">Seu código de acesso</p>
+            <div class="flex items-center justify-center gap-2">
+              <span id="codigo-gerado-valor" class="text-2xl font-mono font-bold tracking-wider text-white"></span>
+              <button onclick="copiarCodigo()" title="Copiar" class="text-slate-400 hover:text-cyan-400 transition-colors">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p id="codigo-gerado-validade" class="text-xs text-slate-400"></p>
+            <p id="codigo-gerado-status" class="text-xs text-slate-500"></p>
           </div>
 
           <p class="text-xs text-slate-500 text-center flex items-center justify-center gap-1">
@@ -235,6 +258,9 @@
     </div>
   </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="db.js"></script>
+<script src="email-config.js"></script>
 <script src="pagamento.js"></script>
 </body>
 </html>
