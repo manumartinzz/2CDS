@@ -99,8 +99,16 @@ function enhanceNavCards() {
 }
 
 // Função auxiliar para logout (caso queira usar)
-function logout() {
+async function logout() {
     if (confirm("Deseja realmente sair?")) {
+        try {
+            if (typeof dbSair === 'function') await dbSair();
+        } catch (error) {
+            console.warn('Não foi possível encerrar a sessão remota:', error);
+        }
+        sessionStorage.removeItem('usuarioLogado');
+        sessionStorage.removeItem('usuarioEmail');
+        sessionStorage.removeItem('usuarioNome');
         localStorage.removeItem("usuarioAcquaSafe");
         window.location.href = "index.html";
     }

@@ -74,34 +74,45 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="db.js"></script>
 <script src="login.js"></script>
 <script>
     lucide.createIcons();
 
-    function loginAdmin(e) {
+    async function loginAdmin(e) {
         e.preventDefault();
 
         const email = document.getElementById('admin-email').value.trim().toLowerCase();
         const senha = document.getElementById('admin-senha').value.trim();
         const errorEl = document.getElementById('login-error');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
 
-        const userFound = adminUsers.find(user => 
-            user.email.toLowerCase() === email && user.senha === senha
-        );
+        try {
+            const resultado = await dbValidarAdmin(email, senha, adminUsers);
+            if (!resultado.ok) {
+                errorEl.textContent = resultado.erro || 'E-mail ou senha incorretos.';
+                errorEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                return;
+            }
 
-        if (userFound) {
             sessionStorage.setItem('adminLogado', 'true');
-            sessionStorage.setItem('adminUsuario', userFound.email);
-            sessionStorage.setItem('adminNome', userFound.nome);
+            sessionStorage.setItem('adminUsuario', resultado.usuario.email);
+            sessionStorage.setItem('adminNome', resultado.usuario.nome);
 
             errorEl.classList.add('hidden');
             showToast('Login realizado com sucesso! Redirecionando...', 'success');
-            
             setTimeout(() => {
                 window.location.href = 'admin-clientes.html';
             }, 900);
-        } else {
+        } catch (error) {
+            console.error('Erro no login administrativo:', error);
+            errorEl.textContent = 'Não foi possível validar o acesso agora.';
             errorEl.classList.remove('hidden');
+            submitBtn.disabled = false;
         }
     }
 

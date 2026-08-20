@@ -73,6 +73,9 @@
     </style>
 </head>
 <body class="admin-bg min-h-screen">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="db.js"></script>
 
 <!-- Guard: redireciona se não estiver logado -->
 <script>
@@ -195,9 +198,8 @@
 <script>
 lucide.createIcons();
 
-// ── Dados de exemplo ──────────────────────────────────────────────────────────
-// Substitua por chamada à API/banco de dados conforme necessário
-let clientes = JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || [
+// ── Dados ──────────────────────────────────────────────────────────────────────
+const clientesDemo = [
     { id: 1, nome: 'Ana Paula Ferreira',  cpf: '123.456.789-00', email: 'ana@email.com',    tel: '(11) 98765-4321', plano: 'Premium', status: 'ativo'     },
     { id: 2, nome: 'Carlos Mendes',       cpf: '234.567.890-11', email: 'carlos@email.com', tel: '(21) 91234-5678', plano: 'Básico',  status: 'pendente'  },
     { id: 3, nome: 'Fernanda Lima',       cpf: '345.678.901-22', email: 'fer@email.com',    tel: '(31) 99876-5432', plano: 'Premium', status: 'ativo'     },
@@ -205,11 +207,31 @@ let clientes = JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || [
     { id: 5, nome: 'Mariana Costa',       cpf: '567.890.123-44', email: 'mari@email.com',   tel: '(51) 96543-2109', plano: 'Premium', status: 'ativo'     },
     { id: 6, nome: 'Roberto Alves',       cpf: '678.901.234-55', email: 'rob@email.com',    tel: '(61) 95432-1098', plano: 'Básico',  status: 'pendente'  },
 ];
-
+let clientes = [];
 let clienteAtivo = null;
 
-function salvar() {
+async function carregarClientes() {
+    try {
+        if (dbUsarSupabase()) {
+            clientes = await dbListarClientes();
+        } else {
+            clientes = JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || clientesDemo;
+        }
+        renderTabela();
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        clientes = [];
+        showToast('Não foi possível carregar os clientes do Supabase.', 'error');
+        renderTabela();
+    }
+}
+
+async function salvar(cliente) {
+    if (dbUsarSupabase()) {
+        return dbAtualizarStatusCliente(cliente.id, cliente.status === 'bloqueado');
+    }
     localStorage.setItem('acqua_clientes', JSON.stringify(clientes));
+    return { ok: true };
 }
 
 // ── Renderização da tabela ────────────────────────────────────────────────────
@@ -248,7 +270,7 @@ function renderTabela() {
             <td class="px-5 py-3.5">${c.plano}</td>
             <td class="px-5 py-3.5">${badgeStatus(c.status)}</td>
             <td class="px-5 py-3.5 text-center">
-                <button onclick="abrirModal(${c.id})"
+                <button onclick="abrirModal('${c.id}')"
                         class="text-cyan-400 hover:text-cyan-300 transition-colors text-xs font-semibold">
                     Ver detalhes
                 </button>
@@ -269,7 +291,7 @@ function badgeStatus(s) {
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 function abrirModal(id) {
-    clienteAtivo = clientes.find(c => c.id === id);
+    clienteAtivo = clientes.find(c => String(c.id) === String(id));
     if (!clienteAtivo) return;
 
     document.getElementById('modal-content').innerHTML = `
@@ -320,24 +342,33 @@ function fecharModal(e) {
     clienteAtivo = null;
 }
 
-function toggleBloqueio() {
+async function toggleBloqueio() {
     if (!clienteAtivo) return;
-    const c = clientes.find(x => x.id === clienteAtivo.id);
+    const c = clientes.find(x => String(x.id) === String(clienteAtivo.id));
+    if (!c) return;
+
+    const statusAnterior = c.status;
     c.status = c.status === 'bloqueado' ? 'ativo' : 'bloqueado';
-    salvar();
+    const resultado = await salvar(c);
+    if (!resultado.ok) {
+        c.status = statusAnterior;
+        alert(resultado.erro || 'Não foi possível atualizar o cliente.');
+        return;
+    }
     fecharModal();
     renderTabela();
 }
 
 // ── Sair ──────────────────────────────────────────────────────────────────────
-function sair() {
+async function sair() {
+    try { await dbSair(); } catch (error) { console.warn('Falha ao encerrar sessão:', error); }
     sessionStorage.removeItem('adminLogado');
     sessionStorage.removeItem('adminUsuario');
     window.location.href = 'login-admin.html';
 }
 
 // Init
-renderTabela();
+carregarClientes();
 </script>
 </body>
 </html>

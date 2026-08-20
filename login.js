@@ -7,7 +7,7 @@ const adminUsers = [
 ];
 
 /* ==================== LOGIN NORMAL (cliente) ==================== */
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const login  = document.getElementById('login-usuario').value.trim();
     const senha  = document.getElementById('login-senha').value.trim();
@@ -20,53 +20,77 @@ function handleLogin(e) {
         return;
     }
 
-    const resultado = dbValidarLogin(login, senha, codigo);
-
-    if (!resultado.ok) {
-        const mensagens = {
-            usuario:   'Não encontramos cadastro com este e-mail/CPF.',
-            senha:     'Senha incorreta.',
-            sem_plano: 'Você ainda não tem um plano ativo. Assine para receber seu código de acesso.',
-            expirado:  'Seu código de acesso expirou (validade de 30 dias). Assine novamente para gerar um novo.',
-            codigo:    'Código de confirmação incorreto.'
-        };
-        showError(mensagens[resultado.motivo] || 'Não foi possível entrar. Verifique seus dados.');
-        return;
-    }
-
     submitBtn.disabled = true;
-    btn.textContent = 'Acessando…';
+    btn.textContent = 'Verificando…';
 
-    sessionStorage.setItem('usuarioLogado', 'true');
-    sessionStorage.setItem('usuarioEmail', resultado.usuario.emailOuCpf);
-    sessionStorage.setItem('usuarioNome', resultado.usuario.nome);
+    try {
+        const resultado = await dbValidarLogin(login, senha, codigo);
 
-    setTimeout(() => {
-        btn.textContent = '✓ Acesso concedido';
-        setTimeout(() => window.location.href = 'portal.html', 800);
-    }, 900);
+        if (!resultado.ok) {
+            const mensagens = {
+                usuario:    'Não encontramos cadastro com este e-mail/CPF.',
+                senha:      'E-mail/CPF ou senha incorretos.',
+                sem_plano:  'Você ainda não tem um plano ativo. Assine para receber seu código de acesso.',
+                expirado:   'Seu código de acesso expirou (validade de 30 dias). Assine novamente para gerar um novo.',
+                codigo:     'Código de confirmação incorreto.',
+                bloqueado:  'Esta conta está bloqueada. Fale com o administrador.',
+                erro_banco: resultado.erro || 'Não foi possível consultar o banco de dados.'
+            };
+            showError(mensagens[resultado.motivo] || 'Não foi possível entrar. Verifique seus dados.');
+            return;
+        }
+
+        sessionStorage.setItem('usuarioLogado', 'true');
+        sessionStorage.setItem('usuarioEmail', resultado.usuario.emailOuCpf);
+        sessionStorage.setItem('usuarioNome', resultado.usuario.nome);
+
+        btn.textContent = 'Acessando…';
+        setTimeout(() => {
+            btn.textContent = '✓ Acesso concedido';
+            setTimeout(() => window.location.href = 'portal.html', 800);
+        }, 300);
+    } catch (error) {
+        console.error('Erro no login:', error);
+        showError('Não foi possível entrar agora. Tente novamente.');
+    } finally {
+        // O redirecionamento acontece depois deste ponto; manter o botão
+        // desabilitado durante a animação evita envios duplicados.
+        if (!sessionStorage.getItem('usuarioLogado')) {
+            submitBtn.disabled = false;
+            btn.textContent = 'Acessar Painel';
+        }
+    }
 }
 
 /* ==================== LOGIN ADMIN (Modal) ==================== */
-function handleAdminLogin(e) {
+async function handleAdminLogin(e) {
     e.preventDefault();
     const email = document.getElementById('admin-email').value.trim().toLowerCase();
     const senha = document.getElementById('admin-password').value.trim();
     const errorEl = document.getElementById('admin-error');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
-    const userFound = adminUsers.find(u => u.email.toLowerCase() === email && u.senha === senha);
+    submitBtn.disabled = true;
 
-    if (userFound) {
-        sessionStorage.setItem('adminLogado', 'true');
-        sessionStorage.setItem('adminUsuario', userFound.email);
-        sessionStorage.setItem('adminNome', userFound.nome);
-        
-        errorEl.classList.add('hidden');
-        document.getElementById('admin-btn-text').textContent = '✓ Acesso concedido';
-        
-        setTimeout(() => window.location.href = 'admin-clientes.html', 800);
-    } else {
-        showAdminError('E-mail ou senha incorretos.');
+    try {
+        const resultado = await dbValidarAdmin(email, senha, adminUsers);
+
+        if (resultado.ok) {
+            sessionStorage.setItem('adminLogado', 'true');
+            sessionStorage.setItem('adminUsuario', resultado.usuario.email);
+            sessionStorage.setItem('adminNome', resultado.usuario.nome);
+
+            errorEl.classList.add('hidden');
+            document.getElementById('admin-btn-text').textContent = '✓ Acesso concedido';
+            setTimeout(() => window.location.href = 'admin-clientes.html', 800);
+        } else {
+            showAdminError(resultado.erro || 'E-mail ou senha incorretos.');
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Erro no login administrativo:', error);
+        showAdminError('Não foi possível validar o acesso agora.');
+        submitBtn.disabled = false;
     }
 }
 
@@ -75,7 +99,7 @@ function showError(msg) {
     if (el) {
         el.textContent = msg;
         el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 4000);
+        setTimeout(() => el.classList.add('hidden'), 5000);
     }
 }
 

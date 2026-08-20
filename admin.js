@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =========================================================
    LOGOUT
    ========================================================= */
-function logout() {
+async function logout() {
+    if (typeof dbSair === 'function') await dbSair();
     localStorage.removeItem("adminLogado");
     window.location.href = "login-admin.html";
 }

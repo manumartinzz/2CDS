@@ -50,7 +50,7 @@ function formatExp(el) {
 /* =========================================================
    PAGAMENTO → GERAÇÃO E ENVIO DO CÓDIGO DE ACESSO
    ========================================================= */
-function handlePayment() {
+async function handlePayment() {
     const loginInput = document.getElementById("pay-login");
     const login = loginInput.value.trim();
     const erroEl = document.getElementById("pay-login-erro");
@@ -62,7 +62,16 @@ function handlePayment() {
         return;
     }
 
-    const usuario = dbEncontrarUsuario(login);
+    let usuario;
+    try {
+        usuario = await dbEncontrarUsuario(login);
+    } catch (error) {
+        console.error("Erro ao buscar usuário para pagamento:", error);
+        erroEl.textContent = "Não foi possível consultar sua conta agora. Tente novamente.";
+        erroEl.classList.remove("hidden");
+        return;
+    }
+
     if (!usuario) {
         erroEl.innerHTML = 'Não encontramos cadastro com este e-mail/CPF. <a href="cadastro.html" class="underline text-cyan-300">Cadastre-se primeiro</a>.';
         erroEl.classList.remove("hidden");
@@ -74,28 +83,44 @@ function handlePayment() {
     btn.innerHTML = '<span class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>';
     btn.disabled = true;
 
-    setTimeout(() => {
+    try {
+        // A espera simula a confirmação do gateway enquanto o checkout real
+        // ainda não foi conectado.
+        await new Promise(resolve => setTimeout(resolve, 1200));
         const plano = plans[selectedPlan];
-        const resultado = dbAtivarPlano(login, { id: selectedPlan, nome: plano.name, preco: plano.price });
+        const resultado = await dbAtivarPlano(login, { id: selectedPlan, nome: plano.name, preco: plano.price });
+
+        if (!resultado.ok) {
+            exibirCodigoConfirmacao(null, null, false, resultado.erro);
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="lock" class="w-4 h-4"></i> Tentar novamente';
+            if (window.lucide) lucide.createIcons();
+            return;
+        }
 
         btn.classList.add("hidden");
         document.getElementById("success-msg").classList.remove("hidden");
         if (window.lucide) lucide.createIcons();
 
-        if (!resultado.ok) {
-            exibirCodigoConfirmacao(null, null, false, resultado.erro);
-            return;
+        try {
+            const envio = await enviarCodigoPorEmail({
+                nome: usuario.nome,
+                email: usuario.emailOuCpf,
+                codigo: resultado.codigo,
+                validade: resultado.validade
+            });
+            exibirCodigoConfirmacao(resultado.codigo, resultado.validade, envio.enviado);
+        } catch (emailError) {
+            console.warn("Falha ao enviar o código por e-mail:", emailError);
+            exibirCodigoConfirmacao(resultado.codigo, resultado.validade, false);
         }
-
-        enviarCodigoPorEmail({
-            nome: usuario.nome,
-            email: usuario.emailOuCpf,
-            codigo: resultado.codigo,
-            validade: resultado.validade
-        }).then(({ enviado }) => {
-            exibirCodigoConfirmacao(resultado.codigo, resultado.validade, enviado);
-        });
-    }, 2000);
+    } catch (error) {
+        console.error("Erro ao ativar plano:", error);
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="lock" class="w-4 h-4"></i> Tentar novamente';
+        exibirCodigoConfirmacao(null, null, false, "Não foi possível ativar o plano agora.");
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
 function exibirCodigoConfirmacao(codigo, validade, enviadoPorEmail, erro) {
@@ -136,15 +161,22 @@ function toggleCodeModal() {
     document.getElementById('code-erro').classList.add('hidden');
 }
 
-function handleCodeRequest(e) {
+async function handleCodeRequest(e) {
     e.preventDefault();
     const login = document.getElementById('reenvio-login').value.trim();
     const msgEl = document.getElementById('code-success');
     const erroEl = document.getElementById('code-erro');
 
-    const usuario = dbEncontrarUsuario(login);
+    let usuario;
+    try {
+        usuario = await dbEncontrarUsuario(login);
+    } catch (error) {
+        console.error('Erro ao buscar código:', error);
+        usuario = null;
+    }
+
     if (!usuario || !usuario.codigoAcesso) {
-        erroEl.textContent = 'Nenhum plano ativo encontrado para este e-mail/CPF.';
+        erroEl.textContent = 'Nenhum plano ativo encontrado para este e-mail/CPF. Entre na sua conta para reenviar o código.';
         erroEl.classList.remove('hidden');
         msgEl.classList.add('hidden');
         return;
@@ -159,18 +191,16 @@ function handleCodeRequest(e) {
 
     erroEl.classList.add('hidden');
 
-    enviarCodigoPorEmail({
+    const { enviado } = await enviarCodigoPorEmail({
         nome: usuario.nome,
         email: usuario.emailOuCpf,
         codigo: usuario.codigoAcesso,
         validade: usuario.codigoValidade
-    }).then(({ enviado }) => {
-        msgEl.textContent = enviado
-            ? 'Código reenviado para o seu e-mail!'
-            : `Não conseguimos confirmar o envio por e-mail. Seu código é: ${usuario.codigoAcesso}`;
-        msgEl.classList.remove('hidden');
     });
-
+    msgEl.textContent = enviado
+        ? 'Código reenviado para o seu e-mail!'
+        : `Não conseguimos confirmar o envio por e-mail. Seu código é: ${usuario.codigoAcesso}`;
+    msgEl.classList.remove('hidden');
     e.target.reset();
 }
 

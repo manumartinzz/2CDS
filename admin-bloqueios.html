@@ -92,6 +92,9 @@
     </style>
 </head>
 <body class="admin-bg min-h-screen">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="db.js"></script>
 
 <script>
     if (sessionStorage.getItem('adminLogado') !== 'true') {
@@ -249,7 +252,7 @@
 lucide.createIcons();
 
 // ── Dados compartilhados com admin-clientes.html ──────────────────────────────
-let clientes = JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || [
+const clientesDemo = [
     { id: 1, nome: 'Ana Paula Ferreira',  cpf: '123.456.789-00', email: 'ana@email.com',    tel: '(11) 98765-4321', plano: 'Premium', status: 'ativo',     motivo: '' },
     { id: 2, nome: 'Carlos Mendes',       cpf: '234.567.890-11', email: 'carlos@email.com', tel: '(21) 91234-5678', plano: 'Básico',  status: 'pendente',  motivo: 'Pagamento atrasado' },
     { id: 3, nome: 'Fernanda Lima',       cpf: '345.678.901-22', email: 'fer@email.com',    tel: '(31) 99876-5432', plano: 'Premium', status: 'ativo',     motivo: '' },
@@ -257,11 +260,29 @@ let clientes = JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || [
     { id: 5, nome: 'Mariana Costa',       cpf: '567.890.123-44', email: 'mari@email.com',   tel: '(51) 96543-2109', plano: 'Premium', status: 'ativo',     motivo: '' },
     { id: 6, nome: 'Roberto Alves',       cpf: '678.901.234-55', email: 'rob@email.com',    tel: '(61) 95432-1098', plano: 'Básico',  status: 'pendente',  motivo: 'Inadimplência' },
 ];
-
+let clientes = [];
 let clienteAtivo = null;
 
-function salvar() {
+async function carregarClientes() {
+    try {
+        clientes = dbUsarSupabase()
+            ? await dbListarClientes()
+            : (JSON.parse(localStorage.getItem('acqua_clientes') || 'null') || clientesDemo);
+        renderTabela();
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        clientes = [];
+        showToast('Não foi possível carregar os clientes do Supabase.', 'error');
+        renderTabela();
+    }
+}
+
+async function salvar(cliente) {
+    if (dbUsarSupabase()) {
+        return dbAtualizarStatusCliente(cliente.id, cliente.status === 'bloqueado');
+    }
     localStorage.setItem('acqua_clientes', JSON.stringify(clientes));
+    return { ok: true };
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -319,7 +340,7 @@ function renderTabela() {
             <td class="px-5 py-3.5">${badgeStatus(c.status)}</td>
             <td class="px-5 py-3.5">
                 <div class="flex justify-center">
-                    <button onclick="abrirModal(${c.id})" class="${btnClass}">
+                    <button onclick="abrirModal('${c.id}')" class="${btnClass}">
                         <i data-lucide="${btnIcon}" class="w-3.5 h-3.5"></i>
                         ${btnLabel}
                     </button>
@@ -341,7 +362,7 @@ function badgeStatus(s) {
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 function abrirModal(id) {
-    clienteAtivo = clientes.find(c => c.id === id);
+    clienteAtivo = clientes.find(c => String(c.id) === String(id));
     if (!clienteAtivo) return;
 
     const isBloq = clienteAtivo.status === 'bloqueado';
@@ -381,26 +402,42 @@ function fecharModal(e) {
     clienteAtivo = null;
 }
 
-function confirmarAcao() {
+async function confirmarAcao() {
     if (!clienteAtivo) return;
-    const c = clientes.find(x => x.id === clienteAtivo.id);
+    const c = clientes.find(x => String(x.id) === String(clienteAtivo.id));
+    if (!c) return;
+
+    const statusAnterior = c.status;
+    const motivoAnterior = c.motivo;
     if (c.status === 'bloqueado') {
         c.status = 'ativo';
         c.motivo = '';
-        showToast(`${c.nome} foi desbloqueado.`, 'success');
     } else {
         c.status = 'bloqueado';
         c.motivo = document.getElementById('motivo-sel').value;
-        showToast(`${c.nome} foi bloqueado por ${c.motivo}.`, 'info');
     }
-    salvar();
+
+    const resultado = await salvar(c);
+    if (!resultado.ok) {
+        c.status = statusAnterior;
+        c.motivo = motivoAnterior;
+        showToast(resultado.erro || 'Não foi possível atualizar o cliente.', 'error');
+        return;
+    }
+
+    showToast(
+        c.status === 'bloqueado'
+            ? `${c.nome} foi bloqueado por ${c.motivo}.`
+            : `${c.nome} foi desbloqueado.`,
+        c.status === 'bloqueado' ? 'info' : 'success'
+    );
     document.getElementById('modal').classList.remove('open');
     clienteAtivo = null;
     renderTabela();
 }
 
 // ── Bloquear todos os pendentes ───────────────────────────────────────────────
-function bloquearTodosPendentes() {
+async function bloquearTodosPendentes() {
     const pendentes = clientes.filter(c => c.status === 'pendente');
     if (pendentes.length === 0) {
         showToast('Não há clientes pendentes.', 'info');
@@ -410,7 +447,13 @@ function bloquearTodosPendentes() {
         c.status = 'bloqueado';
         c.motivo = c.motivo || 'Inadimplência';
     });
-    salvar();
+
+    const resultados = await Promise.all(pendentes.map(c => salvar(c)));
+    const falhou = resultados.find(resultado => !resultado.ok);
+    if (falhou) {
+        showToast(falhou.erro || 'Não foi possível bloquear todos os clientes.', 'error');
+        return;
+    }
     renderTabela();
     showToast(`${pendentes.length} cliente(s) bloqueado(s) por inadimplência.`, 'info');
 }
@@ -426,14 +469,15 @@ function showToast(msg, tipo) {
 }
 
 // ── Sair ──────────────────────────────────────────────────────────────────────
-function sair() {
+async function sair() {
+    try { await dbSair(); } catch (error) { console.warn('Falha ao encerrar sessão:', error); }
     sessionStorage.removeItem('adminLogado');
     sessionStorage.removeItem('adminUsuario');
     window.location.href = 'login-admin.html';
 }
 
 // Init
-renderTabela();
+carregarClientes();
 </script>
 </body>
 </html>

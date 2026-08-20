@@ -104,6 +104,9 @@
     </style>
 </head>
 <body class="admin-bg min-h-screen">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="db.js"></script>
 
 <script>
     if (sessionStorage.getItem('adminLogado') !== 'true') {
@@ -252,7 +255,7 @@
 lucide.createIcons();
 
 // ── Dados ─────────────────────────────────────────────────────────────────────
-let doencas = JSON.parse(localStorage.getItem('acqua_doencas') || 'null') || [
+const doencasDemo = [
     { id: 1, nome: 'Diabetes tipo 1',       categoria: 'Metabólica',      descricao: 'Doença autoimune que afeta a produção de insulina.' },
     { id: 2, nome: 'Diabetes tipo 2',       categoria: 'Metabólica',      descricao: 'Resistência à insulina associada a hábitos de vida.' },
     { id: 3, nome: 'Hipertensão arterial',  categoria: 'Cardiovascular',  descricao: 'Pressão arterial cronicamente elevada.' },
@@ -260,9 +263,27 @@ let doencas = JSON.parse(localStorage.getItem('acqua_doencas') || 'null') || [
     { id: 5, nome: 'Dermatite atópica',     categoria: 'Dermatológica',   descricao: 'Inflamação crônica da pele.' },
     { id: 6, nome: 'Asma',                  categoria: 'Respiratória',    descricao: 'Obstrução reversível das vias aéreas.' },
 ];
-let nextId = Math.max(...doencas.map(d => d.id), 0) + 1;
+let doencas = [];
+let nextId = 1;
 let editandoId = null;
 let removendoId = null;
+
+async function carregarDoencas() {
+    try {
+        doencas = dbUsarSupabase()
+            ? await dbListarDoencas()
+            : (JSON.parse(localStorage.getItem('acqua_doencas') || 'null') || doencasDemo);
+        nextId = Math.max(...doencas.map(d => Number(d.id) || 0), 0) + 1;
+        atualizarCategorias();
+        renderLista();
+    } catch (error) {
+        console.error('Erro ao carregar doenças:', error);
+        doencas = [];
+        showToast('Não foi possível carregar as doenças do Supabase.', 'error');
+        atualizarCategorias();
+        renderLista();
+    }
+}
 
 function salvarStorage() {
     localStorage.setItem('acqua_doencas', JSON.stringify(doencas));
@@ -317,12 +338,12 @@ function renderLista() {
                 ${d.descricao ? `<p class="text-white/50 text-xs mt-1 leading-relaxed">${d.descricao}</p>` : ''}
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-                <button onclick="abrirModalEditar(${d.id})"
+                <button onclick="abrirModalEditar('${d.id}')"
                         class="p-1.5 rounded-lg text-white/40 hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors"
                         title="Editar">
                     <i data-lucide="pencil" class="w-4 h-4"></i>
                 </button>
-                <button onclick="pedirRemocao(${d.id})"
+                <button onclick="pedirRemocao('${d.id}')"
                         class="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                         title="Remover">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -346,7 +367,7 @@ function abrirModalAdicionar() {
 }
 
 function abrirModalEditar(id) {
-    const d = doencas.find(x => x.id === id);
+    const d = doencas.find(x => String(x.id) === String(id));
     if (!d) return;
     editandoId = id;
     document.getElementById('modal-titulo').textContent = 'Editar Doença';
@@ -363,7 +384,7 @@ function fecharModal(e) {
     document.getElementById('modal').classList.remove('open');
 }
 
-function salvarDoenca() {
+async function salvarDoenca() {
     const nome = document.getElementById('f-nome').value.trim();
     const cat  = document.getElementById('f-cat').value.trim();
     const desc = document.getElementById('f-desc').value.trim();
@@ -374,25 +395,33 @@ function salvarDoenca() {
         return;
     }
 
+    let resultado;
     if (editandoId) {
-        const d = doencas.find(x => x.id === editandoId);
+        const d = doencas.find(x => String(x.id) === String(editandoId));
+        if (!d) return;
         d.nome = nome; d.categoria = cat; d.descricao = desc;
-        showToast('Doença atualizada com sucesso!', 'success');
+        resultado = await dbSalvarDoenca(d);
     } else {
-        doencas.push({ id: nextId++, nome, categoria: cat, descricao: desc });
-        showToast('Doença adicionada com sucesso!', 'success');
+        const nova = { id: null, nome, categoria: cat, descricao: desc };
+        resultado = await dbSalvarDoenca(nova);
+        if (!dbUsarSupabase()) doencas.push({ ...nova, id: nextId++ });
     }
 
-    salvarStorage();
-    atualizarCategorias();
-    renderLista();
+    if (!resultado.ok) {
+        showToast(resultado.erro || 'Não foi possível salvar a doença.', 'error');
+        return;
+    }
+
+    if (!dbUsarSupabase()) salvarStorage();
     document.getElementById('modal').classList.remove('open');
+    showToast(editandoId ? 'Doença atualizada com sucesso!' : 'Doença adicionada com sucesso!', 'success');
+    await carregarDoencas();
 }
 
 // ── Modal remover ─────────────────────────────────────────────────────────────
 function pedirRemocao(id) {
     removendoId = id;
-    const d = doencas.find(x => x.id === id);
+    const d = doencas.find(x => String(x.id) === String(id));
     document.getElementById('del-nome').textContent = d ? d.nome : '';
     document.getElementById('modal-del').classList.add('open');
     lucide.createIcons();
@@ -404,13 +433,23 @@ function fecharModalDel(e) {
     removendoId = null;
 }
 
-function confirmarRemocao() {
-    doencas = doencas.filter(x => x.id !== removendoId);
-    salvarStorage();
-    atualizarCategorias();
-    renderLista();
+async function confirmarRemocao() {
+    const removida = doencas.find(x => String(x.id) === String(removendoId));
+    if (!removida) return;
+
+    const resultado = await dbExcluirDoenca(removida.id);
+    if (!resultado.ok) {
+        showToast(resultado.erro || 'Não foi possível remover a doença.', 'error');
+        return;
+    }
+
+    if (!dbUsarSupabase()) {
+        doencas = doencas.filter(x => String(x.id) !== String(removendoId));
+        salvarStorage();
+    }
     fecharModalDel();
     showToast('Doença removida.', 'success');
+    await carregarDoencas();
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -424,15 +463,15 @@ function showToast(msg, tipo) {
 }
 
 // ── Sair ──────────────────────────────────────────────────────────────────────
-function sair() {
+async function sair() {
+    try { await dbSair(); } catch (error) { console.warn('Falha ao encerrar sessão:', error); }
     sessionStorage.removeItem('adminLogado');
     sessionStorage.removeItem('adminUsuario');
     window.location.href = 'login-admin.html';
 }
 
 // Init
-atualizarCategorias();
-renderLista();
+carregarDoencas();
 </script>
 </body>
 </html>
