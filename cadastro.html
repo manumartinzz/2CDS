@@ -43,6 +43,8 @@
                            class="input-field w-full px-4 py-3 rounded-lg text-white" required>
                 </div>
 
+                <p id="cad-erro" class="hidden text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4"></p>
+
                 <button type="submit"
                         class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold py-3 rounded-lg transition-all transform hover:scale-[1.02]">
                     Finalizar Cadastro
@@ -55,19 +57,16 @@
                    class="flex-1 text-center border border-white/30 hover:bg-white/10 text-white font-semibold py-3 rounded-lg transition-all">
                     Voltar para Login
                 </a>
-                <a href="pagamento.html"
-                   class="flex-1 text-center bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold py-3 rounded-lg transition-all">
-                    Assinar Plano
-                </a>
             </div>
+            <p class="text-center text-white/40 text-xs">
+                Depois de cadastrar, você será levado direto para a tela de pagamento — é lá que seu código de acesso é gerado e enviado.
+            </p>
         </div>
     </div>
 
 </div>
 
-<script src="login.js"></script>
-<script>
-    lucide.createIcons();
-</script>
+<script src="db.js"></script>
+<script src="cadastro.js"></script>
 </body>
 </html>
