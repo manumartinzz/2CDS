@@ -11,6 +11,10 @@ const PLANOS = {
 let planoSelecionado = "pro";
 let metodoSelecionado = "card";
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) lucide.createIcons();
+});
+
 // -------- Seleção de plano --------
 function selectPlan(el) {
   document.querySelectorAll(".plan-card").forEach((card) => {

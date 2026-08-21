@@ -3,6 +3,8 @@
 // Precisa ser carregado DEPOIS de supabase-client.js.
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) lucide.createIcons();
+
   const form = document.getElementById("formCadastro");
 
   form.addEventListener("submit", async (event) => {

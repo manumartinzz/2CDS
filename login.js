@@ -2,6 +2,10 @@
 // Substitui inteiramente o login.js antigo (baseado em db.js).
 // Precisa ser carregado DEPOIS de supabase-client.js.
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) lucide.createIcons();
+});
+
 function openAdminModal() {
   document.getElementById("adminModal").classList.remove("hidden");
 }
@@ -50,7 +54,9 @@ async function handleLogin(event) {
     await supabaseClient.auth.signInWithPassword({ email, password: senha });
 
   if (authError) {
-    mostrarErroLogin("E-mail/CPF ou senha inválidos.");
+    // Mostrando a mensagem real do Supabase por enquanto, pra facilitar o diagnóstico.
+    // Depois que tudo estiver funcionando, pode trocar por um texto genérico se preferir.
+    mostrarErroLogin(authError.message);
     return;
   }
 

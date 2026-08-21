@@ -8,6 +8,8 @@ let chartInstance = null;
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  if (window.lucide) lucide.createIcons();
+
   const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) {
     window.location.href = "login.html";
