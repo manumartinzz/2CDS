@@ -1,101 +1,111 @@
-// login.js – AcquaSafe
-
-const adminUsers = [
-    { email: "milenakachimarck@gmail.com", senha: "123456", nome: "Milena Kachimarck" },
-    { email: "mayracalegario@gmail.com",   senha: "123456", nome: "Mayra Calegario" },
-    { email: "manucordeiro326@gmail.com",  senha: "123456", nome: "Manu Cordeiro" }
-];
-
-/* ==================== LOGIN NORMAL (cliente) ==================== */
-function handleLogin(e) {
-    e.preventDefault();
-    const login  = document.getElementById('login-usuario').value.trim();
-    const senha  = document.getElementById('login-senha').value.trim();
-    const codigo = document.getElementById('login-codigo').value.trim();
-    const btn = document.getElementById('btn-text');
-    const submitBtn = btn.closest('button');
-
-    if (!login || !senha || !codigo) {
-        showError('Preencha todos os campos.');
-        return;
-    }
-
-    const resultado = dbValidarLogin(login, senha, codigo);
-
-    if (!resultado.ok) {
-        const mensagens = {
-            usuario:   'Não encontramos cadastro com este e-mail/CPF.',
-            senha:     'Senha incorreta.',
-            sem_plano: 'Você ainda não tem um plano ativo. Assine para receber seu código de acesso.',
-            expirado:  'Seu código de acesso expirou (validade de 30 dias). Assine novamente para gerar um novo.',
-            codigo:    'Código de confirmação incorreto.'
-        };
-        showError(mensagens[resultado.motivo] || 'Não foi possível entrar. Verifique seus dados.');
-        return;
-    }
-
-    submitBtn.disabled = true;
-    btn.textContent = 'Acessando…';
-
-    sessionStorage.setItem('usuarioLogado', 'true');
-    sessionStorage.setItem('usuarioEmail', resultado.usuario.emailOuCpf);
-    sessionStorage.setItem('usuarioNome', resultado.usuario.nome);
-
-    setTimeout(() => {
-        btn.textContent = '✓ Acesso concedido';
-        setTimeout(() => window.location.href = 'portal.html', 800);
-    }, 900);
-}
-
-/* ==================== LOGIN ADMIN (Modal) ==================== */
-function handleAdminLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('admin-email').value.trim().toLowerCase();
-    const senha = document.getElementById('admin-password').value.trim();
-    const errorEl = document.getElementById('admin-error');
-
-    const userFound = adminUsers.find(u => u.email.toLowerCase() === email && u.senha === senha);
-
-    if (userFound) {
-        sessionStorage.setItem('adminLogado', 'true');
-        sessionStorage.setItem('adminUsuario', userFound.email);
-        sessionStorage.setItem('adminNome', userFound.nome);
-        
-        errorEl.classList.add('hidden');
-        document.getElementById('admin-btn-text').textContent = '✓ Acesso concedido';
-        
-        setTimeout(() => window.location.href = 'admin-clientes.html', 800);
-    } else {
-        showAdminError('E-mail ou senha incorretos.');
-    }
-}
-
-function showError(msg) {
-    const el = document.getElementById('login-error');
-    if (el) {
-        el.textContent = msg;
-        el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 4000);
-    }
-}
-
-function showAdminError(msg) {
-    const el = document.getElementById('admin-error');
-    if (el) {
-        el.textContent = msg;
-        el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 3000);
-    }
-}
+// login.js
+// Substitui inteiramente o login.js antigo (baseado em db.js).
+// Precisa ser carregado DEPOIS de supabase-client.js.
 
 function openAdminModal() {
-    document.getElementById('adminModal').classList.remove('hidden');
+  document.getElementById("adminModal").classList.remove("hidden");
 }
 
 function closeAdminModal() {
-    document.getElementById('adminModal').classList.add('hidden');
+  document.getElementById("adminModal").classList.add("hidden");
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.lucide) lucide.createIcons();
-});
+function mostrarErroLogin(mensagem) {
+  const erro = document.getElementById("login-error");
+  erro.textContent = mensagem;
+  erro.classList.remove("hidden");
+}
+
+function mostrarErroAdmin(mensagem) {
+  const erro = document.getElementById("admin-error");
+  erro.textContent = mensagem;
+  erro.classList.remove("hidden");
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  document.getElementById("login-error").classList.add("hidden");
+
+  const usuario = document.getElementById("login-usuario").value.trim();
+  const senha = document.getElementById("login-senha").value;
+  const codigoDigitado = document.getElementById("login-codigo").value.trim();
+
+  // O Supabase Auth loga com e-mail. Se o campo tiver CPF, buscamos
+  // o e-mail correspondente via a função RPC (não expõe outros dados).
+  const apenasNumeros = usuario.replace(/\D/g, "");
+  let email = usuario;
+
+  if (apenasNumeros.length === 11) {
+    const { data: infoConta } = await supabaseClient.rpc("obter_codigo_acesso", {
+      identificador: usuario
+    });
+    if (!infoConta || infoConta.length === 0) {
+      mostrarErroLogin("CPF não encontrado.");
+      return;
+    }
+    email = infoConta[0].email;
+  }
+
+  const { data: authData, error: authError } =
+    await supabaseClient.auth.signInWithPassword({ email, password: senha });
+
+  if (authError) {
+    mostrarErroLogin("E-mail/CPF ou senha inválidos.");
+    return;
+  }
+
+  // Confere assinatura ativa + código de confirmação
+  const { data: assinatura, error: assinaturaError } = await supabaseClient
+    .from("assinaturas")
+    .select("status, codigo_acesso, codigo_expira_em")
+    .eq("user_id", authData.user.id)
+    .eq("status", "ativa")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (assinaturaError || !assinatura) {
+    mostrarErroLogin("Nenhuma assinatura ativa. Finalize o pagamento primeiro.");
+    await supabaseClient.auth.signOut();
+    return;
+  }
+
+  const expirado = new Date(assinatura.codigo_expira_em) < new Date();
+  if (codigoDigitado !== assinatura.codigo_acesso || expirado) {
+    mostrarErroLogin("Código de confirmação inválido ou expirado.");
+    await supabaseClient.auth.signOut();
+    return;
+  }
+
+  window.location.href = "painel.html";
+}
+
+async function handleAdminLogin(event) {
+  event.preventDefault();
+  document.getElementById("admin-error").classList.add("hidden");
+
+  const email = document.getElementById("admin-email").value.trim();
+  const senha = document.getElementById("admin-password").value;
+
+  const { data: authData, error: authError } =
+    await supabaseClient.auth.signInWithPassword({ email, password: senha });
+
+  if (authError) {
+    mostrarErroAdmin("E-mail ou senha inválidos.");
+    return;
+  }
+
+  const { data: profile, error: profileError } = await supabaseClient
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", authData.user.id)
+    .single();
+
+  if (profileError || !profile?.is_admin) {
+    mostrarErroAdmin("Esta conta não tem permissão de administrador.");
+    await supabaseClient.auth.signOut();
+    return;
+  }
+
+  window.location.href = "admin.html";
+}

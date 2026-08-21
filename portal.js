@@ -1,321 +1,147 @@
-/* portal.js – AcquaSafe – Painel Principal */
+// portal.js
+// Lógica do painel.html (dashboard do cliente).
+// Precisa ser carregado DEPOIS de supabase-client.js.
 
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ Portal AcquaSafe carregado com sucesso");
+let sensorAtual = null;
+let chartInstance = null;
 
-    // Inicializa ícones Lucide
-    if (typeof lucide !== "undefined") {
-        lucide.createIcons();
-    }
+document.addEventListener("DOMContentLoaded", init);
 
-    // Configuração do Gráfico
-    initQualityChart();
+async function init() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-    // Adiciona efeito de hover nos cards de navegação
-    enhanceNavCards();
+  const { data: sensores } = await supabaseClient
+    .from("sensores")
+    .select("id, nome")
+    .eq("user_id", user.id)
+    .eq("ativo", true)
+    .limit(1);
 
-    // Sistema de alerta de qualidade da água
-    initAlertSystem();
-});
+  const botaoSimular = document.getElementById("btn-simular-alerta");
 
-/* =========================================================
-   GRÁFICO DE QUALIDADE DA ÁGUA
-   ========================================================= */
-let qualityChart = null;
+  if (!sensores || sensores.length === 0) {
+    mostrarAlerta("info", "Nenhum sensor instalado ainda. Entre em contato com a equipe AcquaSafe.");
+    botaoSimular.disabled = true;
+    botaoSimular.classList.add("opacity-50", "cursor-not-allowed");
+    return;
+  }
 
-function initQualityChart() {
-    const ctx = document.getElementById("qualityChart");
-    if (!ctx) {
-        console.warn("Canvas #qualityChart não encontrado");
-        return;
-    }
+  sensorAtual = sensores[0];
+  await carregarLeituras();
+  inscreverTempoReal();
 
-    qualityChart = new Chart(ctx.getContext("2d"), {
-        type: "bar",
-        data: {
-            labels: parametrosAgua.map(p => p.nome),
-            datasets: [
-                {
-                    label: "Valor Atual",
-                    data: parametrosAgua.map(p => p.normal),
-                    backgroundColor: parametrosAgua.map(() => "rgba(34, 211, 238, 0.85)"),
-                    borderColor: parametrosAgua.map(() => "#22d3ee"),
-                    borderWidth: 1,
-                    borderRadius: 6,
-                },
-                {
-                    label: "Limite de Referência",
-                    data: parametrosAgua.map(p => (p.direcao === "alto" ? p.max : p.min)),
-                    backgroundColor: "rgba(148, 163, 184, 0.3)",
-                    borderColor: "#94a3b8",
-                    borderWidth: 1,
-                    borderRadius: 6,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 600 },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: "#94a3b8",
-                        font: { family: "DM Sans", size: 13 },
-                        padding: 20
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { color: "#64748b" },
-                    grid: { color: "rgba(255,255,255,0.05)" }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: "#64748b" },
-                    grid: { color: "rgba(255,255,255,0.05)" }
-                }
-            }
-        }
-    });
+  botaoSimular.addEventListener("click", simularAlerta);
 }
 
-/**
- * Melhora interatividade dos cards de navegação
- */
-function enhanceNavCards() {
-    const cards = document.querySelectorAll('.glass-card[onclick]');
+async function carregarLeituras() {
+  const { data: leituras, error } = await supabaseClient
+    .from("leituras_sensores")
+    .select("ph, turbidez, coliformes, qualidade_percentual, medido_em")
+    .eq("sensor_id", sensorAtual.id)
+    .order("medido_em", { ascending: true })
+    .limit(20);
 
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            card.style.transition = 'all 0.3s ease';
-        });
-    });
+  if (error || !leituras || leituras.length === 0) return;
+
+  desenharGrafico(leituras);
 }
 
-// Função auxiliar para logout (caso queira usar)
+function desenharGrafico(leituras) {
+  const labels = leituras.map((l) =>
+    new Date(l.medido_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+  );
+  const ph = leituras.map((l) => l.ph);
+  const turbidez = leituras.map((l) => l.turbidez);
+  const coliformes = leituras.map((l) => l.coliformes);
+
+  const ctx = document.getElementById("qualityChart").getContext("2d");
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label: "pH", data: ph, borderColor: "#22d3ee", tension: 0.3 },
+        { label: "Turbidez", data: turbidez, borderColor: "#3b82f6", tension: 0.3 },
+        { label: "Coliformes", data: coliformes, borderColor: "#f43f5e", tension: 0.3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#cbd5e1" } } },
+      scales: {
+        x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
+        y: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } }
+      }
+    }
+  });
+}
+
+function inscreverTempoReal() {
+  supabaseClient
+    .channel("leituras-realtime")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "leituras_sensores", filter: `sensor_id=eq.${sensorAtual.id}` },
+      () => carregarLeituras()
+    )
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "alertas", filter: `sensor_id=eq.${sensorAtual.id}` },
+      (payload) => mostrarAlerta(payload.new.nivel, payload.new.mensagem)
+    )
+    .subscribe();
+}
+
+async function simularAlerta() {
+  const leituraFake = {
+    sensor_id: sensorAtual.id,
+    ph: (Math.random() * 3 + 4).toFixed(2),
+    turbidez: (Math.random() * 50 + 20).toFixed(2),
+    coliformes: (Math.random() * 100).toFixed(2),
+    qualidade_percentual: (Math.random() * 40).toFixed(2)
+  };
+
+  const { data: leitura, error } = await supabaseClient
+    .from("leituras_sensores")
+    .insert(leituraFake)
+    .select()
+    .single();
+
+  if (error) {
+    mostrarAlerta("critico", "Erro ao simular alerta: " + error.message);
+    return;
+  }
+
+  await supabaseClient.from("alertas").insert({
+    sensor_id: sensorAtual.id,
+    leitura_id: leitura.id,
+    nivel: "critico",
+    mensagem: "Parâmetros fora do padrão detectados (simulação)."
+  });
+}
+
+function mostrarAlerta(nivel, mensagem) {
+  const cores = {
+    info: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
+    atencao: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+    critico: "border-red-500/30 bg-red-500/10 text-red-300"
+  };
+  const box = document.createElement("div");
+  box.className = `glass-card rounded-xl p-4 border ${cores[nivel] || cores.info} shadow-lg`;
+  box.textContent = mensagem;
+  document.getElementById("alert-container").appendChild(box);
+  setTimeout(() => box.remove(), 8000);
+}
+
 function logout() {
-    if (confirm("Deseja realmente sair?")) {
-        localStorage.removeItem("usuarioAcquaSafe");
-        window.location.href = "index.html";
-    }
-}
-
-/* =========================================================
-   SISTEMA DE ALERTA DE QUALIDADE DA ÁGUA
-   Referência: Portaria GM/MS nº 888/2021 (padrão de potabilidade)
-   e Resolução CONAMA nº 357/2005 (classificação de corpos d'água)
-
-   Para cada parâmetro, o risco pode estar na QUEDA (pH, Cloro
-   residual, Flúor — perda de proteção/desinfecção) ou na ALTA
-   (Turbidez, Coliformes, DBO — aumento de contaminação/sujidade).
-   ========================================================= */
-const parametrosAgua = [
-    {
-        nome: "pH",
-        unidade: "",
-        min: 6.0, max: 9.5,       // faixa recomendada (Portaria GM/MS 888/2021)
-        normal: 7.2,
-        critico: 4.8,              // muito abaixo do mínimo seguro
-        direcao: "baixo",
-        mensagem: "pH crítico: água ácida e corrosiva, imprópria para consumo e irrigação."
-    },
-    {
-        nome: "Turbidez",
-        unidade: " UNT",
-        min: 0, max: 5,            // VMP = 5 UNT
-        normal: 3.5,
-        critico: 9.8,               // muito acima do limite máximo
-        direcao: "alto",
-        mensagem: "Turbidez crítica: excesso de partículas em suspensão na água."
-    },
-    {
-        nome: "Cloro",
-        unidade: " mg/L",
-        min: 0.2, max: 5,          // mínimo obrigatório 0,2 mg/L
-        normal: 1.8,
-        critico: 0.05,              // muito abaixo do mínimo obrigatório
-        direcao: "baixo",
-        mensagem: "Cloro residual crítico: desinfecção comprometida, risco microbiológico."
-    },
-    {
-        nome: "Coliformes",
-        unidade: "/100mL",
-        min: 0, max: 1,            // VMP: ausência em 100mL
-        normal: 0,
-        critico: 6,                 // presença confirmada e elevada
-        direcao: "alto",
-        mensagem: "Coliformes detectados: possível contaminação biológica da água."
-    },
-    {
-        nome: "Flúor",
-        unidade: " mg/L",
-        min: 0.6, max: 1.5,        // faixa recomendada de fluoretação
-        normal: 0.7,
-        critico: 0.1,                // muito abaixo do recomendado
-        direcao: "baixo",
-        mensagem: "Flúor muito abaixo do recomendado."
-    },
-    {
-        nome: "DBO",
-        unidade: " mg/L",
-        min: 0, max: 5,            // referência CONAMA 357 (águas classe 1)
-        normal: 4.2,
-        critico: 11,                 // muito acima do limite de referência
-        direcao: "alto",
-        mensagem: "DBO crítica: excesso de matéria orgânica, baixo oxigênio dissolvido."
-    }
-];
-
-let alertoEmAndamento = false;
-let cicloAlertaTimer = null;
-
-function initAlertSystem() {
-    // Dispara um alerta simulado periodicamente (entre 14 e 26 segundos)
-    agendarProximoAlerta();
-
-    // Botão de simulação manual (usado na apresentação/demo)
-    const btnSimular = document.getElementById("btn-simular-alerta");
-    if (btnSimular) {
-        btnSimular.addEventListener("click", () => {
-            if (!alertoEmAndamento) dispararAlerta();
-        });
-    }
-}
-
-function agendarProximoAlerta() {
-    const delay = 14000 + Math.random() * 12000; // 14s – 26s
-    cicloAlertaTimer = setTimeout(() => {
-        if (!alertoEmAndamento) dispararAlerta();
-        agendarProximoAlerta();
-    }, delay);
-}
-
-function dispararAlerta() {
-    if (!qualityChart) return;
-    alertoEmAndamento = true;
-
-    const idx = Math.floor(Math.random() * parametrosAgua.length);
-    const parametro = parametrosAgua[idx];
-
-    // Atualiza o valor no gráfico para o nível crítico
-    qualityChart.data.datasets[0].data[idx] = parametro.critico;
-    qualityChart.data.datasets[0].backgroundColor[idx] = "rgba(239, 68, 68, 0.85)";
-    qualityChart.data.datasets[0].borderColor[idx] = "#ef4444";
-    qualityChart.update();
-
-    tocarSomAlerta();
-    mostrarNotificacaoAlerta(parametro);
-
-    // Após alguns segundos, o parâmetro volta ao normal (recuperação do sensor)
-    setTimeout(() => {
-        qualityChart.data.datasets[0].data[idx] = parametro.normal;
-        qualityChart.data.datasets[0].backgroundColor[idx] = "rgba(34, 211, 238, 0.85)";
-        qualityChart.data.datasets[0].borderColor[idx] = "#22d3ee";
-        qualityChart.update();
-        mostrarNotificacaoNormalizado(parametro);
-        alertoEmAndamento = false;
-    }, 7000);
-}
-
-/* ── Notificação visual ── */
-function mostrarNotificacaoAlerta(parametro) {
-    const container = document.getElementById("alert-container");
-    if (!container) return;
-
-    const card = document.createElement("div");
-    card.className = "alert-toast alert-toast-critico";
-    card.innerHTML = `
-        <div class="alert-toast-icon">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-        </div>
-        <div class="flex-1">
-            <p class="alert-toast-title">Alerta crítico — ${parametro.nome}</p>
-            <p class="alert-toast-msg">${parametro.mensagem}</p>
-            <p class="alert-toast-value">Leitura atual: <strong>${parametro.critico}${parametro.unidade}</strong> · faixa segura: ${parametro.min}${parametro.unidade} – ${parametro.max}${parametro.unidade}</p>
-        </div>
-        <button class="alert-toast-close" aria-label="Fechar">
-            <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-    `;
-
-    card.querySelector(".alert-toast-close").addEventListener("click", () => removerToast(card));
-    container.appendChild(card);
-    if (window.lucide) lucide.createIcons();
-
-    requestAnimationFrame(() => card.classList.add("show"));
-
-    setTimeout(() => removerToast(card), 9000);
-}
-
-function mostrarNotificacaoNormalizado(parametro) {
-    const container = document.getElementById("alert-container");
-    if (!container) return;
-
-    const card = document.createElement("div");
-    card.className = "alert-toast alert-toast-ok";
-    card.innerHTML = `
-        <div class="alert-toast-icon">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-        </div>
-        <div class="flex-1">
-            <p class="alert-toast-title">${parametro.nome} normalizado</p>
-            <p class="alert-toast-msg">Parâmetro voltou à faixa segura (${parametro.normal}${parametro.unidade}).</p>
-        </div>
-        <button class="alert-toast-close" aria-label="Fechar">
-            <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-    `;
-
-    card.querySelector(".alert-toast-close").addEventListener("click", () => removerToast(card));
-    container.appendChild(card);
-    if (window.lucide) lucide.createIcons();
-
-    requestAnimationFrame(() => card.classList.add("show"));
-
-    setTimeout(() => removerToast(card), 6000);
-}
-
-function removerToast(card) {
-    if (!card || !card.parentNode) return;
-    card.classList.remove("show");
-    setTimeout(() => card.remove(), 300);
-}
-
-/* ── Som de alerta (gerado via Web Audio API — sem depender de arquivo externo) ── */
-let audioCtx = null;
-
-function tocarSomAlerta() {
-    try {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        // Três bipes ascendentes, como um alerta de instrumentação
-        const frequencias = [880, 880, 1046.5];
-        frequencias.forEach((freq, i) => {
-            const startTime = audioCtx.currentTime + i * 0.28;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = "square";
-            osc.frequency.setValueAtTime(freq, startTime);
-
-            gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(0.18, startTime + 0.02);
-            gain.gain.linearRampToValueAtTime(0, startTime + 0.22);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start(startTime);
-            osc.stop(startTime + 0.25);
-        });
-    } catch (err) {
-        console.warn("Não foi possível reproduzir o som de alerta:", err);
-    }
+  supabaseClient.auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
 }

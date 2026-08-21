@@ -74,45 +74,9 @@
     </div>
 </div>
 
-<script src="login.js"></script>
-<script>
-    lucide.createIcons();
-
-    function loginAdmin(e) {
-        e.preventDefault();
-
-        const email = document.getElementById('admin-email').value.trim().toLowerCase();
-        const senha = document.getElementById('admin-senha').value.trim();
-        const errorEl = document.getElementById('login-error');
-
-        const userFound = adminUsers.find(user => 
-            user.email.toLowerCase() === email && user.senha === senha
-        );
-
-        if (userFound) {
-            sessionStorage.setItem('adminLogado', 'true');
-            sessionStorage.setItem('adminUsuario', userFound.email);
-            sessionStorage.setItem('adminNome', userFound.nome);
-
-            errorEl.classList.add('hidden');
-            showToast('Login realizado com sucesso! Redirecionando...', 'success');
-            
-            setTimeout(() => {
-                window.location.href = 'admin-clientes.html';
-            }, 900);
-        } else {
-            errorEl.classList.remove('hidden');
-        }
-    }
-
-    function showToast(msg, tipo) {
-        const toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.textContent = msg;
-        toast.className = `show ${tipo === 'success' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-red-500/20 border-red-500 text-red-300'}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="login-admin.js"></script>
+</body>
 </body>
 </html>

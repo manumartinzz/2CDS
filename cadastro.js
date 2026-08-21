@@ -1,33 +1,44 @@
-/* cadastro.js – AcquaSafe – Criação de conta */
+// cadastro.js
+// Substitui inteiramente o cadastro.js antigo (baseado em db.js).
+// Precisa ser carregado DEPOIS de supabase-client.js.
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.lucide) lucide.createIcons();
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("formCadastro");
 
-    const form = document.getElementById('formCadastro');
-    if (!form) return;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+    const erroBox = document.getElementById("cad-erro");
+    erroBox.classList.add("hidden");
 
-        const nome  = document.getElementById('cad-nome').value.trim();
-        const login = document.getElementById('cad-login').value.trim();
-        const senha = document.getElementById('cad-senha').value;
-        const erroEl = document.getElementById('cad-erro');
+    const nomeCompleto = document.getElementById("cad-nome").value.trim();
+    const login = document.getElementById("cad-login").value.trim();
+    const senha = document.getElementById("cad-senha").value;
 
-        if (!nome || !login || !senha) return;
+    const apenasNumeros = login.replace(/\D/g, "");
+    const ehCpf = apenasNumeros.length === 11;
 
-        const resultado = dbCadastrarUsuario({ nome, emailOuCpf: login, senha });
+    if (ehCpf) {
+      erroBox.textContent = "Por enquanto, cadastre-se usando um e-mail válido (o CPF pode ser adicionado depois no seu perfil).";
+      erroBox.classList.remove("hidden");
+      return;
+    }
 
-        if (!resultado.ok) {
-            erroEl.textContent = resultado.erro;
-            erroEl.classList.remove('hidden');
-            return;
-        }
-
-        erroEl.classList.add('hidden');
-
-        // Leva o e-mail/CPF cadastrado para a tela de pagamento, já pronto pra usar
-        sessionStorage.setItem('acqua_cadastro_pendente', login);
-        window.location.href = 'pagamento.html';
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: login,
+      password: senha,
+      options: {
+        data: { nome_completo: nomeCompleto }
+      }
     });
+
+    if (error) {
+      erroBox.textContent = "Erro ao cadastrar: " + error.message;
+      erroBox.classList.remove("hidden");
+      return;
+    }
+
+    // Cadastro OK -> segue o fluxo do site (tela de pagamento)
+    window.location.href = "pagamento.html";
+  });
 });
