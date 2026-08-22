@@ -1,5 +1,5 @@
 // admin-doencas.js
-// Substitui inteiramente a lógica antiga (localStorage).
+// Gerencia o catálogo de patógenos (tabela "doencas" no banco).
 // Precisa ser carregado DEPOIS de supabase-client.js e admin-guard.js.
 
 let doencas = [];
@@ -17,13 +17,13 @@ async function init() {
   await carregarDoencas();
 
   document.getElementById("busca").addEventListener("input", renderLista);
-  document.getElementById("filtro-cat").addEventListener("change", renderLista);
+  document.getElementById("filtro-tipo").addEventListener("change", renderLista);
 }
 
 async function carregarDoencas() {
   const { data, error } = await supabaseClient
     .from("doencas")
-    .select("id, nome, categoria, descricao")
+    .select("id, nome, tipo, grupo_risco, doenca_associada, orgao_afetado, nivel_bsl")
     .order("nome", { ascending: true });
 
   if (error) {
@@ -32,39 +32,28 @@ async function carregarDoencas() {
   }
 
   doencas = data || [];
-  atualizarCategorias();
   renderLista();
-}
-
-// ── Categorias dinâmicas ──────────────────────────────────────────────────────
-function atualizarCategorias() {
-  const sel = document.getElementById("filtro-cat");
-  const atual = sel.value;
-  const cats = [...new Set(doencas.map((d) => d.categoria).filter(Boolean))].sort();
-  sel.innerHTML =
-    '<option value="">Todas as categorias</option>' +
-    cats.map((c) => `<option value="${c}" ${c === atual ? "selected" : ""}>${c}</option>`).join("");
 }
 
 // ── Renderização ──────────────────────────────────────────────────────────────
 function renderLista() {
   const busca = document.getElementById("busca").value.toLowerCase();
-  const filtro = document.getElementById("filtro-cat").value;
+  const filtro = document.getElementById("filtro-tipo").value;
 
   const filtrados = doencas.filter((d) => {
     const match =
-      d.nome.toLowerCase().includes(busca) ||
-      (d.categoria || "").toLowerCase().includes(busca) ||
-      (d.descricao || "").toLowerCase().includes(busca);
-    const catOk = !filtro || d.categoria === filtro;
-    return match && catOk;
+      (d.nome || "").toLowerCase().includes(busca) ||
+      (d.doenca_associada || "").toLowerCase().includes(busca) ||
+      (d.orgao_afetado || "").toLowerCase().includes(busca);
+    const tipoOk = !filtro || d.tipo === filtro;
+    return match && tipoOk;
   });
 
   const lista = document.getElementById("lista-doencas");
   const empty = document.getElementById("empty-state");
   const cont = document.getElementById("contador");
 
-  cont.textContent = `${filtrados.length} de ${doencas.length} doença(s)`;
+  cont.textContent = `${filtrados.length} de ${doencas.length} patógeno(s)`;
 
   if (filtrados.length === 0) {
     lista.innerHTML = "";
@@ -83,10 +72,13 @@ function renderLista() {
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-semibold text-sm">${d.nome}</span>
-                    ${d.categoria ? `<span class="badge-cat">${d.categoria}</span>` : ""}
+                    <span class="font-semibold text-sm italic">${d.nome}</span>
+                    ${d.tipo ? `<span class="badge-cat">${d.tipo}</span>` : ""}
+                    ${d.grupo_risco ? `<span class="badge-cat">GR${d.grupo_risco}</span>` : ""}
+                    ${d.nivel_bsl ? `<span class="badge-cat">${d.nivel_bsl}</span>` : ""}
                 </div>
-                ${d.descricao ? `<p class="text-white/50 text-xs mt-1 leading-relaxed">${d.descricao}</p>` : ""}
+                ${d.doenca_associada ? `<p class="text-white/70 text-xs mt-1">${d.doenca_associada}</p>` : ""}
+                ${d.orgao_afetado ? `<p class="text-white/40 text-xs mt-0.5">Órgão afetado: ${d.orgao_afetado}</p>` : ""}
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
                 <button onclick="abrirModalEditar('${d.id}')"
@@ -110,10 +102,13 @@ function renderLista() {
 // ── Modal adicionar / editar ──────────────────────────────────────────────────
 function abrirModalAdicionar() {
   editandoId = null;
-  document.getElementById("modal-titulo").textContent = "Nova Doença";
+  document.getElementById("modal-titulo").textContent = "Novo Patógeno";
   document.getElementById("f-nome").value = "";
-  document.getElementById("f-cat").value = "";
-  document.getElementById("f-desc").value = "";
+  document.getElementById("f-tipo").value = "";
+  document.getElementById("f-risco").value = "";
+  document.getElementById("f-doenca").value = "";
+  document.getElementById("f-orgao").value = "";
+  document.getElementById("f-bsl").value = "";
   document.getElementById("modal").classList.add("open");
   setTimeout(() => document.getElementById("f-nome").focus(), 100);
   lucide.createIcons();
@@ -123,10 +118,13 @@ function abrirModalEditar(id) {
   const d = doencas.find((x) => x.id === id);
   if (!d) return;
   editandoId = id;
-  document.getElementById("modal-titulo").textContent = "Editar Doença";
-  document.getElementById("f-nome").value = d.nome;
-  document.getElementById("f-cat").value = d.categoria || "";
-  document.getElementById("f-desc").value = d.descricao || "";
+  document.getElementById("modal-titulo").textContent = "Editar Patógeno";
+  document.getElementById("f-nome").value = d.nome || "";
+  document.getElementById("f-tipo").value = d.tipo || "";
+  document.getElementById("f-risco").value = d.grupo_risco || "";
+  document.getElementById("f-doenca").value = d.doenca_associada || "";
+  document.getElementById("f-orgao").value = d.orgao_afetado || "";
+  document.getElementById("f-bsl").value = d.nivel_bsl || "";
   document.getElementById("modal").classList.add("open");
   setTimeout(() => document.getElementById("f-nome").focus(), 100);
   lucide.createIcons();
@@ -139,36 +137,34 @@ function fecharModal(e) {
 
 async function salvarDoenca() {
   const nome = document.getElementById("f-nome").value.trim();
-  const cat = document.getElementById("f-cat").value.trim();
-  const desc = document.getElementById("f-desc").value.trim();
+  const tipo = document.getElementById("f-tipo").value;
+  const grupo_risco = document.getElementById("f-risco").value;
+  const doenca_associada = document.getElementById("f-doenca").value.trim();
+  const orgao_afetado = document.getElementById("f-orgao").value.trim();
+  const nivel_bsl = document.getElementById("f-bsl").value;
 
   if (!nome) {
-    showToast("Informe o nome da doença.", "error");
+    showToast("Informe o nome do patógeno.", "error");
     document.getElementById("f-nome").focus();
     return;
   }
 
-  if (editandoId) {
-    const { error } = await supabaseClient
-      .from("doencas")
-      .update({ nome, categoria: cat, descricao: desc })
-      .eq("id", editandoId);
+  const payload = { nome, tipo, grupo_risco, doenca_associada, orgao_afetado, nivel_bsl };
 
+  if (editandoId) {
+    const { error } = await supabaseClient.from("doencas").update(payload).eq("id", editandoId);
     if (error) {
       showToast("Erro ao atualizar: " + error.message, "error");
       return;
     }
-    showToast("Doença atualizada com sucesso!", "success");
+    showToast("Patógeno atualizado com sucesso!", "success");
   } else {
-    const { error } = await supabaseClient
-      .from("doencas")
-      .insert({ nome, categoria: cat, descricao: desc });
-
+    const { error } = await supabaseClient.from("doencas").insert(payload);
     if (error) {
       showToast("Erro ao adicionar: " + error.message, "error");
       return;
     }
-    showToast("Doença adicionada com sucesso!", "success");
+    showToast("Patógeno adicionado com sucesso!", "success");
   }
 
   document.getElementById("modal").classList.remove("open");
@@ -199,7 +195,7 @@ async function confirmarRemocao() {
   }
 
   fecharModalDel();
-  showToast("Doença removida.", "success");
+  showToast("Patógeno removido.", "success");
   await carregarDoencas();
 }
 
