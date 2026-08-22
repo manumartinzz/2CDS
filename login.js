@@ -83,7 +83,7 @@ async function handleLogin(event) {
     return;
   }
 
-  window.location.href = "painel.html";
+  window.location.href = "portal.html";
 }
 
 async function handleAdminLogin(event) {
