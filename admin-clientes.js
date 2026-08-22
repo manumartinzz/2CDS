@@ -1,6 +1,6 @@
 // admin-clientes.js
 // Substitui inteiramente a lógica antiga (localStorage + sessionStorage).
-// Precisa ser carregado DEPOIS de supabase-client.js.
+// Precisa ser carregado DEPOIS de supabase-client.js e admin-guard.js.
 
 let clientes = [];
 let clienteAtivo = null;
@@ -8,27 +8,9 @@ let clienteAtivo = null;
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
-  // -------- Guard: só admin logado passa --------
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  const user = await guardAdmin();
+  if (!user) return;
 
-  if (!user) {
-    window.location.href = "login-admin.html";
-    return;
-  }
-
-  const { data: profile } = await supabaseClient
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) {
-    alert("Acesso negado. Faça login como administrador.");
-    window.location.href = "login-admin.html";
-    return;
-  }
-
-  document.body.classList.remove("opacity-0"); // revela a página só depois do guard
   lucide.createIcons();
 
   await carregarClientes();
@@ -197,10 +179,4 @@ async function toggleBloqueio() {
 
   fecharModal();
   renderTabela();
-}
-
-// ── Sair ──────────────────────────────────────────────────────────────────────
-async function sair() {
-  await supabaseClient.auth.signOut();
-  window.location.href = "login-admin.html";
 }
