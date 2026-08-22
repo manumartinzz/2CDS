@@ -83,7 +83,7 @@ async function handleLogin(event) {
     return;
   }
 
-  window.location.href = "portal.html";
+  window.location.href = "painel.html";
 }
 
 async function handleAdminLogin(event) {
@@ -113,5 +113,5 @@ async function handleAdminLogin(event) {
     return;
   }
 
-  window.location.href = "admin.html";
+  window.location.href = "admin-clientes.html";
 }
