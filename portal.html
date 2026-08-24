@@ -68,7 +68,7 @@
                     Parâmetros de Qualidade
                 </h3>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-slate-500">Atualizado agora</span>
+                    <span class="text-xs text-slate-500" id="updated-at">Atualizado agora</span>
                     <button id="btn-simular-alerta"
                             class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 transition-colors">
                         <i data-lucide="siren" class="w-3.5 h-3.5"></i>
@@ -76,6 +76,39 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Cards de leitura atual -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[11px] uppercase tracking-wide text-cyan-300/80">pH</span>
+                        <span id="badge-ph" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">normal</span>
+                    </div>
+                    <div id="val-ph" class="text-2xl font-bold text-white">—</div>
+                </div>
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[11px] uppercase tracking-wide text-blue-300/80">Flúor</span>
+                        <span id="badge-fluor" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">normal</span>
+                    </div>
+                    <div id="val-fluor" class="text-2xl font-bold text-white">— <span class="text-xs font-medium text-slate-400">mg/L</span></div>
+                </div>
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[11px] uppercase tracking-wide text-emerald-300/80">Cloro</span>
+                        <span id="badge-cloro" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">normal</span>
+                    </div>
+                    <div id="val-cloro" class="text-2xl font-bold text-white">— <span class="text-xs font-medium text-slate-400">mg/L</span></div>
+                </div>
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[11px] uppercase tracking-wide text-amber-300/80">Turbidez</span>
+                        <span id="badge-turbidez" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">normal</span>
+                    </div>
+                    <div id="val-turbidez" class="text-2xl font-bold text-white">— <span class="text-xs font-medium text-slate-400">NTU</span></div>
+                </div>
+            </div>
+
             <div class="h-[320px]">
                 <canvas id="qualityChart"></canvas>
             </div>
@@ -138,5 +171,217 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="portal.js"></script>
+
+<!-- Gráfico de parâmetros: sensor simulado + Supabase -->
+<script>
+(function () {
+  // ---------- Config Supabase (usa o client já criado em supabase-client.js quando existir) ----------
+  const SUPABASE_URL = "https://syoxvywvlwftdkpebogn.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5b3h2eXd2bHdmdGRrcGVib2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNDM3ODksImV4cCI6MjEwMjkxOTc4OX0.AjXevRAIevIOZpD5DBWJm-kM1QubOlbvugN7F_lWzpY";
+  const TABLE = "leituras";
+  const SENSOR_ID = "sensor-01";
+  const MAX_POINTS = 40;
+  const TICK_MS = 4000;
+
+  function sbHeaders() {
+    return {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    };
+  }
+  function sbUrl(path) { return SUPABASE_URL.replace(/\/+$/, "") + path; }
+
+  async function insertReading(reading) {
+    const res = await fetch(sbUrl("/rest/v1/" + TABLE), {
+      method: "POST",
+      headers: sbHeaders(),
+      body: JSON.stringify([{ sensor_id: SENSOR_ID, ...reading }])
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  async function fetchHistory(limit = MAX_POINTS) {
+    const url = sbUrl(`/rest/v1/${TABLE}?select=*&sensor_id=eq.${encodeURIComponent(SENSOR_ID)}&order=criado_em.desc&limit=${limit}`);
+    const res = await fetch(url, { headers: sbHeaders() });
+    if (!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+    return rows.reverse();
+  }
+
+  // ---------- Simulação de sensor (random walk suave) ----------
+  let sim = { ph: 7.2, fluor: 0.8, cloro: 1.2, turbidez: 3.5 };
+  let contaminationTicks = 0;
+
+  function step(v, target, drift, noise, min, max) {
+    const next = v + (target - v) * drift + (Math.random() - 0.5) * noise;
+    return Math.min(max, Math.max(min, next));
+  }
+
+  function nextReading() {
+    const contaminating = contaminationTicks > 0;
+    if (contaminating) contaminationTicks--;
+
+    sim.ph = step(sim.ph, contaminating ? 5.6 : 7.2, 0.25, 0.12, 3, 10);
+    sim.fluor = step(sim.fluor, contaminating ? 2.6 : 0.8, 0.25, 0.08, 0, 4);
+    sim.cloro = step(sim.cloro, contaminating ? 0.05 : 1.2, 0.25, 0.1, 0, 4);
+    sim.turbidez = step(sim.turbidez, contaminating ? 22 : 3.5, 0.3, 0.5, 0, 30);
+
+    return {
+      ph: Number(sim.ph.toFixed(2)),
+      fluor: Number(sim.fluor.toFixed(2)),
+      cloro: Number(sim.cloro.toFixed(2)),
+      turbidez: Number(sim.turbidez.toFixed(2))
+    };
+  }
+
+  // ---------- Cards + alertas ----------
+  function setCard(id, value, unit, alert) {
+    const val = document.getElementById("val-" + id);
+    const badge = document.getElementById("badge-" + id);
+    val.innerHTML = `${value}${unit ? ' <span class="text-xs font-medium text-slate-400">' + unit + "</span>" : ""}`;
+    badge.textContent = alert ? "alerta" : "normal";
+    badge.className = "text-[10px] px-2 py-0.5 rounded-full border " +
+      (alert
+        ? "bg-red-500/15 text-red-300 border-red-500/25"
+        : "bg-emerald-500/15 text-emerald-300 border-emerald-500/25");
+  }
+
+  function updateCards(r) {
+    const phAlert = r.ph < 6 || r.ph > 8.5;
+    const fluorAlert = r.fluor > 1.5;
+    const cloroAlert = r.cloro < 0.2 || r.cloro > 2;
+    const turbidezAlert = r.turbidez > 10;
+
+    setCard("ph", r.ph.toFixed(2), "", phAlert);
+    setCard("fluor", r.fluor.toFixed(2), "mg/L", fluorAlert);
+    setCard("cloro", r.cloro.toFixed(2), "mg/L", cloroAlert);
+    setCard("turbidez", r.turbidez.toFixed(1), "NTU", turbidezAlert);
+
+    return phAlert || fluorAlert || cloroAlert || turbidezAlert;
+  }
+
+  function setUpdatedAt() {
+    const el = document.getElementById("updated-at");
+    if (el) el.textContent = "Atualizado " + new Date().toLocaleTimeString("pt-BR");
+  }
+
+  function pushAlert(msg) {
+    const container = document.getElementById("alert-container");
+    if (!container) return;
+    const card = document.createElement("div");
+    card.className = "flex items-start gap-3 bg-red-500/15 border border-red-500/30 text-red-200 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md animate-[fadeIn_.2s_ease-out]";
+    card.innerHTML = `
+      <i data-lucide="siren" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+      <span class="text-sm">${msg}</span>`;
+    container.appendChild(card);
+    if (window.lucide) window.lucide.createIcons();
+    setTimeout(() => {
+      card.style.transition = "opacity .3s";
+      card.style.opacity = "0";
+      setTimeout(() => card.remove(), 300);
+    }, 6000);
+  }
+
+  // ---------- Chart.js ----------
+  let chart;
+  function initChart() {
+    const ctx = document.getElementById("qualityChart").getContext("2d");
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          { label: "pH", data: [], borderColor: "#22d3ee", backgroundColor: "transparent", tension: 0.35, yAxisID: "yPh", pointRadius: 0, borderWidth: 2 },
+          { label: "Flúor (mg/L)", data: [], borderColor: "#60a5fa", backgroundColor: "transparent", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2 },
+          { label: "Cloro (mg/L)", data: [], borderColor: "#34d399", backgroundColor: "transparent", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2 },
+          { label: "Turbidez (NTU)", data: [], borderColor: "#fbbf24", backgroundColor: "transparent", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2, borderDash: [4, 3] }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 250 },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { labels: { color: "#cbd5e1", font: { family: "DM Sans", size: 11 } } }
+        },
+        scales: {
+          x: { ticks: { color: "#64748b", maxRotation: 0, autoSkip: true, font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.05)" } },
+          yPh: { position: "left", min: 3, max: 10, ticks: { color: "#22d3ee", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.05)" }, title: { display: true, text: "pH", color: "#22d3ee" } },
+          yOther: { position: "right", min: 0, max: 30, ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function pushToChart(r, criado_em) {
+    const label = new Date(criado_em || Date.now()).toLocaleTimeString("pt-BR");
+    chart.data.labels.push(label);
+    chart.data.datasets[0].data.push(r.ph);
+    chart.data.datasets[1].data.push(r.fluor);
+    chart.data.datasets[2].data.push(r.cloro);
+    chart.data.datasets[3].data.push(r.turbidez);
+    if (chart.data.labels.length > MAX_POINTS) {
+      chart.data.labels.shift();
+      chart.data.datasets.forEach(d => d.data.shift());
+    }
+    chart.update("none");
+  }
+
+  function loadHistory(rows) {
+    chart.data.labels = rows.map(r => new Date(r.criado_em).toLocaleTimeString("pt-BR"));
+    chart.data.datasets[0].data = rows.map(r => r.ph);
+    chart.data.datasets[1].data = rows.map(r => r.fluor);
+    chart.data.datasets[2].data = rows.map(r => r.cloro);
+    chart.data.datasets[3].data = rows.map(r => r.turbidez);
+    chart.update();
+    if (rows.length) {
+      updateCards(rows[rows.length - 1]);
+      setUpdatedAt();
+    }
+  }
+
+  // ---------- Loop principal ----------
+  async function tick() {
+    const reading = nextReading();
+    const alerted = updateCards(reading);
+    setUpdatedAt();
+    try {
+      const inserted = await insertReading(reading);
+      const row = Array.isArray(inserted) ? inserted[0] : reading;
+      pushToChart(reading, row.criado_em);
+    } catch (err) {
+      pushToChart(reading, new Date().toISOString());
+      console.warn("Falha ao gravar leitura no Supabase:", err.message);
+    }
+    if (alerted) {
+      pushAlert("Parâmetro fora do padrão detectado — verifique o painel.");
+    }
+  }
+
+  document.getElementById("btn-simular-alerta").addEventListener("click", () => {
+    contaminationTicks = 6;
+    pushAlert("Evento de contaminação simulado: pH, flúor, cloro e turbidez vão se alterar nas próximas leituras.");
+  });
+
+  // ---------- Boot ----------
+  initChart();
+  (async () => {
+    try {
+      const rows = await fetchHistory();
+      if (rows.length) loadHistory(rows);
+    } catch (err) {
+      console.warn("Não foi possível carregar histórico do Supabase:", err.message);
+      pushAlert("Sem conexão com o banco ainda — rode o SQL de criação da tabela no Supabase.");
+    }
+    tick();
+    setInterval(tick, TICK_MS);
+  })();
+})();
+</script>
+
 </body>
 </html>
