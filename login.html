@@ -47,19 +47,21 @@
                             <input type="password" id="login-senha" placeholder="••••••••"
                                    class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
                         </div>
-                        <!-- Código de Confirmação -->
-                        <div>
+                        <!-- Código de confirmação: aparece somente no primeiro acesso -->
+                        <div id="login-codigo-wrapper" class="hidden">
                             <label class="block text-sm font-medium text-white mb-2">Código de Confirmação</label>
                             <div class="relative">
                                 <input type="text" id="login-codigo" placeholder="Ex.: AQ7F-92XK"
-                                       class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors" required>
+                                       autocomplete="one-time-code"
+                                       class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-white/40 transition-colors">
                                 <div class="absolute right-3 top-3 group">
                                     <i data-lucide="help-circle" class="w-5 h-5 text-slate-500 cursor-help"></i>
                                     <div class="absolute bottom-full right-0 mb-2 w-56 p-2 bg-slate-800 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-slate-700">
-                                        Este código foi enviado por e-mail após a confirmação do pagamento e é válido por 30 dias.
+                                        O código é usado somente no primeiro acesso após a confirmação do pagamento.
                                     </div>
                                 </div>
                             </div>
+                            <p id="login-codigo-help" class="text-xs text-slate-400 mt-2"></p>
                         </div>
                         <div class="flex items-center justify-between text-sm">
                             <label class="flex items-center gap-2 cursor-pointer">

@@ -164,7 +164,19 @@ async function handlePayment() {
 
 function copiarCodigo() {
   const codigo = document.getElementById("codigo-gerado-valor").textContent;
-  navigator.clipboard.writeText(codigo);
+  try {
+    sessionStorage.setItem("acquasafe_codigo_primeiro_acesso", codigo);
+  } catch (_) {}
+
+  const irParaLogin = () => {
+    window.location.href = "login.html?primeiro_acesso=1";
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(codigo).then(irParaLogin).catch(irParaLogin);
+  } else {
+    irParaLogin();
+  }
 }
 
 // -------- Modal "Reenviar código" --------
