@@ -35,8 +35,8 @@
 
 <div class="max-w-7xl mx-auto px-6 py-10">
     <header class="mb-10">
-        <h2 class="text-4xl font-bold text-white mb-2">Soluções Químicas</h2>
-        <p class="text-slate-400">Gerenciamento de soluções, concentrações e aplicações laboratoriais</p>
+        <h2 class="text-4xl font-bold text-white mb-2">Soluções para Controle da Água</h2>
+        <p class="text-slate-400">Produtos, métodos e rotinas para prevenção e controle de doenças de veiculação hídrica</p>
     </header>
 
     <div class="flex flex-wrap gap-4 mb-6">
@@ -65,44 +65,9 @@
     </div>
 </div>
 
-<script>
-lucide.createIcons();
-
-const solucoes = [
-    { nome: "Hipoclorito de Sódio", concentracao: "10–15%", solvente: "Água", uso: "Desinfecção", validade: "180" },
-    { nome: "Sulfato de Cobre",     concentracao: "0,1%",   solvente: "Água", uso: "Algicida",     validade: "365" },
-    { nome: "Ácido Peracético",     concentracao: "5%",     solvente: "Água", uso: "Esterilização", validade: "90" },
-    { nome: "Cloreto de Cálcio",    concentracao: "2%",     solvente: "Água", uso: "Tratamento",   validade: "240" },
-];
-
-function renderSolucoes(lista) {
-    document.getElementById("tabelaSolucoes").innerHTML = lista.map(s => `
-        <tr class="border-t border-white/10 hover:bg-white/5">
-            <td class="px-6 py-4 font-medium">${s.nome}</td>
-            <td class="px-6 py-4">${s.concentracao}</td>
-            <td class="px-6 py-4">${s.solvente}</td>
-            <td class="px-6 py-4">${s.uso}</td>
-            <td class="px-6 py-4">${s.validade}</td>
-            <td class="px-6 py-4 text-center">
-                <button class="text-cyan-400 hover:text-cyan-300 text-xs font-medium">Editar</button>
-            </td>
-        </tr>
-    `).join("");
-}
-
-document.getElementById("search").addEventListener("input", (e) => {
-    const t = e.target.value.toLowerCase();
-    renderSolucoes(t ? solucoes.filter(s =>
-        Object.values(s).some(v => v.toLowerCase().includes(t))
-    ) : solucoes);
-});
-
-function limparFiltros() {
-    document.getElementById("search").value = "";
-    renderSolucoes(solucoes);
-}
-
-window.onload = () => renderSolucoes(solucoes);
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="solucoes.js"></script>
+  <script src="./pwa.js"></script>
 </body>
 </html>

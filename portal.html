@@ -294,14 +294,14 @@
   function initChart() {
     const ctx = document.getElementById("qualityChart").getContext("2d");
     chart = new Chart(ctx, {
-      type: "line",
+      type: "bar",
       data: {
         labels: [],
         datasets: [
-          { label: "pH", data: [], borderColor: "#22d3ee", backgroundColor: "transparent", tension: 0.35, yAxisID: "yPh", pointRadius: 0, borderWidth: 2 },
-          { label: "Flúor (mg/L)", data: [], borderColor: "#60a5fa", backgroundColor: "transparent", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2 },
-          { label: "Cloro (mg/L)", data: [], borderColor: "#34d399", backgroundColor: "transparent", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2 },
-          { label: "Turbidez (NTU)", data: [], borderColor: "#fbbf24", backgroundColor: "transparent", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2, borderDash: [4, 3] }
+          { label: "pH", data: [], borderColor: "#22d3ee", backgroundColor: "rgba(34,211,238,0.65)", tension: 0.35, yAxisID: "yPh", pointRadius: 0, borderWidth: 2 },
+          { label: "Flúor (mg/L)", data: [], borderColor: "#60a5fa", backgroundColor: "rgba(34,211,238,0.65)", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2 },
+          { label: "Cloro (mg/L)", data: [], borderColor: "#34d399", backgroundColor: "rgba(34,211,238,0.65)", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2 },
+          { label: "Turbidez (NTU)", data: [], borderColor: "#fbbf24", backgroundColor: "rgba(34,211,238,0.65)", tension: 0.35, yAxisID: "yOther", pointRadius: 0, borderWidth: 2, borderDash: [4, 3] }
         ]
       },
       options: {
@@ -387,5 +387,6 @@
 })();
 </script>
 
+  <script src="./pwa.js"></script>
 </body>
 </html>

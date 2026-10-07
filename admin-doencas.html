@@ -146,7 +146,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
             <h2 class="text-2xl font-bold">Gerenciar Doenças</h2>
-            <p class="text-white/50 text-sm mt-1">Adicione ou remova doenças do sistema.</p>
+            <p class="text-white/50 text-sm mt-1">Adicione, edite ou remova doenças e patógenos associados à água.</p>
         </div>
         <button onclick="abrirModalAdicionar()"
                 class="btn-gradient px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 self-start sm:self-auto">
@@ -160,9 +160,15 @@
             <i data-lucide="search" class="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2"></i>
             <input type="text" id="busca" class="input-search" placeholder="Buscar doença…" oninput="renderLista()">
         </div>
-        <select id="filtro-cat" onchange="renderLista()"
+        <select id="filtro-tipo" onchange="renderLista()"
                 class="input-search sm:w-48 pl-3">
-            <option value="">Todas as categorias</option>
+            <option value="">Todos os tipos</option>
+            <option value="Bactéria">Bactéria</option>
+            <option value="Vírus">Vírus</option>
+            <option value="Protozoário">Protozoário</option>
+            <option value="Fungo">Fungo</option>
+            <option value="Nematoide">Nematoide</option>
+            <option value="Helminto">Helminto</option>
         </select>
     </div>
 
@@ -192,15 +198,11 @@
                 <label class="block text-sm text-white/60 mb-1">Nome da doença <span class="text-red-400">*</span></label>
                 <input type="text" id="f-nome" class="input-field" placeholder="Ex.: Diabetes tipo 2">
             </div>
-            <div>
-                <label class="block text-sm text-white/60 mb-1">Categoria</label>
-                <input type="text" id="f-cat" class="input-field" placeholder="Ex.: Metabólica, Cardiovascular…">
-            </div>
-            <div>
-                <label class="block text-sm text-white/60 mb-1">Descrição / observações</label>
-                <textarea id="f-desc" rows="3" class="input-field resize-none"
-                          placeholder="Informações adicionais sobre a doença…"></textarea>
-            </div>
+            <div><label class="block text-sm text-white/60 mb-1">Tipo</label><select id="f-tipo" class="input-field"><option value="">Selecione</option><option>Bactéria</option><option>Vírus</option><option>Protozoário</option><option>Fungo</option><option>Nematoide</option><option>Helminto</option></select></div>
+            <div><label class="block text-sm text-white/60 mb-1">Nível de risco</label><input type="text" id="f-risco" class="input-field" placeholder="Ex.: 1, 2 ou 3"></div>
+            <div><label class="block text-sm text-white/60 mb-1">Doença associada</label><input type="text" id="f-doenca" class="input-field" placeholder="Ex.: Cólera"></div>
+            <div><label class="block text-sm text-white/60 mb-1">Parte afetada</label><input type="text" id="f-orgao" class="input-field" placeholder="Ex.: Intestino"></div>
+            <div><label class="block text-sm text-white/60 mb-1">Nível BSL</label><input type="text" id="f-bsl" class="input-field" placeholder="Ex.: BSL-2"></div>
         </div>
         <div class="flex gap-3 mt-6">
             <button onclick="salvarDoenca()"
