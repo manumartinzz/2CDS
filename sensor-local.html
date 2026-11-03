@@ -48,8 +48,9 @@
   .fld input, .fld select, #novoEquip input {
          width:100%; background:#0b1220; color:#e2e8f0; border:1px solid #ffffff26;
          border-radius:9px; padding:10px; font-size:13px; }
-  .fld .com-botao { display:flex; gap:6px; }
-  .fld .com-botao select { flex:1; min-width:0; width:auto; }
+  .fld .com-botao { display:flex; gap:6px; flex-wrap:wrap; }
+  .fld .com-botao select { flex:1 1 100%; min-width:0; width:100%; }
+  .fld .com-botao button { flex:1; margin:0; }
   button.mini { padding:10px 12px; font-size:12px; white-space:nowrap; }
   #novoEquip { display:none; margin-top:12px; gap:8px; flex-wrap:wrap; align-items:center; }
   #novoEquip input { flex:1 1 170px; width:auto; }
@@ -76,6 +77,7 @@
         <div class="com-botao">
           <select id="equip"></select>
           <button id="bNovo" class="sec mini">+ Novo</button>
+          <button id="bRemover" class="sec mini" title="Remove o equipamento selecionado">🗑 Remover</button>
         </div>
       </div>
       <div class="fld">
@@ -262,6 +264,26 @@
     atualizarCtx();
   }
 
+  function removerEquipamento() {
+    if (equipamentos.length <= 1) {
+      log("Não dá para remover o último equipamento — mantenha ao menos um.", "#fbbf24");
+      return;
+    }
+    const eq = equipamentos.find(x => x.id === ativo);
+    if (!eq) return;
+    if (!confirm('Remover o equipamento "' + eq.nome + '"?\n\n' +
+                 'As leituras já capturadas continuam no CSV com os dados originais.')) return;
+
+    equipamentos = equipamentos.filter(x => x.id !== ativo);
+    guardar(K_EQ, JSON.stringify(equipamentos));
+    ativo = equipamentos[0].id;
+    renderEquip();
+    $("local").value = equipamentos[0].local || "";
+    guardar(K_LOCAL, $("local").value);
+    aplicarEquip();
+    log("Equipamento removido: " + eq.nome + ". Restam " + equipamentos.length + ".", "#fbbf24");
+  }
+
   function initIdentificacao() {
     carregarEquipamentos();
     renderEquip();
@@ -294,6 +316,7 @@
     });
 
     $("bNovo").addEventListener("click", () => { $("novoEquip").style.display = "flex"; });
+    $("bRemover").addEventListener("click", removerEquipamento);
     $("neCancelar").addEventListener("click", () => { $("novoEquip").style.display = "none"; });
     $("neSalvar").addEventListener("click", () => {
       const nome = $("neNome").value.trim();
