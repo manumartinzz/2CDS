@@ -86,13 +86,10 @@ function desenharGrafico(leituras) {
 }
 
 function inscreverTempoReal() {
+  // O gráfico é atualizado pelo portal.html a cada 30 minutos.
+  // Mantemos somente os alertas em tempo real.
   supabaseClient
-    .channel("leituras-realtime")
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "leituras_sensores", filter: `sensor_id=eq.${sensorAtual.id}` },
-      () => carregarLeituras()
-    )
+    .channel("alertas-realtime")
     .on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "alertas", filter: `sensor_id=eq.${sensorAtual.id}` },
