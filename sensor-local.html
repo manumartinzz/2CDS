@@ -55,6 +55,7 @@
       <div class="label">pH agora</div>
       <div id="ph">--</div>
       <div class="small" id="hora">aguardando conexão</div>
+      <div id="valid" class="small" style="font-weight:600;color:#64748b">aguardando sinal</div>
       <div class="small" id="cal" style="color:#fbbf24">curva nominal (ainda sem calibração)</div>
     </div>
     <div class="card">
@@ -88,6 +89,9 @@
     Este arquivo é independente: não precisa de site, servidor, internet ou Supabase.
     Só funciona em <b>Chrome ou Edge</b> no computador onde o Arduino está plugado.
     Se o pH não aparecer, confira se você gravou o sketch no Uno (o Uno novo não fala sozinho).
+    <b>Com a sonda desconectada o número NÃO é confiável</b>: a entrada BNC fica flutuando, a
+    tensão em A0 tende a um extremo e, como a conversão é inversa, o pH costuma <b>subir até 14</b>
+    (ou cair a 0, conforme a placa). O valor correto de referência é <b>BNC em curto ≈ 2500 mV ≈ pH 7,00</b>.
   </p>
 </div>
 
@@ -137,6 +141,34 @@
     g.stroke();
   }
 
+  // Sonda desconectada = entrada BNC flutuando = A0 tende a 0 V ou 5 V.
+  // Como a conversao e inversa (tensao CAI -> pH SOBE), o numero normalmente
+  // dispara para o extremo alcalino em vez de zerar. Nao e medicao: e lixo.
+  const ultimosRaw = [];
+  function validar(o) {
+    const mv = Number(o.mv), raw = Number(o.raw);
+    let msg, cor;
+
+    if (Number.isNaN(mv) || mv < 1000 || mv > 4000) {
+      msg = "⚠️ sonda desconectada / fora da faixa — NÃO é medição";
+      cor = "#fbbf24";
+    } else {
+      ultimosRaw.push(raw);
+      if (ultimosRaw.length > 12) ultimosRaw.shift();
+      const travado = ultimosRaw.length === 12 && ultimosRaw.every(v => v === ultimosRaw[0]);
+      if (travado) {
+        msg = "⚠️ sinal travado — confira o BNC e o fio do A0";
+        cor = "#fbbf24";
+      } else {
+        msg = "✅ sinal plausível (sonda conectada)";
+        cor = "#34d399";
+      }
+    }
+    $("valid").textContent = msg;
+    $("valid").style.color = cor;
+    $("ph").style.color = cor === "#34d399" ? "#67e8f9" : "#fbbf24";
+  }
+
   function novaLeitura(o) {
     total++;
     $("n").textContent = total;
@@ -150,6 +182,7 @@
     $("raw").textContent = o.raw ?? "--";
     $("mv").textContent = (o.mv ?? "--") + " mV";
     $("hora").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
+    validar(o);
     if (o.cal === true) {
       $("cal").textContent = "calibrado";
       $("cal").style.color = "#34d399";
