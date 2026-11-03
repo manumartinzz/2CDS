@@ -16,6 +16,11 @@ async function init() {
     return;
   }
 
+  // Modo sensor real (portal.html?real=1): o script inline do HTML e quem
+  // desenha o grafico e atualiza os cards a partir da tabela "leituras".
+  // Sair aqui evita dois Charts disputando o mesmo canvas #qualityChart.
+  if (new URLSearchParams(location.search).get("real") === "1") return;
+
   const { data: sensores } = await supabaseClient
     .from("sensores")
     .select("id, nome")

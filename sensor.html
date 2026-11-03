@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcquaSafe – Teste do Sensor de pH</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal.css">
+  <style>body { font-family: "DM Sans", sans-serif; }</style>
+</head>
+<body class="h-full bg-[#0a0f1a] text-white overflow-auto">
+
+<!-- Navbar -->
+<header class="w-full px-6 py-4 flex items-center justify-between border-b border-white/10 bg-[#0a0f1a]/95 backdrop-blur-md sticky top-0 z-50">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+      <i data-lucide="cpu" class="w-5 h-5 text-white"></i>
+    </div>
+    <span class="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
+      AcquaSafe · Bancada
+    </span>
+  </div>
+  <div class="flex items-center gap-4 text-sm">
+    <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+    <span id="status-texto" class="text-slate-400">Desconectado</span>
+    <a href="portal.html?real=1" class="text-cyan-400 hover:text-cyan-300">Ver no painel →</a>
+  </div>
+</header>
+
+<div class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-bold">Sensor de pH E201-9 · Arduino Uno R3</h1>
+    <p class="text-slate-400 text-sm mt-1">
+      Leitura direta pela porta USB (Web Serial). Sem WiFi, sem servidor e sem gateway.
+    </p>
+  </div>
+
+  <!-- Aviso de navegador incompativel -->
+  <div id="sem-webserial" class="hidden rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+    <strong>Web Serial não disponível aqui.</strong> Use <b>Chrome ou Edge desktop</b>, abra esta página em
+    <b>aba própria</b> (não dentro de um iframe) e em <b>HTTPS ou localhost</b>.
+    Alternativa sem navegador: <code class="font-mono">bridge/ph_serial_bridge.py</code>.
+  </div>
+
+  <!-- Aviso: conectou mas nao chegou nenhuma linha JSON -->
+  <div id="sem-dados" class="hidden rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+    <strong>Conectado, mas nenhuma linha JSON chegou em 4 s.</strong>
+    O Uno ligado no USB ainda não está falando. Confira:
+    <b>fez o upload de <code class="font-mono">arduino/acquasafe_ph/acquasafe_ph.ino</code></b> pela IDE do Arduino?
+    Placa = <b>Arduino Uno</b>, porta correta, <b>9600 baud</b> e <b>Monitor Serial fechado</b>.
+    Um Uno novo de fábrica não envia nada sozinho — só estar plugado não basta.
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Leitura atual -->
+    <div class="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-slate-400">pH em tempo real</p>
+          <div class="flex items-end gap-3 mt-2">
+            <span id="valor-ph" class="text-7xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent tabular-nums">--</span>
+            <span class="text-slate-400 mb-3 text-sm">pH</span>
+          </div>
+          <p id="valor-hora" class="text-xs text-slate-500 mt-2">Aguardando conexão…</p>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span id="ph-badge" class="text-[11px] px-2.5 py-1 rounded-full border bg-slate-500/15 text-slate-300 border-white/10">—</span>
+          <span id="cal-badge" class="text-[11px] px-2.5 py-1 rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/25">0/2 pontos · curva nominal (aproximada)</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/10">
+        <div>
+          <p class="text-xs text-slate-400">ADC bruto (0–1023)</p>
+          <p id="valor-raw" class="text-2xl font-semibold tabular-nums mt-1">--</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Tensão no pino A0</p>
+          <p id="valor-mv" class="text-2xl font-semibold tabular-nums mt-1">-- mV</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conexao -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <h2 class="font-semibold flex items-center gap-2"><i data-lucide="usb" class="w-4 h-4 text-cyan-400"></i> Conexão USB</h2>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Feche o <b>Monitor Serial da IDE</b> antes de conectar (a porta é exclusiva).
+        Use um cabo USB que transmita dados, não apenas carga.
+      </p>
+      <div class="flex gap-2">
+        <button id="btn-conectar" class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 disabled:opacity-40 transition">
+          Conectar Arduino
+        </button>
+        <button id="btn-desconectar" class="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 disabled:opacity-40 transition">
+          Sair
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-2 pt-2">
+        <button id="btn-get" disabled class="py-2 rounded-lg text-xs bg-white/5 hover:bg-white/10 disabled:opacity-40 transition">GET</button>
+        <button id="btn-raw" disabled class="py-2 rounded-lg text-xs bg-white/5 hover:bg-white/10 disabled:opacity-40 transition">RAW</button>
+        <button id="btn-status" disabled class="py-2 rounded-lg text-xs bg-white/5 hover:bg-white/10 disabled:opacity-40 transition">STATUS</button>
+      </div>
+      <p class="text-[11px] text-slate-500 leading-relaxed">
+        9600 baud · 1 linha JSON/s · Arduino Uno R3 aparece como <code class="font-mono">COMx</code> (Windows),
+        <code class="font-mono">/dev/ttyACM0</code> (Linux) ou <code class="font-mono">/dev/cu.usbmodem*</code> (macOS).
+      </p>
+    </div>
+  </div>
+
+  <!-- Grafico -->
+  <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold">Últimas 60 leituras</h2>
+      <span class="text-xs text-slate-500">Faixa considerada normal: pH 6,0 – 8,5</span>
+    </div>
+    <div class="h-64"><canvas id="chart-ph"></canvas></div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Calibracao -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <h2 class="font-semibold flex items-center gap-2"><i data-lucide="flask-conical" class="w-4 h-4 text-cyan-400"></i> Calibração em 2 pontos</h2>
+      <ol class="text-sm text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
+        <li>Enxague o bulbo com água destilada e seque <u>com leves batidas</u> (não esfregue).</li>
+        <li>Mergulhe no <b>buffer pH 7,00</b>, espere 30–60 s estabilizar, clique em <b>CAL:7.00</b>.</li>
+        <li>Enxague, mergulhe no <b>buffer pH 4,00</b>, espere estabilizar, clique em <b>CAL:4.00</b>.</li>
+        <li>O badge passa a “Calibrado” e a curva nominal é substituída pela reta real do seu sensor.</li>
+      </ol>
+      <div class="flex flex-wrap gap-2">
+        <button id="btn-cal7" disabled class="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 disabled:opacity-40 transition">CAL:7.00</button>
+        <button id="btn-cal4" disabled class="px-4 py-2 rounded-lg text-sm font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 disabled:opacity-40 transition">CAL:4.00</button>
+        <button id="btn-reset" disabled class="px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-40 transition">RESET</button>
+      </div>
+      <p class="text-[11px] text-slate-500">
+        A calibração fica na EEPROM do Arduino. Antes dos 2 pontos, o pH exibido vem de uma curva
+        genérica (~2,5 V em pH 7 / ~0,18 V por pH) e serve só para conferir que o sensor reage.
+      </p>
+    </div>
+
+    <!-- Supabase -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <h2 class="font-semibold flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-cyan-400"></i> Gravar no site</h2>
+      <label class="flex items-center gap-3 text-sm cursor-pointer">
+        <input id="chk-gravar" type="checkbox" class="w-4 h-4 accent-cyan-500">
+        Enviar leituras para a tabela <code class="font-mono text-cyan-300">leituras</code> do Supabase
+      </label>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-400">sensor_id</label>
+          <input id="sensor-id" value="sensor-01" class="mt-1 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">Intervalo de gravação</label>
+          <select id="intervalo" class="mt-1 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+            <option value="1">1 s</option>
+            <option value="5" selected>5 s</option>
+            <option value="30">30 s</option>
+            <option value="60">60 s</option>
+          </select>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400">
+        Leituras gravadas: <b id="contador-envios" class="text-cyan-300">0</b>.
+        Antes de ativar, execute <code class="font-mono">supabase/leituras.sql</code> no SQL Editor do Supabase.
+      </p>
+      <a href="portal.html?real=1" class="inline-flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300">
+        Abrir o painel em modo sensor real <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+      <p class="text-[11px] text-slate-500">
+        O modo <code class="font-mono">?real=1</code> desliga o gerador de leituras falsas do portal e
+        passa a apenas ler o banco a cada 10 s.
+      </p>
+    </div>
+  </div>
+
+  <!-- Console -->
+  <div class="rounded-2xl border border-white/10 bg-black/30 p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-sm">Console serial</h2>
+      <button id="btn-limpar-log" class="text-xs text-slate-400 hover:text-white">Limpar</button>
+    </div>
+    <div id="console-log" class="font-mono text-[11px] leading-relaxed h-40 overflow-y-auto space-y-0.5"></div>
+  </div>
+
+  <p class="text-center text-xs text-slate-500 pb-4">
+    Guia completo de ligação, calibração e alternativas (WiFi / ponte Python):
+    <a href="SENSOR_PH.md" class="text-cyan-400 hover:text-cyan-300">SENSOR_PH.md</a>
+  </p>
+</div>
+
+<script src="sensor.js"></script>
+</body>
+</html>

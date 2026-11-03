@@ -35,6 +35,11 @@
         </span>
     </div>
     <div class="flex items-center gap-4">
+        <a href="sensor.html"
+           class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-sm text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 transition">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            <span>Testar Sensor</span>
+        </a>
         <a href="pagamento.html"
            class="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 px-5 py-2.5 rounded-2xl font-semibold text-sm transition-all hover:scale-105">
             <i data-lucide="credit-card" class="w-4 h-4"></i>
@@ -187,6 +192,12 @@
   const MAX_POINTS = 40;
   const TICK_MS = 30 * 60 * 1000; // 30 minutos
 
+  // Modo "sensor real": aberto com portal.html?real=1.
+  // Desliga o gerador de leituras simuladas e passa a apenas reler o banco,
+  // para nao misturar dados falsos com as leituras do pHmetro E201-9.
+  const LIVE_MODE = new URLSearchParams(location.search).get("real") === "1";
+  const POLL_MS = 10 * 1000; // 10 segundos
+
   function sbHeaders() {
     return {
       apikey: SUPABASE_ANON_KEY,
@@ -245,6 +256,15 @@
   function setCard(id, value, unit, alert) {
     const val = document.getElementById("val-" + id);
     const badge = document.getElementById("badge-" + id);
+
+    // No modo sensor real so temos pH: os demais parametros chegam como NULL.
+    if (value === null || value === undefined) {
+      val.innerHTML = '<span class="text-slate-500">—</span>';
+      badge.textContent = "sem dados";
+      badge.className = "text-[10px] px-2 py-0.5 rounded-full border bg-white/5 text-slate-400 border-white/10";
+      return;
+    }
+
     val.innerHTML = `${value}${unit ? ' <span class="text-xs font-medium text-slate-400">' + unit + "</span>" : ""}`;
     badge.textContent = alert ? "alerta" : "normal";
     badge.className = "text-[10px] px-2 py-0.5 rounded-full border " +
@@ -254,15 +274,17 @@
   }
 
   function updateCards(r) {
-    const phAlert = r.ph < 6 || r.ph > 8.5;
-    const fluorAlert = r.fluor > 1.5;
-    const cloroAlert = r.cloro < 0.2 || r.cloro > 2;
-    const turbidezAlert = r.turbidez > 10;
+    const tem = (v) => v !== null && v !== undefined && !Number.isNaN(Number(v));
+    const n = (v) => Number(v);
+    const phAlert = tem(r.ph) && (n(r.ph) < 6 || n(r.ph) > 8.5);
+    const fluorAlert = tem(r.fluor) && n(r.fluor) > 1.5;
+    const cloroAlert = tem(r.cloro) && (n(r.cloro) < 0.2 || n(r.cloro) > 2);
+    const turbidezAlert = tem(r.turbidez) && n(r.turbidez) > 10;
 
-    setCard("ph", r.ph.toFixed(2), "", phAlert);
-    setCard("fluor", r.fluor.toFixed(2), "mg/L", fluorAlert);
-    setCard("cloro", r.cloro.toFixed(2), "mg/L", cloroAlert);
-    setCard("turbidez", r.turbidez.toFixed(1), "NTU", turbidezAlert);
+    setCard("ph", tem(r.ph) ? n(r.ph).toFixed(2) : null, "", phAlert);
+    setCard("fluor", tem(r.fluor) ? n(r.fluor).toFixed(2) : null, "mg/L", fluorAlert);
+    setCard("cloro", tem(r.cloro) ? n(r.cloro).toFixed(2) : null, "mg/L", cloroAlert);
+    setCard("turbidez", tem(r.turbidez) ? n(r.turbidez).toFixed(1) : null, "NTU", turbidezAlert);
 
     return phAlert || fluorAlert || cloroAlert || turbidezAlert;
   }
@@ -366,10 +388,12 @@
     }
   }
 
-  document.getElementById("btn-simular-alerta").addEventListener("click", () => {
-    contaminationTicks = 6;
-    pushAlert("Evento de contaminação simulado: pH, flúor, cloro e turbidez vão se alterar nas próximas leituras.");
-  });
+  if (!LIVE_MODE) {
+    document.getElementById("btn-simular-alerta").addEventListener("click", () => {
+      contaminationTicks = 6;
+      pushAlert("Evento de contaminação simulado: pH, flúor, cloro e turbidez vão se alterar nas próximas leituras.");
+    });
+  }
 
   // ---------- Boot ----------
   initChart();
@@ -381,6 +405,24 @@
       console.warn("Não foi possível carregar histórico do Supabase:", err.message);
       pushAlert("Sem conexão com o banco ainda — rode o SQL de criação da tabela no Supabase.");
     }
+
+    if (LIVE_MODE) {
+      // Nao grava leituras falsas: apenas acompanha o que o sensor real gravou.
+      const btn = document.getElementById("btn-simular-alerta");
+      btn.disabled = true;
+      btn.title = "Simulação desativada no modo sensor real";
+      btn.classList.add("opacity-50", "cursor-not-allowed");
+      setInterval(async () => {
+        try {
+          const rows = await fetchHistory();
+          loadHistory(rows);
+        } catch (err) {
+          console.warn("Falha ao atualizar leituras reais:", err.message);
+        }
+      }, POLL_MS);
+      return;
+    }
+
     tick();
     setInterval(tick, TICK_MS);
   })();

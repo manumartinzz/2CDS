@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AcquaSafe - Leitor de pH (local)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; background:#0a0f1a; color:#e2e8f0;
+         font-family: "Segoe UI", Arial, sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color:#94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; }
+  .card { flex:1 1 260px; background:#ffffff0a; border:1px solid #ffffff1a;
+          border-radius:16px; padding:20px; margin-bottom:16px; }
+  .label { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; }
+  #ph { font-size:72px; font-weight:700; line-height:1.1; color:#67e8f9;
+        font-variant-numeric: tabular-nums; margin-top:8px; }
+  .small { font-size:13px; color:#94a3b8; margin-top:8px; }
+  .kv { display:flex; justify-content:space-between; font-size:14px; padding:6px 0;
+        border-bottom:1px solid #ffffff12; }
+  .kv span:last-child { font-variant-numeric: tabular-nums; font-weight:600; }
+  button { background:linear-gradient(90deg,#06b6d4,#2563eb); color:#fff; border:0;
+           padding:12px 18px; border-radius:10px; font-size:14px; font-weight:600;
+           cursor:pointer; margin:4px 6px 4px 0; }
+  button.sec { background:#ffffff14; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%;
+         background:#64748b; margin-right:7px; }
+  .ok { background:#34d399 !important; } .bad { background:#f87171 !important; }
+  .warn { background:#fbbf24 !important; }
+  #aviso { display:none; background:#f59e0b18; border:1px solid #f59e0b55;
+           color:#fcd34d; padding:14px; border-radius:12px; font-size:13px;
+           line-height:1.6; margin-bottom:16px; }
+  #erro  { display:none; background:#ef444418; border:1px solid #ef444455;
+           color:#fca5a5; padding:14px; border-radius:12px; font-size:13px;
+           line-height:1.6; margin-bottom:16px; }
+  canvas { width:100%; height:190px; display:block; }
+  #log { height:120px; overflow:auto; background:#00000055; border-radius:10px;
+         padding:10px; font:11px/1.5 Consolas, monospace; color:#94a3b8; }
+  code { color:#67e8f9; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AcquaSafe · Leitor de pH</h1>
+  <div class="sub">E201-9 + Arduino Uno R3 · <span class="dot" id="dot"></span><span id="status">desconectado</span></div>
+
+  <div id="erro"></div>
+  <div id="aviso"></div>
+
+  <div class="row">
+    <div class="card">
+      <div class="label">pH agora</div>
+      <div id="ph">--</div>
+      <div class="small" id="hora">aguardando conexão</div>
+      <div class="small" id="cal" style="color:#fbbf24">curva nominal (ainda sem calibração)</div>
+    </div>
+    <div class="card">
+      <div class="label">Conexão USB</div>
+      <p style="font-size:13px;color:#94a3b8;line-height:1.6">
+        Feche o <b>Monitor Serial</b> da IDE antes de conectar. Use cabo USB de dados.
+      </p>
+      <button id="bCon">Conectar Arduino</button>
+      <button id="bDes" class="sec" disabled>Desconectar</button>
+      <div class="small">9600 baud · 1 leitura por segundo</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="kv"><span>ADC bruto (0–1023)</span><span id="raw">--</span></div>
+    <div class="kv"><span>Tensão em A0</span><span id="mv">-- mV</span></div>
+    <div class="kv"><span>Leituras recebidas</span><span id="n">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:10px">Últimas 60 leituras</div>
+    <canvas id="chart" width="860" height="190"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:8px">Console serial</div>
+    <div id="log"></div>
+  </div>
+
+  <p style="font-size:12px;color:#64748b;line-height:1.7">
+    Este arquivo é independente: não precisa de site, servidor, internet ou Supabase.
+    Só funciona em <b>Chrome ou Edge</b> no computador onde o Arduino está plugado.
+    Se o pH não aparecer, confira se você gravou o sketch no Uno (o Uno novo não fala sozinho).
+  </p>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const BAUD = 9600;
+  let porta = null, leitor = null, lendo = false, buffer = "", total = 0;
+  let ultimaLinha = 0, watchdog = null, avisou = false;
+  const pontos = [];
+
+  function log(txt, cor) {
+    const d = document.createElement("div");
+    d.style.color = cor || "#94a3b8";
+    d.textContent = "[" + new Date().toLocaleTimeString("pt-BR") + "] " + txt;
+    $("log").appendChild(d);
+    $("log").scrollTop = $("log").scrollHeight;
+    while ($("log").children.length > 100) $("log").removeChild($("log").firstChild);
+  }
+
+  function status(txt, classe) {
+    $("status").textContent = txt;
+    $("dot").className = "dot" + (classe ? " " + classe : "");
+  }
+
+  function botoes(con) {
+    $("bCon").disabled = con;
+    $("bDes").disabled = !con;
+  }
+
+  function desenhar() {
+    const c = $("chart"), g = c.getContext("2d");
+    const W = c.width, H = c.height;
+    g.clearRect(0, 0, W, H);
+    g.strokeStyle = "#ffffff12"; g.lineWidth = 1;
+    for (let i = 0; i <= 14; i += 2) {
+      const y = H - (i / 14) * H;
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+    if (pontos.length < 2) return;
+    g.strokeStyle = "#22d3ee"; g.lineWidth = 2; g.beginPath();
+    pontos.forEach((v, i) => {
+      const x = (i / 59) * W;
+      const y = H - (v / 14) * H;
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    });
+    g.stroke();
+  }
+
+  function novaLeitura(o) {
+    total++;
+    $("n").textContent = total;
+    const ph = Number(o.ph);
+    if (!Number.isNaN(ph)) {
+      $("ph").textContent = ph.toFixed(2);
+      pontos.push(ph);
+      if (pontos.length > 60) pontos.shift();
+      desenhar();
+    }
+    $("raw").textContent = o.raw ?? "--";
+    $("mv").textContent = (o.mv ?? "--") + " mV";
+    $("hora").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
+    if (o.cal === true) {
+      $("cal").textContent = "calibrado";
+      $("cal").style.color = "#34d399";
+    }
+    if (total === 1) {
+      $("aviso").style.display = "none";
+      log("Primeira leitura recebida. Sensor funcionando!", "#34d399");
+    }
+  }
+
+  function linha(txt) {
+    ultimaLinha = Date.now();
+    if (avisou) { $("aviso").style.display = "none"; avisou = false; }
+    let o;
+    try { o = JSON.parse(txt); } catch (e) { log("Serial: " + txt); return; }
+    if (o.tipo === "leitura") novaLeitura(o);
+    else log((o.ok ? "OK: " : "ERRO: ") + (o.msg || o.cmd || ""), o.ok ? "#34d399" : "#f87171");
+  }
+
+  function vigiar() {
+    ultimaLinha = Date.now(); avisou = false;
+    if (watchdog) clearInterval(watchdog);
+    watchdog = setInterval(() => {
+      if (!lendo) return;
+      if (Date.now() - ultimaLinha > 4000 && !avisou) {
+        $("aviso").innerHTML = "<b>Conectou, mas não chegou nenhum dado em 4 s.</b><br>" +
+          "Você gravou o sketch no Uno? Confira: placa <b>Arduino Uno</b>, porta correta, " +
+          "<b>9600 baud</b>, <b>Monitor Serial fechado</b>. Um Uno novo não envia nada sozinho.";
+        $("aviso").style.display = "block";
+        log("Nenhum JSON recebido — verifique o upload do sketch.", "#fbbf24");
+        avisou = true;
+      }
+    }, 2000);
+  }
+
+  async function conectar() {
+    if (!("serial" in navigator)) {
+      $("erro").innerHTML = "<b>Este navegador não tem Web Serial.</b> Abra este arquivo no " +
+        "<b>Chrome ou Edge</b> (desktop). Firefox e Safari não funcionam.";
+      $("erro").style.display = "block";
+      return;
+    }
+    try {
+      porta = await navigator.serial.requestPort();
+      await porta.open({ baudRate: BAUD });
+      lendo = true; buffer = "";
+      botoes(true); status("conectado · 9600 baud", "ok");
+      log("Porta aberta. Aguardando leituras...", "#34d399");
+      vigiar();
+      await ler();
+    } catch (e) {
+      log("Falha ao conectar: " + e.message, "#f87171");
+      status("falha na conexão", "bad");
+      botoes(false); porta = null;
+    }
+  }
+
+  async function ler() {
+    let pipe;
+    try {
+      const dec = new TextDecoderStream();
+      pipe = porta.readable.pipeTo(dec.writable);
+      leitor = dec.readable.getReader();
+      while (lendo) {
+        const { value, done } = await leitor.read();
+        if (done) break;
+        buffer += value;
+        let p;
+        while ((p = buffer.indexOf("\n")) >= 0) {
+          const l = buffer.slice(0, p).replace(/\r$/, "").trim();
+          buffer = buffer.slice(p + 1);
+          if (l) linha(l);
+        }
+      }
+    } catch (e) {
+      if (lendo) log("Leitura interrompida: " + e.message, "#f87171");
+    } finally {
+      try { if (leitor) await leitor.cancel(); } catch (e) {}
+      try { if (pipe) await pipe.catch(() => {}); } catch (e) {}
+      leitor = null;
+    }
+  }
+
+  async function desconectar() {
+    lendo = false;
+    if (watchdog) { clearInterval(watchdog); watchdog = null; }
+    try { if (leitor) await leitor.cancel(); } catch (e) {}
+    try { if (porta) await porta.close(); } catch (e) {}
+    porta = null; leitor = null;
+    botoes(false); status("desconectado", "");
+    $("aviso").style.display = "none";
+    log("Porta fechada.", "#fbbf24");
+  }
+
+  $("bCon").addEventListener("click", conectar);
+  $("bDes").addEventListener("click", desconectar);
+  if ("serial" in navigator) {
+    navigator.serial.addEventListener("disconnect", () => {
+      log("Arduino desconectado.", "#fbbf24"); desconectar();
+    });
+  }
+  desenhar();
+  botoes(false);
+  log("Abra no Chrome/Edge e clique em 'Conectar Arduino'.");
+})();
+</script>
+</body>
+</html>
