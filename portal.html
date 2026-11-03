@@ -366,9 +366,10 @@
     }
   }
 
-  document.getElementById("btn-simular-alerta").addEventListener("click", () => {
+  document.getElementById("btn-simular-alerta").addEventListener("click", async () => {
     contaminationTicks = 6;
-    pushAlert("Evento de contaminação simulado: pH, flúor, cloro e turbidez vão se alterar nas próximas leituras.");
+    pushAlert("Alerta simulado: leitura contaminada gerada agora.");
+    await tick();
   });
 
   // ---------- Boot ----------

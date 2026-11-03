@@ -23,12 +23,8 @@ async function init() {
     .eq("ativo", true)
     .limit(1);
 
-  const botaoSimular = document.getElementById("btn-simular-alerta");
-
   if (!sensores || sensores.length === 0) {
-    mostrarAlerta("info", "Nenhum sensor instalado ainda. Entre em contato com a equipe AcquaSafe.");
-    botaoSimular.disabled = true;
-    botaoSimular.classList.add("opacity-50", "cursor-not-allowed");
+    mostrarAlerta("info", "Nenhum sensor instalado ainda. O simulador local continua disponível.");
     return;
   }
 
@@ -36,7 +32,6 @@ async function init() {
   await carregarLeituras();
   inscreverTempoReal();
 
-  botaoSimular.addEventListener("click", simularAlerta);
 }
 
 async function carregarLeituras() {
