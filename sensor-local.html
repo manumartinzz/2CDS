@@ -131,6 +131,16 @@
     <canvas id="chart" width="860" height="190"></canvas>
   </div>
 
+  <!-- Exportar -->
+  <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <button id="bExport" disabled>📥 Exportar CSV</button>
+    <div class="small" style="margin:0;flex:1 1 260px;line-height:1.6">
+      <b id="qtdReg" style="color:#67e8f9">0</b> leituras capturadas nesta sessão.
+      O arquivo leva data/hora, <b>pH</b>, ADC, mV, sinal e os 3 campos de identificação
+      (equipamento, localização, conta). Abre direto no Excel — separador <code>;</code> e decimal <code>,</code>.
+    </div>
+  </div>
+
   <div class="card">
     <div class="label" style="margin-bottom:8px">Console serial</div>
     <div id="log"></div>
@@ -156,6 +166,7 @@
   let porta = null, leitor = null, lendo = false, buffer = "", total = 0;
   let ultimaLinha = 0, watchdog = null, avisou = false;
   const pontos = [];
+  const registros = [];   // historico completo para exportar em CSV
 
   /* ================= Identificação da leitura =================
      Equipamento (varios), localizacao e conta. Tudo fica salvo no
@@ -304,6 +315,41 @@
     });
   }
 
+  /* -------------------- Exportar CSV -------------------- */
+  function csvCell(v) {
+    return '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  }
+
+  function exportarCSV() {
+    if (!registros.length) {
+      log("Nada para exportar — conecte o Arduino e receba ao menos 1 leitura.", "#fbbf24");
+      return;
+    }
+    const cab = ["data_hora", "equipamento_id", "equipamento", "localizacao",
+                 "conta_usuario", "ph", "raw_adc", "mv", "calibrado", "sinal"];
+    const linhas = [cab.map(csvCell).join(";")];
+    registros.forEach(r => linhas.push([
+      r.hora, r.equipamento_id, r.equipamento, r.localizacao, r.conta,
+      r.ph, r.raw, r.mv, r.calibrado, r.sinal
+    ].map(csvCell).join(";")));
+
+    // BOM + CRLF + ";" + decimal "," = abre direto no Excel pt-BR.
+    const csv = "\uFEFF" + linhas.join("\r\n") + "\r\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const d = new Date(), p2 = n => String(n).padStart(2, "0");
+    const stamp = d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) +
+                  "_" + p2(d.getHours()) + "-" + p2(d.getMinutes());
+    a.href = url;
+    a.download = "acquasafe_" + (ativo || "sensor") + "_" + stamp + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    log("CSV exportado: " + registros.length + " leituras → " + a.download, "#34d399");
+  }
+
   function log(txt, cor) {
     const d = document.createElement("div");
     d.style.color = cor || "#94a3b8";
@@ -348,7 +394,7 @@
   const ultimosRaw = [];
   function validar(o) {
     const mv = Number(o.mv), raw = Number(o.raw);
-    let msg, cor;
+    let msg, cor, plausivel = false;
 
     if (Number.isNaN(mv) || mv < 1000 || mv > 4000) {
       msg = "⚠️ sonda desconectada / fora da faixa — NÃO é medição";
@@ -363,11 +409,13 @@
       } else {
         msg = "✅ sinal plausível (sonda conectada)";
         cor = "#34d399";
+        plausivel = true;
       }
     }
     $("valid").textContent = msg;
     $("valid").style.color = cor;
     $("ph").style.color = cor === "#34d399" ? "#67e8f9" : "#fbbf24";
+    return plausivel;
   }
 
   function novaLeitura(o) {
@@ -383,7 +431,27 @@
     $("raw").textContent = o.raw ?? "--";
     $("mv").textContent = (o.mv ?? "--") + " mV";
     $("hora").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
-    validar(o);
+    const plausivel = validar(o);
+
+    // Cada linha guarda o contexto do momento da leitura: se o usuario trocar
+    // de equipamento/local/conta no meio da sessao, as linhas antigas nao mudam.
+    const eq = equipamentos.find(x => x.id === ativo);
+    const agora = new Date();
+    registros.push({
+      hora: agora.toLocaleString("pt-BR"),
+      equipamento_id: ativo,
+      equipamento: eq ? eq.nome : "",
+      localizacao: $("local").value.trim(),
+      conta: $("usuario").value.trim(),
+      ph: Number.isNaN(ph) ? "" : String(ph.toFixed(2)).replace(".", ","),
+      raw: o.raw ?? "",
+      mv: o.mv ?? "",
+      calibrado: o.cal === true ? "sim" : "nao",
+      sinal: plausivel ? "plausivel" : "invalido"
+    });
+    $("qtdReg").textContent = registros.length;
+    $("bExport").disabled = false;
+
     if (o.cal === true) {
       $("cal").textContent = "calibrado";
       $("cal").style.color = "#34d399";
@@ -480,6 +548,7 @@
 
   $("bCon").addEventListener("click", conectar);
   $("bDes").addEventListener("click", desconectar);
+  $("bExport").addEventListener("click", exportarCSV);
   if ("serial" in navigator) {
     navigator.serial.addEventListener("disconnect", () => {
       log("Arduino desconectado.", "#fbbf24"); desconectar();
