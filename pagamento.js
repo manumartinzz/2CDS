@@ -302,24 +302,27 @@ async function handleCodeRequest(event) {
     });
 
     const conta = Array.isArray(data) ? data[0] : data;
-    if (error || !conta?.email || !conta?.codigo_acesso) {
-      erro.textContent = "Não encontramos uma assinatura ativa para esse e-mail/CPF.";
+    const codigo = String(conta?.codigo_acesso || "").trim().toUpperCase();
+    if (error || !conta?.email || !codigo) {
+      erro.textContent = "Não encontramos uma assinatura ativa com código para esse e-mail/CPF.";
       erro.classList.remove("hidden");
       return;
     }
 
     let enviado = false;
     if (typeof enviarEmailCodigoAcesso === "function") {
-      const resultado = await enviarEmailCodigoAcesso(conta.email, conta.codigo_acesso, {
+      const resultado = await enviarEmailCodigoAcesso(conta.email, codigo, {
         nome: conta.nome_completo || conta.email,
         validade: conta.codigo_expira_em
       });
       enviado = !!resultado?.enviado;
     }
 
+    // Fallback: mesmo que o e-mail falhe ou chegue sem código, o código
+    // aparece aqui (igual à tela de pagamento). Ver "Limitações" no README.
     sucesso.textContent = enviado
-      ? "Código reenviado para " + conta.email + "."
-      : "Não foi possível enviar o e-mail agora. Use o código exibido após o pagamento ou fale com o suporte.";
+      ? "Código reenviado para " + conta.email + ". Seu código: " + codigo
+      : "Não foi possível enviar o e-mail. Seu código é: " + codigo;
     sucesso.classList.remove("hidden");
   } catch (err) {
     console.error("Falha ao reenviar código:", err);

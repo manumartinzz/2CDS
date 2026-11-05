@@ -12,8 +12,11 @@
       variáveis no corpo do e-mail (clique para inserir):
          {{to_name}}      → nome do cliente
          {{to_email}}     → e-mail do cliente
-         {{access_code}}  → código de acesso gerado
+         {{access_code}}  → código de acesso gerado (nome oficial)
+         {{passcode}}     → alternativa: o modelo pronto de OTP usa este
          {{validade}}     → data de validade do código
+      O código é enviado sob vários nomes (access_code, passcode, codigo,
+      codigo_acesso, code), então qualquer um deles funciona no template.
       Copie o "Template ID" gerado.
    4. Menu "Account" → "General" → copie a "Public Key".
    5. Cole os três valores nos campos abaixo.
@@ -51,18 +54,29 @@ function enviarCodigoPorEmail({ nome, email, codigo, validade }) {
         console.warn('EmailJS não configurado — veja as instruções em email-config.js');
         return Promise.resolve({ enviado: false });
     }
-    if (!email || !codigo) {
+    const codigoLimpo = String(codigo || "").trim().toUpperCase();
+    if (!email || !codigoLimpo) {
+        // Nunca envia um e-mail com o código em branco.
         return Promise.resolve({ enviado: false });
     }
 
-    const validadeFormatada = validade
-        ? new Date(validade).toLocaleDateString('pt-BR')
-        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR');
+    // Um valor inválido de validade não pode quebrar o envio (RangeError).
+    let dataValidade = validade ? new Date(validade) : null;
+    if (!dataValidade || Number.isNaN(dataValidade.getTime())) {
+        dataValidade = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    }
+    const validadeFormatada = dataValidade.toLocaleDateString('pt-BR');
 
     return emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
         to_name: nome || email,
         to_email: email,
-        access_code: codigo,
+        access_code: codigoLimpo,
+        // O template pronto "Senha de uso único" do EmailJS usa {{passcode}}.
+        // Enviando aliases, qualquer template exibe o código.
+        passcode: codigoLimpo,
+        codigo: codigoLimpo,
+        codigo_acesso: codigoLimpo,
+        code: codigoLimpo,
         validade: validadeFormatada
     }).then(() => ({ enviado: true }))
       .catch(err => {

@@ -173,8 +173,14 @@ antes de qualquer uso real:
   Python gravam sem login. Troque por um token por dispositivo + RPC
   `SECURITY DEFINER` (instruções em `supabase/leituras.sql`).
 - **`obter_codigo_acesso()` é executável por `anon` e devolve o código**, pois
-  a tela de reenvio é pública. Mova o reenvio para uma Edge Function
-  autenticada com rate limit e revogue o `grant ... to anon`.
+  a tela de reenvio é pública. Por isso o modal de reenvio **também exibe o
+  código na tela**, como fallback caso o e-mail falhe. Em produção, mova o
+  reenvio para uma Edge Function autenticada com rate limit, revogue o
+  `grant ... to anon` e remova esse fallback visual.
+- **Código "inválido ou expirado" com o código certo**: assinaturas criadas
+  antes de `supabase/schema.sql` podem estar sem `codigo_expira_em`. O
+  `login.js` usa `codigo_gerado_em + 30 dias` como fallback; para reparar os
+  dados no banco, rode [`supabase/corrigir-codigos.sql`](supabase/corrigir-codigos.sql).
 - **CDNs externos** (Tailwind, Lucide, Chart.js, Supabase, EmailJS): sem
   internet as páginas perdem estilo/ícones/funções. `sensor-local.html` é a
   única página 100% independente.
