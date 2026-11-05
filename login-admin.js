@@ -19,14 +19,20 @@ async function loginAdmin(event) {
     return;
   }
 
+  if (!authData?.user) {
+    errorEl.textContent = "Não foi possível iniciar a sessão. Tente novamente.";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+
   const { data: profile, error: profileError } = await supabaseClient
     .from("profiles")
-    .select("is_admin, nome_completo")
+    .select("is_admin, nome_completo, bloqueado")
     .eq("id", authData.user.id)
     .single();
 
-  if (profileError || !profile?.is_admin) {
-    errorEl.textContent = "Esta conta não tem permissão de administrador.";
+  if (profileError || profile?.bloqueado || !profile?.is_admin) {
+    errorEl.textContent = "Esta conta não tem permissão de administrador ou está bloqueada.";
     errorEl.classList.remove("hidden");
     await supabaseClient.auth.signOut();
     return;

@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="login.css">
-    <link rel="stylesheet" href="style-dark.css">
     <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#0a0f1a">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -86,7 +85,7 @@
 </div>
 
 <script>
-lucide.createIcons();
+if (window.lucide) lucide.createIcons();
 
 const perigos = [
     { nivel: "BSL-1", desc: "Risco mínimo",       exemplo: "Bactérias não patogênicas",      epi: "Luvas, jaleco" },

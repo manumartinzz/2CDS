@@ -18,10 +18,8 @@
    4. Menu "Account" → "General" → copie a "Public Key".
    5. Cole os três valores nos campos abaixo.
 
-   Enquanto os valores abaixo continuarem como "SUBSTITUA_...",
-   o sistema funciona normalmente: o código só deixa de ser
-   enviado por e-mail e passa a ser exibido na tela como
-   confirmação (para não travar a demonstração do TCC).
+   Se algum valor começar com "SUBSTITUA_", o envio é ignorado e o
+   código passa a ser exibido apenas na tela (não trava a demonstração).
    ========================================================= */
 
 const EMAILJS_CONFIG = {
@@ -50,14 +48,19 @@ let emailjsPronto = false;
  */
 function enviarCodigoPorEmail({ nome, email, codigo, validade }) {
     if (!emailjsPronto) {
-        console.warn('EmailJS não configurado ainda — veja as instruções em email-config.js');
+        console.warn('EmailJS não configurado — veja as instruções em email-config.js');
+        return Promise.resolve({ enviado: false });
+    }
+    if (!email || !codigo) {
         return Promise.resolve({ enviado: false });
     }
 
-    const validadeFormatada = new Date(validade).toLocaleDateString('pt-BR');
+    const validadeFormatada = validade
+        ? new Date(validade).toLocaleDateString('pt-BR')
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR');
 
     return emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
-        to_name: nome,
+        to_name: nome || email,
         to_email: email,
         access_code: codigo,
         validade: validadeFormatada
@@ -66,4 +69,24 @@ function enviarCodigoPorEmail({ nome, email, codigo, validade }) {
           console.error('Falha ao enviar e-mail via EmailJS:', err);
           return { enviado: false };
       });
+}
+
+/**
+ * Atalho usado por pagamento.js.
+ * CORREÇÃO: antes o pagamento chamava `enviarEmailCodigoAcesso`, que não
+ * existia — o typeof falhava silenciosamente e NENHUM e-mail era enviado.
+ * Agora o nome existe e delega para enviarCodigoPorEmail().
+ *
+ * @param {string} email
+ * @param {string} codigo
+ * @param {{nome?: string, validade?: string}} [opcoes]
+ * @returns {Promise<{enviado: boolean}>}
+ */
+function enviarEmailCodigoAcesso(email, codigo, opcoes = {}) {
+    return enviarCodigoPorEmail({
+        nome: opcoes.nome || email,
+        email: email,
+        codigo: codigo,
+        validade: opcoes.validade
+    });
 }

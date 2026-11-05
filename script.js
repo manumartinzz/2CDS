@@ -1,78 +1,87 @@
-// ─── Formulário de contato ─────────────────────────────────────────────────────
-document.getElementById('contact-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  document.getElementById('form-success').classList.remove('hidden');
-  this.reset();
-  setTimeout(() => document.getElementById('form-success').classList.add('hidden'), 4000);
-});
+/*
+  script.js — AcquaSafe · Landing page (index.html)
+  ==================================================
+  CORREÇÕES:
+  - removidos defaultConfig/applyConfig/adjustColor, que nunca eram chamados
+    (código morto) e podiam alterar o visual se fossem invocados;
+  - formulário de contato deixou de ser "falso": agora valida os campos e
+    abre o WhatsApp oficial do projeto com a mensagem preenchida;
+  - smooth scroll protegido contra href="#" e anchors inexistentes;
+  - lucide.createIcons() protegido caso o CDN não carregue.
+*/
 
-// ─── Smooth scroll ─────────────────────────────────────────────────────────────
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
+const CONTATO_WHATSAPP = "5541996366813";
+
+/* ─── Formulário de contato (envio real) ─────────────────────────────────────── */
+const formContato = document.getElementById("contact-form");
+
+if (formContato) {
+  formContato.addEventListener("submit", function (e) {
     e.preventDefault();
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) t.scrollIntoView({ behavior: 'smooth' });
+
+    if (!this.checkValidity()) {
+      this.reportValidity();
+      return;
+    }
+
+    const nome = (document.getElementById("name")?.value || "").trim();
+    const email = (document.getElementById("email")?.value || "").trim();
+    const mensagem = (document.getElementById("msg")?.value || "").trim();
+
+    if (!nome || !email || !mensagem) return;
+
+    const texto =
+      "Olá! Sou " + nome + " (" + email + ").\n\n" + mensagem +
+      "\n\n— Enviado pelo site AcquaSafe";
+    const url = "https://wa.me/" + CONTATO_WHATSAPP +
+                "?text=" + encodeURIComponent(texto);
+
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    const ok = document.getElementById("form-success");
+    if (ok) {
+      ok.textContent = "✓ Abrimos o WhatsApp com sua mensagem — conclua o envio por lá.";
+      ok.classList.remove("hidden");
+      setTimeout(() => ok.classList.add("hidden"), 6000);
+    }
+    this.reset();
+  });
+}
+
+/* ─── Smooth scroll ──────────────────────────────────────────────────────────── */
+document.querySelectorAll('a[href^="#"]').forEach((a) => {
+  const href = a.getAttribute("href");
+  if (!href || href === "#") return; // evita querySelector("#") inválido
+  a.addEventListener("click", (e) => {
+    const alvo = document.querySelector(href);
+    if (!alvo) return;
+    e.preventDefault();
+    alvo.scrollIntoView({ behavior: "smooth" });
   });
 });
 
-// ─── Config padrão ─────────────────────────────────────────────────────────────
-const defaultConfig = {
-  hero_title:       'Acquasafe',
-  hero_subtitle:    'Sensores inteligentes monitoram sua água 24h por dia e protegem sua lavoura contra contaminação — em tempo real.',
-  cta_button:       'Entre em contato pelo email',
-  background_color: '#0c1a2e',
-  surface_color:    '#ffffff0d',
-  text_color:       '#ffffff',
-  primary_action:   '#06b6d4',
-  secondary_action: '#10b981',
-  font_family:      'Outfit',
-  font_size:        16
-};
-
-function applyConfig(config) {
-  const c = { ...defaultConfig, ...config };
-  document.getElementById('hero-title').textContent   = c.hero_title;
-  document.getElementById('hero-subtitle').textContent = c.hero_subtitle;
-  document.getElementById('cta-btn').textContent       = c.cta_button;
-  document.getElementById('nav-brand').textContent     = c.hero_title;
-  document.getElementById('app').style.background =
-    `linear-gradient(180deg, ${c.background_color} 0%, ${adjustColor(c.background_color, 20)} 100%)`;
-  document.querySelectorAll('.font-heading').forEach(el => {
-    el.style.fontFamily = `${c.font_family}, sans-serif`;
-  });
-  document.body.style.fontSize = c.font_size + 'px';
-}
-
-function adjustColor(hex, amount) {
-  let r = parseInt(hex.slice(1,3), 16),
-      g = parseInt(hex.slice(3,5), 16),
-      b = parseInt(hex.slice(5,7), 16);
-  r = Math.min(255, r + amount);
-  g = Math.min(255, g + amount);
-  b = Math.min(255, b + amount);
-  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-}
-
-// ─── Legendas do "comercial" animado do Hero ───────────────────────────────────
+/* ─── Legendas animadas do Hero ─────────────────────────────────────────────── */
 const heroCaptions = [
-  'Água monitorada em tempo real.',
-  'Alertas antes do problema acontecer.',
-  'Sua colheita, protegida 24h por dia.'
+  "Água monitorada em tempo real.",
+  "Alertas antes do problema acontecer.",
+  "Sua colheita, protegida 24h por dia."
 ];
 let heroCaptionIndex = 0;
 
 function cycleHeroCaption() {
-  const el = document.getElementById('hero-caption');
+  const el = document.getElementById("hero-caption");
   if (!el) return;
-  el.style.opacity = 0;
+  el.style.opacity = "0";
   setTimeout(() => {
     heroCaptionIndex = (heroCaptionIndex + 1) % heroCaptions.length;
     el.textContent = heroCaptions[heroCaptionIndex];
-    el.style.opacity = 1;
+    el.style.opacity = "1";
   }, 500);
 }
 
-setInterval(cycleHeroCaption, 3200);
+if (document.getElementById("hero-caption")) {
+  setInterval(cycleHeroCaption, 3200);
+}
 
-// ─── Init ──────────────────────────────────────────────────────────────────────
-lucide.createIcons();
+/* ─── Init ──────────────────────────────────────────────────────────────────── */
+if (window.lucide) lucide.createIcons();

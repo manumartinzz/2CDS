@@ -1,6 +1,14 @@
-// pagamento.js
-// Substitui inteiramente o pagamento.js antigo (baseado em db.js).
-// Precisa ser carregado DEPOIS de supabase-client.js e email-config.js.
+/*
+  pagamento.js — AcquaSafe · Finalizar Pagamento
+  =============================================
+  AMBIENTE DE DEMONSTRAÇÃO: não há gateway de pagamento. Nenhum cartão é
+  cobrado e os dados digitados não são enviados a lugar algum — eles são
+  apenas validados localmente. A assinatura é criada como "ativa" pelo
+  próprio navegador, protegida pelas policies de RLS (ver supabase/schema.sql).
+  Em produção, substitua por um checkout real + confirmação no servidor.
+
+  Precisa ser carregado DEPOIS de supabase-client.js e email-config.js.
+*/
 
 const PLANOS = {
   pro: { nome: "Plano Profissional", preco: 89.0 },
@@ -10,12 +18,16 @@ const PLANOS = {
 
 let planoSelecionado = "pro";
 let metodoSelecionado = "card";
+let processando = false;
+
+const $ = (id) => document.getElementById(id);
 
 document.addEventListener("DOMContentLoaded", () => {
   if (window.lucide) lucide.createIcons();
 });
 
-// -------- Seleção de plano --------
+/* -------------------- Seleção de plano / método -------------------- */
+
 function selectPlan(el) {
   document.querySelectorAll(".plan-card").forEach((card) => {
     card.classList.remove("selected", "border-cyan-500", "bg-cyan-500/10");
@@ -26,15 +38,13 @@ function selectPlan(el) {
 
   planoSelecionado = el.dataset.plan;
   const plano = PLANOS[planoSelecionado];
+  if (!plano) return;
 
-  document.getElementById("summary-plan").textContent = plano.nome;
-  document.getElementById("summary-price").textContent =
-    "R$ " + plano.preco.toFixed(2).replace(".", ",");
-  document.getElementById("summary-total").textContent =
-    "R$ " + plano.preco.toFixed(2).replace(".", ",") + "/mês";
+  $("summary-plan").textContent = plano.nome;
+  $("summary-price").textContent = "R$ " + plano.preco.toFixed(2).replace(".", ",");
+  $("summary-total").textContent = "R$ " + plano.preco.toFixed(2).replace(".", ",") + "/mês";
 }
 
-// -------- Seleção de forma de pagamento --------
 function selectMethod(el) {
   document.querySelectorAll(".payment-method").forEach((btn) => {
     btn.classList.remove("active", "border-cyan-500", "bg-cyan-500/10");
@@ -45,12 +55,13 @@ function selectMethod(el) {
 
   metodoSelecionado = el.dataset.method;
 
-  document.getElementById("form-card").classList.toggle("hidden", metodoSelecionado !== "card");
-  document.getElementById("form-pix").classList.toggle("hidden", metodoSelecionado !== "pix");
-  document.getElementById("form-boleto").classList.toggle("hidden", metodoSelecionado !== "boleto");
+  $("form-card").classList.toggle("hidden", metodoSelecionado !== "card");
+  $("form-pix").classList.toggle("hidden", metodoSelecionado !== "pix");
+  $("form-boleto").classList.toggle("hidden", metodoSelecionado !== "boleto");
 }
 
-// -------- Máscaras dos campos de cartão --------
+/* -------------------- Máscaras -------------------- */
+
 function formatCard(input) {
   input.value = input.value.replace(/\D/g, "").replace(/(\d{4})(?=\d)/g, "$1 ").trim();
 }
@@ -59,7 +70,8 @@ function formatExp(input) {
   input.value = input.value.replace(/\D/g, "").replace(/(\d{2})(\d)/, "$1/$2").slice(0, 5);
 }
 
-// -------- Utilitário: gera um código de acesso tipo AQ7F-92XK --------
+/* -------------------- Código de acesso -------------------- */
+
 function gerarCodigoAcesso() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let cod = "AQ";
@@ -69,151 +81,249 @@ function gerarCodigoAcesso() {
   return cod;
 }
 
-// -------- Confirmar pagamento --------
-async function handlePayment() {
-  const erroBox = document.getElementById("pay-login-erro");
-  erroBox.classList.add("hidden");
+/* -------------------- Validação local -------------------- */
 
-  // O pagamento exige uma conta já autenticada nesta sessão do navegador
-  // (normalmente a pessoa acabou de se cadastrar em cadastro.html, ou já
-  // está logada). Sem isso, o banco recusa a gravação por segurança (RLS).
-  const { data: { user } } = await supabaseClient.auth.getUser();
+function validarPagamento() {
+  const identificacao = ($("pay-login")?.value || "").trim();
+  if (!identificacao) return "Informe seu e-mail ou CPF.";
 
-  if (!user) {
-    erroBox.textContent =
-      "Você precisa criar uma conta ou fazer login antes de pagar.";
-    erroBox.classList.remove("hidden");
-    return;
-  }
+  if (!PLANOS[planoSelecionado]) return "Selecione um plano válido.";
 
-  const payBtn = document.getElementById("pay-btn");
-  payBtn.disabled = true;
-  payBtn.querySelector("span").textContent = "Processando...";
+  if (metodoSelecionado === "card") {
+    const nome = ($("card-name")?.value || "").trim();
+    const numero = ($("card-num")?.value || "").replace(/\D/g, "");
+    const validade = ($("card-exp")?.value || "").trim();
+    const cvv = ($("card-cvv")?.value || "").trim();
 
-  // 1) Busca o plano escolhido
-  const { data: plano, error: planoError } = await supabaseClient
-    .from("planos")
-    .select("id")
-    .eq("nome", PLANOS[planoSelecionado].nome)
-    .single();
+    if (nome.length < 2) return "Informe o nome impresso no cartão.";
+    if (numero.length < 13 || numero.length > 19) return "Informe um número de cartão válido.";
+    if (!/^\d{2}\/\d{2}$/.test(validade)) return "Informe a validade no formato MM/AA.";
 
-  if (planoError || !plano) {
-    erroBox.textContent = "Erro ao localizar o plano. Tente novamente.";
-    erroBox.classList.remove("hidden");
-    payBtn.disabled = false;
-    payBtn.querySelector("span").textContent = "Confirmar Pagamento";
-    return;
-  }
-
-  const codigo = gerarCodigoAcesso();
-  const agora = new Date();
-  const expira = new Date(agora.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 dias
-
-  // 2) Cria a assinatura já como "ativa" (pagamento simulado/confirmado na hora)
-  const { data: assinatura, error: assinaturaError } = await supabaseClient
-    .from("assinaturas")
-    .insert({
-      user_id: user.id,
-      plano_id: plano.id,
-      status: "ativa",
-      codigo_acesso: codigo,
-      codigo_gerado_em: agora.toISOString(),
-      codigo_expira_em: expira.toISOString(),
-      data_inicio: agora.toISOString()
-    })
-    .select()
-    .single();
-
-  if (assinaturaError) {
-    erroBox.textContent = "Erro ao criar assinatura: " + assinaturaError.message;
-    erroBox.classList.remove("hidden");
-    payBtn.disabled = false;
-    payBtn.querySelector("span").textContent = "Confirmar Pagamento";
-    return;
-  }
-
-  // 3) Registra o pagamento
-  const mapaMetodo = { card: "cartao", pix: "pix", boleto: "boleto" };
-  await supabaseClient.from("pagamentos").insert({
-    assinatura_id: assinatura.id,
-    forma: mapaMetodo[metodoSelecionado],
-    valor: PLANOS[planoSelecionado].preco,
-    status: "aprovado",
-    confirmado_em: agora.toISOString()
-  });
-
-  // 4) Envia o código por e-mail (usa o EmailJS já configurado em email-config.js)
-  if (typeof emailjs !== "undefined" && typeof enviarEmailCodigoAcesso === "function") {
-    try {
-      await enviarEmailCodigoAcesso(user.email, codigo);
-    } catch (e) {
-      console.warn("Não foi possível enviar o e-mail automaticamente:", e);
+    const [mm, aa] = validade.split("/").map(Number);
+    if (mm < 1 || mm > 12) return "Mês de validade inválido.";
+    const agora = new Date();
+    const ano = 2000 + aa;
+    if (ano < agora.getFullYear() ||
+        (ano === agora.getFullYear() && mm < agora.getMonth() + 1)) {
+      return "Este cartão está vencido.";
     }
+    if (!/^\d{3,4}$/.test(cvv)) return "Informe o CVV (3 ou 4 dígitos).";
+  }
+  // PIX e boleto não têm campos obrigatórios nesta demonstração.
+  return null;
+}
+
+/* -------------------- UI -------------------- */
+
+function setBotao(texto, desabilitado) {
+  const btn = $("pay-btn");
+  if (!btn) return;
+  btn.disabled = desabilitado;
+  const span = btn.querySelector("span");
+  if (span) span.textContent = texto;
+}
+
+function mostrarErro(mensagem) {
+  const box = $("pay-login-erro");
+  if (!box) return;
+  box.textContent = mensagem;
+  box.classList.remove("hidden");
+}
+
+function mostrarCodigo(codigo, expira, email, enviado, jaExistia) {
+  $("success-msg").classList.remove("hidden");
+  $("codigo-gerado-box").classList.remove("hidden");
+  $("codigo-gerado-valor").textContent = codigo;
+  $("codigo-gerado-validade").textContent = "Válido até " + expira.toLocaleDateString("pt-BR");
+  $("codigo-gerado-status").textContent = email;
+
+  const status = $("success-email-status");
+  if (status) {
+    status.textContent = enviado
+      ? "Enviamos seu código de acesso por e-mail."
+      : "Não foi possível enviar o e-mail — use o código abaixo no primeiro acesso.";
+  }
+  const titulo = $("success-msg")?.querySelector("p");
+  if (titulo && jaExistia) titulo.textContent = "Você já tem uma assinatura ativa!";
+}
+
+/* -------------------- Confirmar pagamento -------------------- */
+
+async function handlePayment() {
+  if (processando) return; // evita duplo clique / assinaturas duplicadas
+  $("pay-login-erro").classList.add("hidden");
+
+  const erroValidacao = validarPagamento();
+  if (erroValidacao) { mostrarErro(erroValidacao); return; }
+
+  const { data: { user }, error: erroAuth } = await supabaseClient.auth.getUser();
+  if (!user) {
+    // Qualquer link direto para pagamento.html (landing, login, favorito) cai
+    // aqui. Em vez de só mostrar um erro, leva ao início do fluxo correto.
+    mostrarErro("Você precisa criar uma conta antes de pagar. Redirecionando para o cadastro…");
+    setTimeout(() => { window.location.href = "cadastro.html"; }, 1600);
+    return;
+  }
+  if (erroAuth) {
+    mostrarErro("Não foi possível verificar sua sessão. Faça login novamente.");
+    return;
   }
 
-  // 5) Mostra sucesso + código na tela (fallback visual)
-  document.getElementById("success-msg").classList.remove("hidden");
-  document.getElementById("codigo-gerado-box").classList.remove("hidden");
-  document.getElementById("codigo-gerado-valor").textContent = codigo;
-  document.getElementById("codigo-gerado-validade").textContent =
-    "Válido até " + expira.toLocaleDateString("pt-BR");
-  document.getElementById("codigo-gerado-status").textContent = user.email;
+  processando = true;
+  setBotao("Processando...", true);
 
-  payBtn.querySelector("span").textContent = "Pagamento Confirmado";
+  try {
+    // 1) Já existe assinatura ativa? Reaproveita o código em vez de criar outra.
+    const { data: existente, error: erroConsulta } = await supabaseClient
+      .from("assinaturas")
+      .select("id, codigo_acesso, codigo_expira_em")
+      .eq("user_id", user.id)
+      .eq("status", "ativa")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (erroConsulta) throw new Error("Erro ao consultar assinatura: " + erroConsulta.message);
+
+    if (existente?.codigo_acesso) {
+      const expira = new Date(existente.codigo_expira_em || Date.now() + 30 * 86400000);
+      let enviado = false;
+      if (typeof enviarEmailCodigoAcesso === "function") {
+        enviado = !!(await enviarEmailCodigoAcesso(user.email, existente.codigo_acesso, {
+          nome: user.user_metadata?.nome_completo || user.email,
+          validade: expira.toISOString()
+        }))?.enviado;
+      }
+      mostrarCodigo(existente.codigo_acesso, expira, user.email, enviado, true);
+      setBotao("Assinatura já ativa", true);
+      return;
+    }
+
+    // 2) Busca o plano escolhido
+    const { data: plano, error: planoError } = await supabaseClient
+      .from("planos")
+      .select("id")
+      .eq("nome", PLANOS[planoSelecionado].nome)
+      .single();
+    if (planoError || !plano) throw new Error("Erro ao localizar o plano. Rode supabase/schema.sql.");
+
+    const codigo = gerarCodigoAcesso();
+    const agora = new Date();
+    const expira = new Date(agora.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    // 3) Cria a assinatura (pagamento simulado)
+    const { data: assinatura, error: assinaturaError } = await supabaseClient
+      .from("assinaturas")
+      .insert({
+        user_id: user.id,
+        plano_id: plano.id,
+        status: "ativa",
+        codigo_acesso: codigo,
+        codigo_gerado_em: agora.toISOString(),
+        codigo_expira_em: expira.toISOString(),
+        data_inicio: agora.toISOString()
+      })
+      .select()
+      .single();
+    if (assinaturaError) throw new Error("Erro ao criar assinatura: " + assinaturaError.message);
+
+    // 4) Registra o pagamento; se falhar, desfaz a assinatura para não
+    //    deixar uma assinatura ativa sem pagamento correspondente.
+    const mapaMetodo = { card: "cartao", pix: "pix", boleto: "boleto" };
+    const { error: erroPagamento } = await supabaseClient.from("pagamentos").insert({
+      assinatura_id: assinatura.id,
+      forma: mapaMetodo[metodoSelecionado],
+      valor: PLANOS[planoSelecionado].preco,
+      status: "aprovado",
+      confirmado_em: agora.toISOString()
+    });
+    if (erroPagamento) {
+      await supabaseClient.from("assinaturas").delete().eq("id", assinatura.id);
+      throw new Error("Erro ao registrar pagamento: " + erroPagamento.message);
+    }
+
+    // 5) Envia o código por e-mail (função agora existe em email-config.js)
+    let enviado = false;
+    if (typeof enviarEmailCodigoAcesso === "function") {
+      const resultado = await enviarEmailCodigoAcesso(user.email, codigo, {
+        nome: user.user_metadata?.nome_completo || user.email,
+        validade: expira.toISOString()
+      });
+      enviado = !!resultado?.enviado;
+    }
+
+    // 6) Mostra sucesso + código na tela (fallback visual honesto)
+    mostrarCodigo(codigo, expira, user.email, enviado, false);
+    setBotao("Pagamento Confirmado", true);
+  } catch (err) {
+    console.error("Falha no pagamento:", err);
+    mostrarErro(err.message || "Não foi possível concluir o pagamento.");
+    setBotao("Confirmar Pagamento", false);
+  } finally {
+    processando = false;
+  }
 }
 
 function copiarCodigo() {
-  const codigo = document.getElementById("codigo-gerado-valor").textContent;
-  try {
-    sessionStorage.setItem("acquasafe_codigo_primeiro_acesso", codigo);
-  } catch (_) {}
+  const codigo = $("codigo-gerado-valor").textContent;
+  try { sessionStorage.setItem("acquasafe_codigo_primeiro_acesso", codigo); } catch (_) {}
 
-  const irParaLogin = () => {
-    window.location.href = "login.html?primeiro_acesso=1";
-  };
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
+  const irParaLogin = () => { window.location.href = "login.html?primeiro_acesso=1"; };
+  if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(codigo).then(irParaLogin).catch(irParaLogin);
   } else {
     irParaLogin();
   }
 }
 
-// -------- Modal "Reenviar código" --------
+/* -------------------- Reenviar código -------------------- */
+
 function toggleCodeModal() {
-  document.getElementById("code-modal").classList.toggle("hidden");
+  $("code-modal").classList.toggle("hidden");
 }
 
 async function handleCodeRequest(event) {
   event.preventDefault();
-
-  const erro = document.getElementById("code-erro");
-  const sucesso = document.getElementById("code-success");
+  const erro = $("code-erro");
+  const sucesso = $("code-success");
   erro.classList.add("hidden");
   sucesso.classList.add("hidden");
 
-  const identificador = document.getElementById("reenvio-login").value.trim();
-
-  const { data, error } = await supabaseClient.rpc("obter_codigo_acesso", {
-    identificador: identificador
-  });
-
-  if (error || !data || data.length === 0) {
-    erro.textContent = "Não encontramos uma assinatura ativa para esse e-mail/CPF.";
+  const identificador = $("reenvio-login").value.trim();
+  if (!identificador) {
+    erro.textContent = "Informe seu e-mail ou CPF.";
     erro.classList.remove("hidden");
     return;
   }
 
-  const { codigo_acesso, email } = data[0];
+  try {
+    const { data, error } = await supabaseClient.rpc("obter_codigo_acesso", {
+      identificador: identificador
+    });
 
-  if (typeof emailjs !== "undefined" && typeof enviarEmailCodigoAcesso === "function") {
-    try {
-      await enviarEmailCodigoAcesso(email, codigo_acesso);
-    } catch (e) {
-      console.warn("Não foi possível enviar o e-mail automaticamente:", e);
+    const conta = Array.isArray(data) ? data[0] : data;
+    if (error || !conta?.email || !conta?.codigo_acesso) {
+      erro.textContent = "Não encontramos uma assinatura ativa para esse e-mail/CPF.";
+      erro.classList.remove("hidden");
+      return;
     }
-  }
 
-  sucesso.textContent = "Código reenviado para " + email + ".";
-  sucesso.classList.remove("hidden");
+    let enviado = false;
+    if (typeof enviarEmailCodigoAcesso === "function") {
+      const resultado = await enviarEmailCodigoAcesso(conta.email, conta.codigo_acesso, {
+        nome: conta.nome_completo || conta.email,
+        validade: conta.codigo_expira_em
+      });
+      enviado = !!resultado?.enviado;
+    }
+
+    sucesso.textContent = enviado
+      ? "Código reenviado para " + conta.email + "."
+      : "Não foi possível enviar o e-mail agora. Use o código exibido após o pagamento ou fale com o suporte.";
+    sucesso.classList.remove("hidden");
+  } catch (err) {
+    console.error("Falha ao reenviar código:", err);
+    erro.textContent = "Não foi possível reenviar agora. Tente novamente.";
+    erro.classList.remove("hidden");
+  }
 }

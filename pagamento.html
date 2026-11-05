@@ -230,11 +230,12 @@
             <i data-lucide="lock" class="w-4 h-4"></i>
             <span>Confirmar Pagamento</span>
           </button>
+          <p class="text-[11px] text-slate-500 text-center">Ambiente de demonstração: nenhuma cobrança real é efetuada.</p>
 
           <div id="success-msg" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
             <i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mx-auto mb-2"></i>
             <p class="text-emerald-300 font-semibold text-sm">Pagamento confirmado!</p>
-            <p class="text-slate-400 text-xs mt-1">Enviamos seu código de acesso por e-mail.</p>
+            <p id="success-email-status" class="text-slate-400 text-xs mt-1">Enviamos seu código de acesso por e-mail.</p>
           </div>
 
           <!-- Código gerado (confirmação visual / fallback caso o e-mail não seja confirmado) -->
