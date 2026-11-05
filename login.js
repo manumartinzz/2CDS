@@ -116,6 +116,26 @@ async function handleLogin(event) {
       return;
     }
 
+    // Conta bloqueada pelo admin (admin-bloqueios.html) não entra, mesmo
+    // com senha correta e assinatura ativa. Antes esse campo era ignorado.
+    const { data: perfil, error: perfilError } = await supabaseClient
+      .from("profiles")
+      .select("bloqueado, motivo_bloqueio")
+      .eq("id", authData.user.id)
+      .maybeSingle();
+
+    if (perfilError) {
+      console.warn("Não foi possível verificar o status da conta:", perfilError);
+    }
+    if (perfil?.bloqueado) {
+      await encerrarSessaoAtual();
+      mostrarErroLogin(
+        "Conta bloqueada" + (perfil.motivo_bloqueio ? ": " + perfil.motivo_bloqueio : "") +
+        ". Entre em contato com o suporte."
+      );
+      return;
+    }
+
     const { data: assinatura, error: assinaturaError } = await supabaseClient
       .from("assinaturas")
       .select("status, codigo_acesso, codigo_expira_em")
@@ -214,7 +234,7 @@ async function handleAdminLogin(event) {
 
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, bloqueado")
       .eq("id", authData.user.id)
       .single();
 
@@ -225,8 +245,8 @@ async function handleAdminLogin(event) {
       return;
     }
 
-    if (!profile?.is_admin) {
-      mostrarErroAdmin("Esta conta não tem permissão de administrador.");
+    if (profile?.bloqueado || !profile?.is_admin) {
+      mostrarErroAdmin("Esta conta não tem permissão de administrador ou está bloqueada.");
       await encerrarSessaoAtual();
       return;
     }
@@ -243,6 +263,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const codigo = codigoSalvoNoPrimeiroAcesso();
   if (new URLSearchParams(window.location.search).get("primeiro_acesso") === "1" || codigo) {
     mostrarCampoCodigo(codigo);
+  }
+  // portal.js expulsa contas bloqueadas com ?bloqueado=1
+  if (new URLSearchParams(window.location.search).get("bloqueado") === "1") {
+    mostrarErroLogin("Esta conta está bloqueada. Entre em contato com o suporte.");
   }
   if (window.lucide) lucide.createIcons();
 });

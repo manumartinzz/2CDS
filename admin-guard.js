@@ -25,11 +25,11 @@ async function guardAdmin() {
 
   const { data: profile, error } = await supabaseClient
     .from("profiles")
-    .select("is_admin")
+    .select("is_admin, bloqueado")
     .eq("id", session.user.id)
     .single();
 
-  if (error || !profile?.is_admin) {
+  if (error || profile?.bloqueado || !profile?.is_admin) {
     alert("Acesso negado. Faça login como administrador.");
     await supabaseClient.auth.signOut();
     window.location.href = "login-admin.html";

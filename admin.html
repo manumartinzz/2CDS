@@ -18,30 +18,37 @@
             </div>
             <h1 class="gradient-text text-xl font-bold">AcquaSafe – Administração</h1>
         </div>
-        <button class="btn-gradient" onclick="logout()">Sair</button>
+        <button class="btn-gradient" onclick="sair()">Sair</button>
     </header>
 
+    <!-- Hub real: aponta para as telas administrativas que usam Supabase.
+         Antes esta página exibia listas fictícias em memória e um login
+         baseado em localStorage.adminLogado (que nunca era setado). -->
     <main class="dashboard">
 
-        <!-- Gerenciar Doenças -->
-        <section class="glass-card painel">
-            <h2>Gerenciar Doenças</h2>
-            <div class="add-box">
-                <input type="text" id="novaDoenca" class="input-field" placeholder="Nova doença">
-                <button class="btn-gradient" onclick="adicionarDoenca()">Adicionar</button>
-            </div>
-            <ul id="listaDoencas"></ul>
-        </section>
-
-        <!-- Clientes -->
         <section class="glass-card painel">
             <h2>Clientes</h2>
-            <ul id="listaClientes"></ul>
+            <p class="text-sm text-white/60 mb-4">Cadastro, planos e situação de cada cliente.</p>
+            <a href="admin-clientes.html" class="btn-gradient inline-block">Abrir lista de clientes</a>
+        </section>
+
+        <section class="glass-card painel">
+            <h2>Gerenciar Doenças</h2>
+            <p class="text-sm text-white/60 mb-4">Catálogo de patógenos exibido no portal.</p>
+            <a href="admin-doencas.html" class="btn-gradient inline-block">Gerenciar catálogo</a>
+        </section>
+
+        <section class="glass-card painel">
+            <h2>Bloqueios</h2>
+            <p class="text-sm text-white/60 mb-4">Suspender ou restaurar o acesso de contas.</p>
+            <a href="admin-bloqueios.html" class="btn-gradient inline-block">Gerenciar bloqueios</a>
         </section>
 
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="admin-guard.js"></script>
     <script src="admin.js"></script>
-    <script>lucide.createIcons();</script>
 </body>
 </html>

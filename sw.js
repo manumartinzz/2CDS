@@ -1,11 +1,13 @@
-const CACHE_NAME = "acquasafe-v3";
+const CACHE_NAME = "acquasafe-v4";
 const APP_FILES = [
   "./", "./index.html", "./login.html", "./cadastro.html",
   "./portal.html", "./patógenos.html", "./solucoes.html",
   "./periculosidade.html", "./portal.css", "./login.css",
   "./style.css", "./portal.js", "./patogenos.js", "./solucoes.js",
   "./sensor.html", "./sensor.js",
-  "./supabase-client.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"
+  "./supabase-client.js", "./email-config.js", "./pagamento.html", "./pagamento.js",
+  "./script.js", "./admin.html", "./admin.js", "./admin-guard.js",
+  "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"
 ];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(async cache => {

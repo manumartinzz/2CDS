@@ -3,8 +3,10 @@
 --  (script inline: "leituras", colunas ph/fluor/cloro/turbidez)
 --  Execute no SQL Editor do Supabase, UMA VEZ.
 -- ============================================================
---  ATENCAO: o repositorio nao versiona o schema do banco. Este arquivo
---  documenta/cria apenas a tabela necessaria para o sensor real de pH.
+--  ATENCAO: este e apenas o recorte da tabela de leituras, mantido para
+--  quem quer ligar SOMENTE o sensor. O schema completo do projeto
+--  (profiles, planos, assinaturas, pagamentos, catalogos, RPCs e RLS)
+--  esta versionado em supabase/schema.sql — execute aquele primeiro.
 --  Se a tabela "leituras" ja existir com colunas diferentes, adapte o
 --  INSERT em sensor.js / bridge/ph_serial_bridge.py em vez de recriar.
 -- ============================================================
@@ -24,17 +26,18 @@ create index if not exists leituras_sensor_criado_idx
 
 alter table public.leituras enable row level security;
 
--- Leitura publica: o portal.html faz GET na REST API com a anon key,
--- sem sessao de usuario. Por isso a policy precisa incluir "anon".
+-- Leitura publica: sensor.html / portal.html?real=1 e a ponte Python
+-- consultam com a anon key; o portal logado usa a role "authenticated".
+-- Por isso a policy precisa incluir as duas roles.
 drop policy if exists "leituras_select" on public.leituras;
 create policy "leituras_select"
   on public.leituras for select
   to anon, authenticated
   using (true);
 
--- Gravacao: a pagina sensor.html (e a ponte Python) inserem sem login.
--- Para um TCC/demonstracao isso e suficiente, mas e uma politica ABERTA:
--- qualquer pessoa com a anon key consegue inserir linhas.
+-- Gravacao: a pagina sensor.html, a ponte Python e a simulacao do portal
+-- inserem leituras. Para um TCC/demonstracao isso e suficiente, mas e uma
+-- politica ABERTA: qualquer pessoa com a anon key consegue inserir linhas.
 drop policy if exists "leituras_insert" on public.leituras;
 create policy "leituras_insert"
   on public.leituras for insert
