@@ -138,7 +138,7 @@ async function handleLogin(event) {
 
     const { data: assinatura, error: assinaturaError } = await supabaseClient
       .from("assinaturas")
-      .select("status, codigo_acesso, codigo_expira_em")
+      .select("status, codigo_acesso, codigo_gerado_em, codigo_expira_em")
       .eq("user_id", authData.user.id)
       .eq("status", "ativa")
       .order("created_at", { ascending: false })
@@ -174,13 +174,34 @@ async function handleLogin(event) {
       return;
     }
 
-    const dataExpiracao = assinatura.codigo_expira_em
+    // Normaliza os DOIS lados. Antes só o campo digitado tinha trim(), então
+    // um espaço no valor gravado no banco bastava para reprovar um código certo.
+    const codigoBanco = String(assinatura.codigo_acesso || "").trim().toUpperCase();
+    if (!codigoBanco) {
+      mostrarCampoCodigo();
+      mostrarErroLogin("Sua assinatura não tem código de acesso. Peça um novo em 'Reenviar Código'.");
+      return;
+    }
+    if (codigoDigitado !== codigoBanco) {
+      mostrarCampoCodigo();
+      mostrarErroLogin("Código incorreto. Confira o hífen (ex.: AQ4G-58JX) e tente novamente.");
+      return;
+    }
+
+    // Assinaturas antigas podem não ter codigo_expira_em. Nesse caso usa
+    // codigo_gerado_em + 30 dias, em vez de considerar o código vencido para sempre.
+    let dataExpiracao = assinatura.codigo_expira_em
       ? new Date(assinatura.codigo_expira_em)
       : null;
-    const expirado = !dataExpiracao || Number.isNaN(dataExpiracao.getTime()) || dataExpiracao < new Date();
-    if (codigoDigitado !== String(assinatura.codigo_acesso || "").toUpperCase() || expirado) {
+    if ((!dataExpiracao || Number.isNaN(dataExpiracao.getTime())) && assinatura.codigo_gerado_em) {
+      const gerado = new Date(assinatura.codigo_gerado_em);
+      if (!Number.isNaN(gerado.getTime())) {
+        dataExpiracao = new Date(gerado.getTime() + 30 * 24 * 60 * 60 * 1000);
+      }
+    }
+    if (!dataExpiracao || Number.isNaN(dataExpiracao.getTime()) || dataExpiracao < new Date()) {
       mostrarCampoCodigo();
-      mostrarErroLogin("Código de confirmação inválido ou expirado.");
+      mostrarErroLogin("Este código venceu. Peça um novo em 'Reenviar Código'.");
       return;
     }
 
