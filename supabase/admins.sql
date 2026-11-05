@@ -2,6 +2,8 @@
 --  AcquaSafe · Contas administradoras
 --  ============================================================================
 --  Execute UMA VEZ no SQL Editor do Supabase, DEPOIS de schema.sql.
+--  Atalho: supabase/instalar-tudo.sql já contém os dois arquivos na ordem
+--  certa — basta colar aquele único arquivo e dar Run.
 --  Marca as 4 contas administradoras como is_admin = true no banco.
 --
 --  Por que isso é necessário: a lista em config-admins.js controla apenas a

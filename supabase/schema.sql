@@ -92,7 +92,7 @@ insert into public.planos (nome, preco) values
   ('Plano Básico',       49.00),
   ('Plano Profissional', 89.00),
   ('Plano Empresarial', 199.00)
-on conflict (nome) do nothing;
+on conflict do nothing;  -- sem alvo: funciona mesmo em tabela antiga sem UNIQUE(nome)
 
 create table if not exists public.assinaturas (
   id                uuid primary key default gen_random_uuid(),
@@ -109,6 +109,24 @@ create table if not exists public.assinaturas (
 
 create index if not exists assinaturas_user_idx
   on public.assinaturas (user_id, created_at desc);
+
+-- Bancos antigos podem ter MAIS DE UMA assinatura "ativa" por usuário
+-- (o pagamento.js antigo fazia INSERT sem upsert). Sem esta limpeza, o
+-- índice único abaixo falharia e abortaria todo o resto do script.
+-- Mantém a mais recente e cancela as demais.
+update public.assinaturas
+set status = 'cancelada'
+where id in (
+  select id from (
+    select id,
+           row_number() over (
+             partition by user_id order by created_at desc, id desc
+           ) as pos
+    from public.assinaturas
+    where status = 'ativa'
+  ) duplicadas
+  where duplicadas.pos > 1
+);
 
 -- Garante no SERVIDOR que não existam duas assinaturas ativas por usuário
 -- (o frontend sozinho não é confiável para isso).

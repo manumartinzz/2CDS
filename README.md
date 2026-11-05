@@ -34,12 +34,19 @@ em [`supabase/schema.sql`](supabase/schema.sql).
 ### 2.1 Banco de dados (obrigatório)
 
 1. Crie um projeto em <https://app.supabase.com>.
-2. Abra **SQL Editor → New query**, cole todo o conteúdo de
-   [`supabase/schema.sql`](supabase/schema.sql) e execute.
-   O script é idempotente e cria: `profiles`, `planos`, `assinaturas`,
-   `pagamentos`, `leituras`, `doencas`, `solucoes`, o gatilho de criação de
-   perfil, as funções `is_admin()`, `admin_listar_clientes()` e
-   `obter_codigo_acesso()`, todas as policies de RLS e a publicação Realtime.
+2. **Forma mais simples:** abra **SQL Editor → New query**, cole **todo** o
+   conteúdo de [`supabase/instalar-tudo.sql`](supabase/instalar-tudo.sql) e
+   clique em **Run** uma vez. Ele já contém `schema.sql` + `admins.sql` na
+   ordem correta e termina com uma tabela de conferência em português.
+   O script é idempotente, seguro para bancos que já têm dados (limpa
+   assinaturas ativas duplicadas antes de criar o índice único) e cria:
+   `profiles`, `planos`, `assinaturas`, `pagamentos`, `leituras`, `doencas`,
+   `solucoes`, o gatilho de criação de perfil, as funções `is_admin()`,
+   `admin_listar_clientes()` e `obter_codigo_acesso()`, todas as policies de
+   RLS, a publicação Realtime e as **4 contas administradoras**.
+   - Alternativa em 2 passos: `schema.sql` primeiro, depois `admins.sql`.
+   - Não execute `select * from admin_listar_clientes()` no SQL Editor: a RPC
+     usa `auth.uid()` e lá não há usuário logado. Teste pelo site.
 3. (Opcional) Para criar **apenas** a tabela de leituras do sensor, use
    [`supabase/leituras.sql`](supabase/leituras.sql). Ele é um recorte do schema.
 
@@ -184,6 +191,8 @@ voltar.js                                botão Voltar injetado em todas as pág
 lavoura.js                               filtro dos catálogos por tipo de lavoura
 perfil.html, perfil.js                   perfil + faturas pagas / a vencer
 images/prototipo.jpg                     imagem temporária do protótipo
+supabase/instalar-tudo.sql               um único SQL: schema + admins + conferência
+supabase/admins.sql                      marca as 4 contas como is_admin
 supabase/schema.sql                      schema COMPLETO do banco
 supabase/leituras.sql                    recorte: só a tabela de leituras
 sw.js, pwa.js, manifest.webmanifest      PWA / cache offline
