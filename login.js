@@ -136,6 +136,14 @@ async function handleLogin(event) {
       return;
     }
 
+    // Contas administradoras não compram plano e não usam código de acesso.
+    // A lista está em config-admins.js (carregado antes deste arquivo).
+    if (typeof emailAdmin === "function" && emailAdmin(authData.user.email)) {
+      limparCodigoSalvo();
+      window.location.href = "portal.html";
+      return;
+    }
+
     const { data: assinatura, error: assinaturaError } = await supabaseClient
       .from("assinaturas")
       .select("status, codigo_acesso, codigo_gerado_em, codigo_expira_em")

@@ -61,6 +61,15 @@
 </style>
 </head>
 <body>
+<button id="btn-voltar" type="button" aria-label="Voltar" onclick="voltarOffline()" style="position:fixed;left:16px;top:16px;z-index:60;padding:8px 12px;border-radius:12px;border:1px solid rgba(34,211,238,.35);background:rgba(15,23,42,.9);color:#67e8f9;font-size:12px;font-weight:600;cursor:pointer">← Voltar</button>
+<script>
+function voltarOffline() {
+  var mesmaOrigem = false;
+  try { var o = document.referrer ? new URL(document.referrer).origin : ""; mesmaOrigem = o && o === location.origin; } catch (e) {}
+  if (mesmaOrigem && history.length > 1) { history.back(); return; }
+  location.href = "index.html";
+}
+</script>
 <div class="wrap">
   <h1>AcquaSafe · Leitor de pH</h1>
   <div class="sub">E201-9 + Arduino Uno R3 · <span class="dot" id="dot"></span><span id="status">desconectado</span></div>

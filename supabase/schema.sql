@@ -29,6 +29,7 @@ create table if not exists public.profiles (
   nome_completo   text,
   cpf             text,
   telefone        text,
+  tipo_lavoura    text not null default 'soja',
   is_admin        boolean not null default false,
   bloqueado       boolean not null default false,
   motivo_bloqueio text,
@@ -40,6 +41,7 @@ alter table public.profiles add column if not exists email text;
 alter table public.profiles add column if not exists nome_completo text;
 alter table public.profiles add column if not exists cpf text;
 alter table public.profiles add column if not exists telefone text;
+alter table public.profiles add column if not exists tipo_lavoura text not null default 'soja';
 alter table public.profiles add column if not exists is_admin boolean not null default false;
 alter table public.profiles add column if not exists bloqueado boolean not null default false;
 alter table public.profiles add column if not exists motivo_bloqueio text;
@@ -53,11 +55,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, nome_completo)
+  insert into public.profiles (id, email, nome_completo, tipo_lavoura)
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data ->> 'nome_completo', '')
+    coalesce(new.raw_user_meta_data ->> 'nome_completo', ''),
+    coalesce(nullif(new.raw_user_meta_data ->> 'tipo_lavoura', ''), 'soja')
   )
   on conflict (id) do nothing;
   return new;

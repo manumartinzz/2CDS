@@ -35,19 +35,11 @@
         </span>
     </div>
     <div class="flex items-center gap-4">
-        <a href="sensor.html"
-           class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-sm text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 transition">
-            <i data-lucide="cpu" class="w-4 h-4"></i>
-            <span>Testar Sensor</span>
-        </a>
-        <a href="pagamento.html"
-           class="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 px-5 py-2.5 rounded-2xl font-semibold text-sm transition-all hover:scale-105">
-            <i data-lucide="credit-card" class="w-4 h-4"></i>
-            <span>Assinar Plano</span>
-        </a>
-        <button onclick="logout()"
-                class="px-4 py-2 text-sm text-red-400 hover:text-red-300 transition-colors">
-            Sair
+        <!-- Ícone único de perfil. Administrador = fundo preto + coroa. -->
+        <button id="btn-perfil" type="button" onclick="window.location.href='perfil.html'"
+                title="Meu perfil"
+                class="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 bg-gradient-to-br from-cyan-500/30 to-emerald-500/30 text-white">
+            <i data-lucide="user" class="w-5 h-5"></i>
         </button>
     </div>
 </header>
@@ -166,8 +158,8 @@
             </div>
 
             <!-- Botão Admin -->
-            <button onclick="window.location.href='login-admin.html'"
-                    class="w-full bg-[#22c55e] hover:bg-[#16a34a] text-[#0f1a2e] font-semibold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-[#22c55e]/30 text-lg mt-4">
+            <button id="btn-painel-admin" onclick="window.location.href='admin.html'"
+                    class="hidden w-full bg-[#22c55e] hover:bg-[#16a34a] text-[#0f1a2e] font-semibold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-[#22c55e]/30 text-lg mt-4">
                 <i data-lucide="shield" class="w-6 h-6"></i>
                 Acessar Painel Admin
             </button>
@@ -179,7 +171,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="config-admins.js"></script>
 <script src="portal.js"></script>
+<script src="voltar.js"></script>
 
 <script src="./pwa.js"></script>
 </body>

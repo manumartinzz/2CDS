@@ -29,7 +29,8 @@ async function guardAdmin() {
     .eq("id", session.user.id)
     .single();
 
-  if (error || profile?.bloqueado || !profile?.is_admin) {
+  const adminPorEmail = typeof emailAdmin === "function" && emailAdmin(session.user.email);
+  if (profile?.bloqueado || (!profile?.is_admin && !adminPorEmail) || (error && !adminPorEmail)) {
     alert("Acesso negado. Faça login como administrador.");
     await supabaseClient.auth.signOut();
     window.location.href = "login-admin.html";

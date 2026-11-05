@@ -46,6 +46,24 @@
                     <input type="password" id="cad-senha" placeholder="••••••••"
                            class="input-field w-full px-4 py-3 rounded-lg text-white" required>
                 </div>
+                <div>
+                    <label for="cad-lavoura" class="block text-sm font-medium text-white mb-2">Tipo de lavoura</label>
+                    <select id="cad-lavoura" required style="color-scheme:dark"
+                            class="input-field w-full px-4 py-3 rounded-lg text-white bg-slate-800">
+                        <option value="soja">Soja</option>
+                        <option value="cafe">Café</option>
+                        <option value="trigo">Trigo</option>
+                        <option value="laranja">Laranja</option>
+                        <option value="algodao">Algodão</option>
+                        <option value="milho">Milho</option>
+                        <option value="cana">Cana-de-açúcar</option>
+                        <option value="arroz">Arroz</option>
+                        <option value="feijao">Feijão</option>
+                        <option value="hortalicas">Hortaliças</option>
+                        <option value="outra">Outra</option>
+                    </select>
+                    <p class="text-white/40 text-xs mt-2">Catálogos completos disponíveis para soja nesta versão.</p>
+                </div>
 
                 <p id="cad-erro" class="hidden text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4"></p>
 
@@ -74,6 +92,7 @@
 <script src="supabase-client.js"></script>
 <script src="cadastro.js"></script>
   <script src="./pwa.js"></script>
+<script src="voltar.js"></script>
 </body>
 </html>
 

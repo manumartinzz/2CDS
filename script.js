@@ -62,9 +62,9 @@ document.querySelectorAll('a[href^="#"]').forEach((a) => {
 
 /* ─── Legendas animadas do Hero ─────────────────────────────────────────────── */
 const heroCaptions = [
-  "Água monitorada em tempo real.",
-  "Alertas antes do problema acontecer.",
-  "Sua colheita, protegida 24h por dia."
+  "Monitoramento 24h por dia.",
+  "Alerta em menos de 5 minutos.",
+  "A partir de R$ 49/mês. Assine hoje."
 ];
 let heroCaptionIndex = 0;
 

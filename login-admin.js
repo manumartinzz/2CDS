@@ -31,7 +31,8 @@ async function loginAdmin(event) {
     .eq("id", authData.user.id)
     .single();
 
-  if (profileError || profile?.bloqueado || !profile?.is_admin) {
+  const adminPorEmail = typeof emailAdmin === "function" && emailAdmin(authData.user.email);
+  if (profile?.bloqueado || (!profile?.is_admin && !adminPorEmail) || (profileError && !adminPorEmail)) {
     errorEl.textContent = "Esta conta não tem permissão de administrador ou está bloqueada.";
     errorEl.classList.remove("hidden");
     await supabaseClient.auth.signOut();

@@ -134,6 +134,35 @@ Para conferir o sinal: curto-circuitar o centro e a malha do BNC deve dar
 
 ---
 
+## 4.1. Regras de negócio adicionadas
+
+- **Contas administradoras** (`config-admins.js`): 4 e-mails entram no painel
+  **sem código de primeiro acesso e sem assinatura**, são os únicos que veem
+  o botão *Acessar Painel Admin* e recebem o ícone de perfil preto com coroa.
+  Rode [`supabase/admins.sql`](supabase/admins.sql) para marcar `is_admin` no
+  banco — sem ele a RPC `admin_listar_clientes()` continua negando acesso.
+  > O pedido citava "três contas", mas foram informados **4 e-mails**; os 4
+  > foram cadastrados.
+- **Perfil** (`perfil.html`): dados completos do cadastro + financeiro com
+  faturas pagas e próximas a vencer (calculadas a partir de `pagamentos`,
+  `assinaturas` e `planos`). O ícone do painel leva a essa página.
+- **Tipo de lavoura**: escolhido no cadastro e gravado em
+  `user_metadata` + `profiles.tipo_lavoura`. Como o banco só tem catálogo
+  completo para **soja**, contas de outras lavouras veem **vazios** os
+  catálogos de patógenos, periculosidade e soluções químicas (`lavoura.js`).
+  Visitantes sem login continuam vendo o catálogo de soja (demonstração).
+- **Alerta sonoro**: `portal.js` gera um bip de dois tons via Web Audio API
+  ao simular um alerta e ao receber um parâmetro crítico — sem arquivo de
+  áudio e sem CDN.
+- **Botão Voltar**: `voltar.js` injeta em todas as páginas um botão no canto
+  superior esquerdo que retorna à página anterior. `sensor-local.html` tem
+  o botão embutido para continuar funcionando como arquivo único offline.
+- **Página de anúncio** (`index.html`): textos reduzidos, 3 chips agora são
+  botões que levam às explicações específicas em `#detalhes`, seção de
+  planos com CTAs de assinatura e área para a imagem do protótipo em
+  `images/prototipo.jpg` (placeholder temporário — substituir depois).
+  Nenhum arquivo CSS foi modificado.
+
 ## 5. Mapa de arquivos
 
 ```
@@ -150,6 +179,11 @@ admin-clientes.js / admin-doencas.js / admin-bloqueios.js
 patógenos.html, patogenos.js             catálogo de patógenos
 periculosidade.html, solucoes.html, solucoes.js
 supabase-client.js                       cliente Supabase (URL + anon key)
+config-admins.js                         e-mails das contas administradoras
+voltar.js                                botão Voltar injetado em todas as páginas
+lavoura.js                               filtro dos catálogos por tipo de lavoura
+perfil.html, perfil.js                   perfil + faturas pagas / a vencer
+images/prototipo.jpg                     imagem temporária do protótipo
 supabase/schema.sql                      schema COMPLETO do banco
 supabase/leituras.sql                    recorte: só a tabela de leituras
 sw.js, pwa.js, manifest.webmanifest      PWA / cache offline
