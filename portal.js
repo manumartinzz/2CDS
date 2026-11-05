@@ -262,7 +262,9 @@ async function tick() {
 
 async function simularAlerta() {
   contaminationTicks = 6;
-  mostrarAlerta("atencao", "Evento de contaminação simulado: os parâmetros vão se alterar nas próximas leituras.");
+  // Texto e comportamento vindos do commit "botão alerta" da main: o clique
+  // gera uma leitura contaminada AGORA (await tick()), não só nas próximas.
+  mostrarAlerta("atencao", "Alerta simulado: leitura contaminada gerada agora. Os parâmetros vão se alterar nas próximas leituras.");
   await tick();
 }
 
@@ -314,10 +316,16 @@ async function init() {
 
   try {
     const rows = await carregarHistorico();
-    if (rows.length) loadHistory(rows);
+    if (rows.length) {
+      loadHistory(rows);
+    } else if (!MODO_REAL) {
+      // Mensagem preservada do commit "botão alerta" da main: sem sensor
+      // instalado, o simulador local continua disponível e o botão ativo.
+      mostrarAlerta("info", "Nenhum sensor instalado ainda. O simulador local continua disponível.");
+    }
   } catch (err) {
     console.warn("Não foi possível carregar o histórico:", err.message);
-    mostrarAlerta("info", "Sem histórico no banco ainda — rode supabase/schema.sql no SQL Editor.");
+    mostrarAlerta("info", "Sem histórico no banco — rode supabase/schema.sql. O simulador local continua disponível.");
   }
 
   const btn = $("btn-simular-alerta");
