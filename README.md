@@ -44,6 +44,9 @@ em [`supabase/schema.sql`](supabase/schema.sql).
    `solucoes`, o gatilho de criação de perfil, as funções `is_admin()`,
    `admin_listar_clientes()` e `obter_codigo_acesso()`, todas as policies de
    RLS, a publicação Realtime e as **4 contas administradoras**.
+   - Funciona tanto em banco **novo** quanto no **schema antigo** do projeto
+     (`planos.preco_mensal`, `pagamentos.criado_em`, enums, sem `leituras`):
+     cria só o que falta e converte as colunas sem apagar dados.
    - Alternativa em 2 passos: `schema.sql` primeiro, depois `admins.sql`.
    - Não execute `select * from admin_listar_clientes()` no SQL Editor: a RPC
      usa `auth.uid()` e lá não há usuário logado. Teste pelo site.

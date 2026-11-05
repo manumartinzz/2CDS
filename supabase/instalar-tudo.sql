@@ -70,6 +70,14 @@ alter table public.profiles add column if not exists bloqueado boolean not null 
 alter table public.profiles add column if not exists motivo_bloqueio text;
 alter table public.profiles add column if not exists created_at timestamptz not null default now();
 
+-- Bancos antigos nao guardavam e-mail no perfil. admins.sql e a RPC de
+-- clientes precisam dele, entao preenchemos a partir do Supabase Auth.
+update public.profiles p
+set email = u.email
+from auth.users u
+where p.id = u.id
+  and (p.email is null or lower(p.email) <> lower(coalesce(u.email, '')));
+
 -- Cria o perfil automaticamente no cadastro (signUp em cadastro.js).
 create or replace function public.handle_new_user()
 returns trigger
@@ -78,11 +86,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, nome_completo, tipo_lavoura)
+  insert into public.profiles (id, email, nome_completo, cpf, tipo_lavoura)
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'nome_completo', ''),
+    new.raw_user_meta_data ->> 'cpf',
     coalesce(nullif(new.raw_user_meta_data ->> 'tipo_lavoura', ''), 'soja')
   )
   on conflict (id) do nothing;
@@ -105,17 +114,34 @@ on conflict (id) do nothing;
 -- 2. Planos / assinaturas / pagamentos
 -- ---------------------------------------------------------------------------
 create table if not exists public.planos (
-  id         uuid primary key default gen_random_uuid(),
-  nome       text not null unique,
-  preco      numeric(10,2) not null,
-  created_at timestamptz not null default now()
+  id           uuid primary key default gen_random_uuid(),
+  nome         text not null unique,
+  preco        numeric(10,2) not null,
+  preco_mensal numeric(10,2),
+  descricao    text,
+  mais_popular boolean default false,
+  ativo        boolean default true,
+  created_at   timestamptz not null default now()
 );
 
-insert into public.planos (nome, preco) values
+-- Banco antigo usa preco_mensal e NAO tem UNIQUE(nome): alinha as colunas
+-- sem apagar nada. perfil.js le preco; pagamento.js usa so id/nome.
+alter table public.planos add column if not exists preco        numeric(10,2);
+alter table public.planos add column if not exists preco_mensal numeric(10,2);
+alter table public.planos add column if not exists descricao    text;
+alter table public.planos add column if not exists mais_popular boolean default false;
+alter table public.planos add column if not exists ativo        boolean default true;
+update public.planos set preco        = coalesce(preco, preco_mensal) where preco is null;
+update public.planos set preco_mensal = coalesce(preco_mensal, preco) where preco_mensal is null;
+
+insert into public.planos (nome, preco, preco_mensal)
+select v.nome, v.preco, v.preco
+from (values
   ('Plano Básico',       49.00),
   ('Plano Profissional', 89.00),
   ('Plano Empresarial', 199.00)
-on conflict do nothing;  -- sem alvo: funciona mesmo em tabela antiga sem UNIQUE(nome)
+) as v(nome, preco)
+where not exists (select 1 from public.planos p where p.nome = v.nome);
 
 create table if not exists public.assinaturas (
   id                uuid primary key default gen_random_uuid(),
@@ -166,6 +192,12 @@ create table if not exists public.pagamentos (
   confirmado_em  timestamptz,
   created_at     timestamptz not null default now()
 );
+
+-- Banco antigo chama a coluna de criado_em; perfil.js le created_at.
+alter table public.pagamentos add column if not exists created_at timestamptz not null default now();
+alter table public.pagamentos add column if not exists criado_em timestamptz;
+update public.pagamentos set created_at = criado_em
+where criado_em is not null and created_at <> criado_em;
 
 -- ---------------------------------------------------------------------------
 -- 3. Leituras (modelo ÚNICO, usado pelo portal e pelo sensor de pH)
@@ -294,7 +326,7 @@ begin
     p.id,
     coalesce(p.nome_completo, '—')::text,
     p.cpf,
-    p.email,
+    u.email::text,
     p.telefone,
     coalesce(pl.nome, 'Sem plano')::text,
     case
@@ -305,6 +337,7 @@ begin
     p.bloqueado,
     p.motivo_bloqueio
   from public.profiles p
+  left join auth.users u on u.id = p.id
   left join lateral (
     select s.plano_id, s.status
     from public.assinaturas s
@@ -328,38 +361,41 @@ grant execute on function public.admin_listar_clientes() to authenticated;
 --     esta RPC é executável por anon e devolve o código de acesso. Em produção,
 --     mova o reenvio para uma Edge Function autenticada/rate-limited e
 --     revogue o execute de anon.
+--
+--     A assinatura (3 colunas, nesta ordem) é mantida igual à do banco já
+--     existente: CREATE OR REPLACE não consegue trocar o tipo de retorno.
 create or replace function public.obter_codigo_acesso(identificador text)
 returns table (
-  email             text,
-  codigo_acesso     text,
-  codigo_expira_em  timestamptz,
-  nome_completo     text
+  codigo_acesso    text,
+  codigo_expira_em timestamptz,
+  email            text
 )
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select
-    p.email,
-    a.codigo_acesso,
-    a.codigo_expira_em,
-    p.nome_completo
-  from public.profiles p
-  left join lateral (
+declare
+  v_digitos text := regexp_replace(coalesce(identificador, ''), '\D', '', 'g');
+begin
+  return query
+  select a.codigo_acesso, a.codigo_expira_em, u.email::text
+  from auth.users u
+  join public.profiles p on p.id = u.id
+  join lateral (
     select s.codigo_acesso, s.codigo_expira_em
     from public.assinaturas s
-    where s.user_id = p.id and s.status = 'ativa'
+    where s.user_id = u.id and s.status = 'ativa'
     order by s.created_at desc
     limit 1
   ) a on true
-  where lower(coalesce(p.email, '')) = lower(btrim(identificador))
+  where lower(coalesce(u.email, '')) = lower(btrim(coalesce(identificador, '')))
      or (
-       length(regexp_replace(coalesce(identificador, ''), '\D', '', 'g')) = 11
-       and regexp_replace(coalesce(p.cpf, ''), '\D', '', 'g')
-           = regexp_replace(identificador, '\D', '', 'g')
+       length(v_digitos) = 11
+       and regexp_replace(coalesce(p.cpf, ''), '\D', '', 'g') = v_digitos
      )
   limit 1;
+end;
 $$;
 
 revoke all on function public.obter_codigo_acesso(text) from public;
@@ -457,13 +493,18 @@ create policy "solucoes_write" on public.solucoes for all to authenticated
 -- ---------------------------------------------------------------------------
 do $$
 begin
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime'
-      and schemaname = 'public'
-      and tablename = 'leituras'
-  ) then
-    alter publication supabase_realtime add table public.leituras;
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime'
+         and schemaname = 'public'
+         and tablename = 'leituras'
+     ) then
+    begin
+      execute 'alter publication supabase_realtime add table public.leituras';
+    exception when others then
+      raise notice 'Realtime nao configurado automaticamente: %', sqlerrm;
+    end;
   end if;
 end;
 $$;
@@ -554,7 +595,12 @@ select 'RPC admin_listar_clientes()',
             then 'OK' else 'FALTA — rode a PARTE 1' end
 union all
 select 'Admins com is_admin=true',
-       ((select count(*) from public.profiles where is_admin)::text || ' de 4');
+       ((select count(*) from public.profiles where is_admin)::text || ' (minimo 4)');
+
+-- Lista TODOS os admins: se aparecer alguem alem das 4 contas, e uma conta
+-- administradora que ja existia no banco (nao foi criada por este script).
+select coalesce(p.email, '(sem e-mail)') as admin, p.is_admin, p.bloqueado
+from public.profiles p where p.is_admin order by 1;
 
 -- Detalhe das 4 contas (todas devem estar com is_admin = true):
 select coalesce(email, '(sem e-mail)') as email, is_admin, bloqueado
