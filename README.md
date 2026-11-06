@@ -157,21 +157,50 @@ Para conferir o sinal: curto-circuitar o centro e a malha do BNC deve dar
   faturas pagas e próximas a vencer (calculadas a partir de `pagamentos`,
   `assinaturas` e `planos`). O ícone do painel leva a essa página.
 - **Tipo de lavoura**: escolhido no cadastro e gravado em
-  `user_metadata` + `profiles.tipo_lavoura`. Como o banco só tem catálogo
-  completo para **soja**, contas de outras lavouras veem **vazios** os
-  catálogos de patógenos, periculosidade e soluções químicas (`lavoura.js`).
-  Visitantes sem login continuam vendo o catálogo de soja (demonstração).
+  `user_metadata` + `profiles.tipo_lavoura`. As **11 culturas** do cadastro
+  têm catálogo pesquisado de patógenos, soluções químicas e periculosidade em
+  `pesquisa-culturas.js`; `lavoura.js` só identifica a cultura da conta.
+  Visitantes sem login continuam vendo a soja (demonstração).
 - **Alerta sonoro**: `portal.js` gera um bip de dois tons via Web Audio API
   ao simular um alerta e ao receber um parâmetro crítico — sem arquivo de
   áudio e sem CDN.
-- **Botão Voltar**: `voltar.js` injeta em todas as páginas um botão no canto
-  superior esquerdo que retorna à página anterior. `sensor-local.html` tem
-  o botão embutido para continuar funcionando como arquivo único offline.
+- **Botão Voltar**: `voltar.js` injeta um botão no canto superior esquerdo
+  que retorna à página anterior em **todas as páginas, exceto `index.html`**.
+  A posição é medida na própria página (abaixo da barra fixa/sticky, abaixo
+  da barra estática dos catálogos ou no canto superior das telas centradas),
+  recalculada em resize. `sensor-local.html` tem o botão embutido para
+  continuar funcionando como arquivo único offline.
 - **Página de anúncio** (`index.html`): textos reduzidos, 3 chips agora são
   botões que levam às explicações específicas em `#detalhes`, seção de
   planos com CTAs de assinatura e área para a imagem do protótipo em
   `images/prototipo.jpg` (placeholder temporário — substituir depois).
+  O botão **Whatsapp** voltou à posição original no nav, ao lado de Login e
+  Assinar; **não** há botão Voltar nesta página.
   Nenhum arquivo CSS foi modificado.
+
+---
+
+## 4.2. Catálogos técnicos por cultura e fontes
+
+As **11 opções de lavoura** do cadastro (`soja`, `cafe`, `trigo`, `laranja`,
+`algodao`, `milho`, `cana`, `arroz`, `feijao`, `hortalicas`, `outra`) têm
+catálogo próprio de patógenos, classes de controle químico e impacto na
+lavoura em `pesquisa-culturas.js`. As fontes oficiais (Embrapa, Fundecitrus,
+MAPA/AGROFIT, Anvisa, Ministério da Saúde, OMS, CONAMA, EPPO e CABI) estão
+documentadas em [`PESQUISA_FONTES.md`](PESQUISA_FONTES.md) e renderizadas
+**ao final de cada banco de dados** — páginas Patógenos, Soluções e
+Periculosidade — e no Perfil da conta. Um seletor permite consultar as
+fontes de qualquer uma das 11 culturas sem trocar de conta.
+
+Três cuidados técnicos:
+
+* **BSL / classes de risco** só se aplicam a agentes que adoecem humanos e
+  animais; fitopatógenos são avaliados por impacto na lavoura.
+* A **classificação toxicológica GHS** (Anvisa RDC 294/2019) é definida por
+  produto formulado, não por ingrediente ativo — o catálogo não fornece doses
+  nem marcas e remete ao AGROFIT.
+* Os níveis Alto/Moderado/Baixo são leitura qualitativa da Embrapa, não
+  classificação oficial do MAPA.
 
 ## 5. Mapa de arquivos
 
@@ -186,12 +215,14 @@ portal.html, portal.js, portal.css       dashboard (um único Chart)
 admin.html, admin.js                     hub administrativo
 admin-guard.js                           guarda de sessão/permissão das telas admin
 admin-clientes.js / admin-doencas.js / admin-bloqueios.js
-patógenos.html, patogenos.js             catálogo de patógenos
-periculosidade.html, solucoes.html, solucoes.js
+patógenos.html, patogenos.js             catálogo de patógenos por cultura
+periculosidade.html, solucoes.html, solucoes.js  riscos e soluções químicas
 supabase-client.js                       cliente Supabase (URL + anon key)
 config-admins.js                         e-mails das contas administradoras
-voltar.js                                botão Voltar injetado em todas as páginas
-lavoura.js                               filtro dos catálogos por tipo de lavoura
+voltar.js                                botão Voltar (exceto index.html)
+lavoura.js                               cultura da conta logada
+pesquisa-culturas.js                     dados das 11 culturas + bloco de fontes
+PESQUISA_FONTES.md                       relatório auditável das fontes oficiais
 perfil.html, perfil.js                   perfil + faturas pagas / a vencer
 images/prototipo.jpg                     imagem temporária do protótipo
 supabase/instalar-tudo.sql               um único SQL: schema + admins + conferência

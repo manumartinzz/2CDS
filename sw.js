@@ -9,7 +9,7 @@ const APP_FILES = [
   "./sensor.html", "./sensor.js",
   "./supabase-client.js", "./email-config.js", "./pagamento.html", "./pagamento.js",
   "./script.js", "./admin.html", "./admin.js", "./admin-guard.js",
-  "./config-admins.js", "./voltar.js", "./lavoura.js",
+  "./config-admins.js", "./voltar.js", "./lavoura.js", "./pesquisa-culturas.js",
   "./perfil.html", "./perfil.js", "./images/prototipo.jpg",
   "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"
 ];

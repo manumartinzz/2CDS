@@ -14,21 +14,30 @@
 
 </head>
 <body class="h-full w-full bg-[#0a0f1a] text-white overflow-auto">
+    <div class="h-full w-full flex flex-col">
 
-<div class="h-full w-full flex flex-col items-center justify-center px-4 py-8">
-
-    <div class="text-center mb-10">
-        <div class="flex items-center justify-center gap-3 mb-6">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-                <i data-lucide="droplets" class="w-7 h-7 text-white"></i>
-            </div>
-            <span class="text-2xl font-bold gradient-text">AcquaSafe</span>
+        <!-- Background Gradient Elements (mesmo do login) -->
+        <div class="fixed inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
         </div>
-        <h1 class="text-3xl font-bold mb-3">Crie sua conta</h1>
-        <p class="text-slate-400">Cadastre-se para monitorar em tempo real</p>
-    </div>
 
-    <div class="w-full max-w-md">
+        <!-- Content -->
+        <div class="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
+
+            <!-- Header: logo + AcquaSafe + boas-vindas (idêntico ao login) -->
+            <div class="text-center mb-12">
+                <div class="flex items-center justify-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                        <i data-lucide="droplets" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold gradient-text">AcquaSafe</span>
+                </div>
+                <h1 id="page-title" class="text-3xl sm:text-4xl font-bold mb-3">Crie sua conta</h1>
+                <p id="page-subtitle" class="text-slate-400 text-lg">Cadastre-se para monitorar em tempo real</p>
+            </div>
+
+            <div class="w-full max-w-md">
         <div class="glass-card glow-border rounded-2xl p-8 space-y-6">
             <form class="space-y-5" id="formCadastro">
                 <div>
@@ -62,7 +71,7 @@
                         <option value="hortalicas">Hortaliças</option>
                         <option value="outra">Outra</option>
                     </select>
-                    <p class="text-white/40 text-xs mt-2">Catálogos completos disponíveis para soja nesta versão.</p>
+                    <p class="text-white/40 text-xs mt-2">Catálogos de patógenos, soluções químicas e periculosidade disponíveis para todas as culturas listadas.</p>
                 </div>
 
                 <p id="cad-erro" class="hidden text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg py-2 px-4"></p>
@@ -86,7 +95,8 @@
         </div>
     </div>
 
-</div>
+        </div>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>

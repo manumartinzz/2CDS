@@ -215,6 +215,38 @@ function aplicarPermissoesVisuais(usuario) {
 
 /* -------------------- Chart.js (UMA instância) -------------------- */
 
+/* -------------------- Chart.js (UMA instância) -------------------- */
+/* Limites usados pelo próprio painel nos cards acima do gráfico.
+   Mantidos idênticos para que o tooltip nunca contradiga os badges. */
+const FAIXAS_PAINEL = [
+  { nome: "pH",       unidade: "",     min: 6.0, max: 8.5, faixa: "6,0–8,5" },
+  { nome: "Flúor",    unidade: "mg/L", min: 0,   max: 1.5, faixa: "até 1,5 mg/L" },
+  { nome: "Cloro",    unidade: "mg/L", min: 0.2, max: 2.0, faixa: "0,2–2,0 mg/L" },
+  { nome: "Turbidez", unidade: "NTU",  min: 0,   max: 10,  faixa: "até 10 NTU" }
+];
+
+/* Faixa visual: destaca, na escala da esquerda, o intervalo de pH que o
+   painel considera normal. É desenhada antes das barras, com baixa opacidade. */
+const faixaNormalPh = {
+  id: "faixaNormalPh",
+  beforeDatasetsDraw(c) {
+    const area = c.chartArea, escala = c.scales && c.scales.yPh;
+    if (!area || !escala) return;
+    const a = escala.getPixelForValue(8.5), b = escala.getPixelForValue(6.0);
+    const topo = Math.max(area.top, Math.min(a, b));
+    const base = Math.min(area.bottom, Math.max(a, b));
+    if (base <= topo) return;
+    const ctx = c.ctx;
+    ctx.save();
+    ctx.fillStyle = "rgba(52,211,153,0.055)";
+    ctx.fillRect(area.left, topo, area.right - area.left, base - topo);
+    ctx.fillStyle = "rgba(110,231,183,0.85)";
+    ctx.font = "11px 'DM Sans', sans-serif";
+    ctx.fillText("pH normal (6,0–8,5)", area.left + 8, topo + 15);
+    ctx.restore();
+  }
+};
+
 function initChart() {
   const canvas = $("qualityChart");
   if (!canvas || typeof Chart === "undefined") return;
@@ -224,22 +256,68 @@ function initChart() {
     data: {
       labels: [],
       datasets: [
-        { label: "pH", data: [], borderColor: "#22d3ee", backgroundColor: "rgba(34,211,238,0.65)", borderWidth: 2, yAxisID: "yPh" },
-        { label: "Flúor (mg/L)", data: [], borderColor: "#60a5fa", backgroundColor: "rgba(96,165,250,0.55)", borderWidth: 2, yAxisID: "yOther" },
-        { label: "Cloro (mg/L)", data: [], borderColor: "#34d399", backgroundColor: "rgba(52,211,153,0.55)", borderWidth: 2, yAxisID: "yOther" },
-        { label: "Turbidez (NTU)", data: [], borderColor: "#fbbf24", backgroundColor: "rgba(251,191,36,0.55)", borderWidth: 2, yAxisID: "yOther" }
+        { label: "pH",       data: [], borderColor: "#22d3ee", backgroundColor: "rgba(34,211,238,0.70)", borderWidth: 2, yAxisID: "yPh",    borderRadius: 3, maxBarThickness: 22 },
+        { label: "Flúor",    data: [], borderColor: "#60a5fa", backgroundColor: "rgba(96,165,250,0.60)", borderWidth: 2, yAxisID: "yOther", borderRadius: 3, maxBarThickness: 22 },
+        { label: "Cloro",    data: [], borderColor: "#34d399", backgroundColor: "rgba(52,211,153,0.60)", borderWidth: 2, yAxisID: "yOther", borderRadius: 3, maxBarThickness: 22 },
+        { label: "Turbidez", data: [], borderColor: "#fbbf24", backgroundColor: "rgba(251,191,36,0.60)", borderWidth: 2, yAxisID: "yOther", borderRadius: 3, maxBarThickness: 22 }
       ]
     },
+    plugins: [faixaNormalPh],
     options: {
       responsive: true,
       maintainAspectRatio: false,
       animation: { duration: 250 },
       interaction: { mode: "index", intersect: false },
-      plugins: { legend: { labels: { color: "#cbd5e1", font: { family: "DM Sans", size: 11 } } } },
+      layout: { padding: { top: 6, right: 4 } },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            color: "#e2e8f0",
+            font: { family: "DM Sans", size: 13 },
+            usePointStyle: true, pointStyle: "rectRounded",
+            boxWidth: 14, boxHeight: 10, padding: 16
+          }
+        },
+        tooltip: {
+          backgroundColor: "rgba(10,15,26,0.96)",
+          borderColor: "rgba(34,211,238,0.35)", borderWidth: 1,
+          titleColor: "#e2e8f0", bodyColor: "#cbd5e1",
+          titleFont: { family: "DM Sans", size: 13, weight: "bold" },
+          bodyFont: { family: "DM Sans", size: 13 },
+          padding: 12, displayColors: true, boxPadding: 5,
+          callbacks: {
+            title: (itens) => "Leitura às " + (itens[0] ? itens[0].label : ""),
+            label: (ctx) => {
+              const f = FAIXAS_PAINEL[ctx.datasetIndex];
+              const v = ctx.parsed.y;
+              if (!f || v === null || typeof v === "undefined") return " Sem dado";
+              const normal = v >= f.min && v <= f.max;
+              const valor = Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+              return " " + f.nome + ": " + valor + (f.unidade ? " " + f.unidade : "") +
+                     " — " + (normal ? "normal" : "fora da faixa") + " (" + f.faixa + ")";
+            }
+          }
+        }
+      },
       scales: {
-        x: { ticks: { color: "#64748b", maxRotation: 0, autoSkip: true, font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.05)" } },
-        yPh: { position: "left", min: 3, max: 10, ticks: { color: "#22d3ee", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.05)" }, title: { display: true, text: "pH", color: "#22d3ee" } },
-        yOther: { position: "right", min: 0, max: 30, ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { display: false } }
+        x: {
+          ticks: { color: "#94a3b8", maxRotation: 0, autoSkip: true, maxTicksLimit: 8, font: { size: 12 } },
+          grid: { color: "rgba(255,255,255,0.04)" },
+          title: { display: true, text: "Horário da leitura (HH:mm)", color: "#94a3b8", font: { size: 12 } }
+        },
+        yPh: {
+          position: "left", min: 3, max: 10,
+          ticks: { color: "#22d3ee", font: { size: 12 }, stepSize: 1 },
+          grid: { color: "rgba(255,255,255,0.06)" },
+          title: { display: true, text: "pH  (escala esquerda)", color: "#22d3ee", font: { size: 12, weight: "bold" } }
+        },
+        yOther: {
+          position: "right", min: 0, max: 30,
+          ticks: { color: "#94a3b8", font: { size: 12 }, stepSize: 5 },
+          grid: { display: false },
+          title: { display: true, text: "mg/L / NTU  (escala direita)", color: "#94a3b8", font: { size: 12, weight: "bold" } }
+        }
       }
     }
   });
@@ -247,7 +325,7 @@ function initChart() {
 
 function pushToChart(r, criadoEm) {
   if (!chart) return;
-  const label = new Date(criadoEm || Date.now()).toLocaleTimeString("pt-BR");
+  const label = new Date(criadoEm || Date.now()).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   chart.data.labels.push(label);
   chart.data.datasets[0].data.push(temValor(r.ph) ? Number(r.ph) : null);
   chart.data.datasets[1].data.push(temValor(r.fluor) ? Number(r.fluor) : null);
@@ -262,7 +340,7 @@ function pushToChart(r, criadoEm) {
 
 function loadHistory(rows) {
   if (!chart) return;
-  chart.data.labels = rows.map((r) => new Date(r.criado_em).toLocaleTimeString("pt-BR"));
+  chart.data.labels = rows.map((r) => new Date(r.criado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
   chart.data.datasets[0].data = rows.map((r) => (temValor(r.ph) ? Number(r.ph) : null));
   chart.data.datasets[1].data = rows.map((r) => (temValor(r.fluor) ? Number(r.fluor) : null));
   chart.data.datasets[2].data = rows.map((r) => (temValor(r.cloro) ? Number(r.cloro) : null));
