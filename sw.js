@@ -1,4 +1,6 @@
-const CACHE_NAME = "acquasafe-v5";
+// v6: limpa o cache v5 e forca re-download de todos os assets,
+// incluindo images/prototipo.jpg quando a foto real for colocada.
+const CACHE_NAME = "acquasafe-v6";
 const APP_FILES = [
   "./", "./index.html", "./login.html", "./cadastro.html",
   "./portal.html", "./patógenos.html", "./solucoes.html",
