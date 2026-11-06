@@ -44,6 +44,29 @@
             <a href="admin-bloqueios.html" class="btn-gradient inline-block">Gerenciar bloqueios</a>
         </section>
 
+        <button id="add">+ Adicionar página</button>
+<nav id="abas"></nav>
+<div id="paginas"></div>
+
+<script>
+let n = 0;
+document.getElementById('add').onclick = () => {
+  n++;
+  const aba = document.createElement('button');
+  aba.textContent = 'Página ' + n;
+  const pagina = document.createElement('section');
+  pagina.id = 'p' + n;
+  pagina.innerHTML = `<h2>Página ${n}</h2><p>Conteúdo da página ${n}.</p>`;
+  aba.onclick = () => {
+    document.querySelectorAll('#paginas section').forEach(s => s.hidden = true);
+    pagina.hidden = false;
+  };
+  document.getElementById('abas').append(aba);
+  document.getElementById('paginas').append(pagina);
+  aba.click();
+};
+</script>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
