@@ -66,6 +66,809 @@
   </a>
 </div>
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AcquaSafe - Leitor de pH (local)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; background:#0a0f1a; color:#e2e8f0;
+         font-family: "Segoe UI", Arial, sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color:#94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; }
+  .card { flex:1 1 260px; background:#ffffff0a; border:1px solid #ffffff1a;
+          border-radius:16px; padding:20px; margin-bottom:16px; }
+  .label { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; }
+  #ph { font-size:72px; font-weight:700; line-height:1.1; color:#67e8f9;
+        font-variant-numeric: tabular-nums; margin-top:8px; }
+  .small { font-size:13px; color:#94a3b8; margin-top:8px; }
+  .kv { display:flex; justify-content:space-between; font-size:14px; padding:6px 0;
+        border-bottom:1px solid #ffffff12; }
+  .kv span:last-child { font-variant-numeric: tabular-nums; font-weight:600; }
+  button { background:linear-gradient(90deg,#06b6d4,#2563eb); color:#fff; border:0;
+           padding:12px 18px; border-radius:10px; font-size:14px; font-weight:600;
+           cursor:pointer; margin:4px 6px 4px 0; }
+  button.sec { background:#ffffff14; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%;
+         background:#64748b; margin-right:7px; }
+  .ok { background:#34d399 !important; } .bad { background:#f87171 !important; }
+  .warn { background:#fbbf24 !important; }
+  #aviso { display:none; background:#f59e0b18; border:1px solid #f59e0b55;
+           color:#fcd34d; padding:14px; border-radius:12px; font-size:13px;
+           line-height:1.6; margin-bottom:16px; }
+  #erro  { display:none; background:#ef444418; border:1px solid #ef444455;
+           color:#fca5a5; padding:14px; border-radius:12px; font-size:13px;
+           line-height:1.6; margin-bottom:16px; }
+  canvas { width:100%; height:190px; display:block; }
+  #log { height:120px; overflow:auto; background:#00000055; border-radius:10px;
+         padding:10px; font:11px/1.5 Consolas, monospace; color:#94a3b8; }
+  code { color:#67e8f9; }
+  /* Identificação da leitura */
+  .fields { display:flex; gap:14px; flex-wrap:wrap; }
+  .fld { flex:1 1 210px; }
+  .fld label { display:block; font-size:11px; color:#94a3b8; margin-bottom:6px;
+               text-transform:uppercase; letter-spacing:.06em; }
+  .fld input, .fld select, #novoEquip input {
+         width:100%; background:#0b1220; color:#e2e8f0; border:1px solid #ffffff26;
+         border-radius:9px; padding:10px; font-size:13px; }
+  .fld .com-botao { display:flex; gap:6px; flex-wrap:wrap; }
+  .fld .com-botao select { flex:1 1 100%; min-width:0; width:100%; }
+  .fld .com-botao button { flex:1; margin:0; }
+  button.mini { padding:10px 12px; font-size:12px; white-space:nowrap; }
+  #novoEquip { display:none; margin-top:12px; gap:8px; flex-wrap:wrap; align-items:center; }
+  #novoEquip input { flex:1 1 170px; width:auto; }
+  #fonteUsuario { font-size:11px; color:#fbbf24; margin-top:6px; }
+  #ctx { font-size:12px; color:#94a3b8; margin-top:12px; padding-top:10px;
+         border-top:1px solid #ffffff12; line-height:1.6; }
+  #ctxTxt { color:#67e8f9; font-weight:600; }
+</style>
+</head>
+<body>
+<button id="btn-voltar" type="button" aria-label="Voltar" onclick="voltarOffline()" style="position:fixed;left:16px;top:16px;z-index:60;padding:8px 12px;border-radius:12px;border:1px solid rgba(34,211,238,.35);background:rgba(15,23,42,.9);color:#67e8f9;font-size:12px;font-weight:600;cursor:pointer">← Voltar</button>
+<script>
+function voltarOffline() {
+  var mesmaOrigem = false;
+  try { var o = document.referrer ? new URL(document.referrer).origin : ""; mesmaOrigem = o && o === location.origin; } catch (e) {}
+  if (mesmaOrigem && history.length > 1) { history.back(); return; }
+  location.href = "index.html";
+}
+</script>
+<div class="wrap">
+  <h1>AcquaSafe · Leitor de pH</h1>
+  <div class="sub">E201-9 + Arduino Uno R3 · <span class="dot" id="dot"></span><span id="status">desconectado</span></div>
+
+  <div id="erro"></div>
+  <div id="aviso"></div>
+
+  <!-- Identificação: equipamento, localização e conta -->
+  <div class="card" style="flex:1 1 100%">
+    <div class="label" style="margin-bottom:12px">Identificação da leitura</div>
+    <div class="fields">
+      <div class="fld">
+        <label>Equipamento</label>
+        <div class="com-botao">
+          <select id="equip"></select>
+          <button id="bNovo" class="sec mini">+ Novo</button>
+          <button id="bRemover" class="sec mini" title="Remove o equipamento selecionado">🗑 Remover</button>
+        </div>
+      </div>
+      <div class="fld">
+        <label>Onde está localizado</label>
+        <input id="local" placeholder="Ex.: Talhão 3 / Estufa A / Bancada">
+      </div>
+      <div class="fld">
+        <label>Conta / usuário logado</label>
+        <input id="usuario" placeholder="Nome da conta">
+        <div id="fonteUsuario">verificando conta...</div>
+      </div>
+    </div>
+
+    <div id="novoEquip">
+      <input id="neNome" placeholder="Nome (ex.: Sensor 02 · pH E201-9)">
+      <input id="neId" placeholder="ID (ex.: sensor-02)">
+      <input id="neLocal" placeholder="Local padrão (opcional)">
+      <button id="neSalvar" class="mini">Salvar</button>
+      <button id="neCancelar" class="sec mini">Cancelar</button>
+    </div>
+
+    <div id="ctx">Leitura identificada como: <span id="ctxTxt">—</span></div>
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <div class="label">pH agora</div>
+      <div id="ph">--</div>
+      <div class="small" id="hora">aguardando conexão</div>
+      <div id="valid" class="small" style="font-weight:600;color:#64748b">aguardando sinal</div>
+      <div class="small" id="cal" style="color:#fbbf24">curva nominal (ainda sem calibração)</div>
+      <div class="small" id="linhaCtx" style="color:#64748b;font-size:11px"></div>
+    </div>
+    <div class="card">
+      <div class="label">Conexão USB</div>
+      <p style="font-size:13px;color:#94a3b8;line-height:1.6">
+        Feche o <b>Monitor Serial</b> da IDE antes de conectar. Use cabo USB de dados.
+      </p>
+      <button id="bCon">Conectar Arduino</button>
+      <button id="bDes" class="sec" disabled>Desconectar</button>
+      <div class="small">9600 baud · 1 leitura por segundo</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="kv"><span>ADC bruto (0–1023)</span><span id="raw">--</span></div>
+    <div class="kv"><span>Tensão em A0</span><span id="mv">-- mV</span></div>
+    <div class="kv"><span>Leituras recebidas</span><span id="n">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:10px">Últimas 60 leituras</div>
+    <canvas id="chart" width="860" height="190"></canvas>
+  </div>
+
+  <!-- Exportar -->
+  <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <button id="bExport" disabled>📥 Exportar CSV</button>
+    <div class="small" style="margin:0;flex:1 1 260px;line-height:1.6">
+      <b id="qtdReg" style="color:#67e8f9">0</b> leituras capturadas nesta sessão.
+      O arquivo leva data/hora, <b>pH</b>, ADC, mV, sinal e os 3 campos de identificação
+      (equipamento, localização, conta). Abre direto no Excel — separador <code>;</code> e decimal <code>,</code>.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label" style="margin-bottom:8px">Console serial</div>
+    <div id="log"></div>
+  </div>
+
+  <p style="font-size:12px;color:#64748b;line-height:1.7">
+    Este arquivo é independente: não precisa de site, servidor, internet ou Supabase.
+    Só funciona em <b>Chrome ou Edge</b> no computador onde o Arduino está plugado.
+    Se o pH não aparecer, confira se você gravou o sketch no Uno (o Uno novo não fala sozinho).
+    <b>Com a sonda desconectada o número NÃO é confiável</b>: a entrada BNC fica flutuando, a
+    tensão em A0 tende a um extremo e, como a conversão é inversa, o pH costuma <b>subir até 14</b>
+    (ou cair a 0, conforme a placa). O valor correto de referência é <b>BNC em curto ≈ 2500 mV ≈ pH 7,00</b>.
+    <br><br>
+    <b>Equipamento, localização e conta</b> ficam salvos só neste navegador e aparecem junto com a leitura.
+    Nesta tela offline <b>nada é enviado para o banco</b>.
+  </p>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const BAUD = 9600;
+  let porta = null, leitor = null, lendo = false, buffer = "", total = 0;
+  let ultimaLinha = 0, watchdog = null, avisou = false;
+  const pontos = [];
+  const registros = [];   // historico completo para exportar em CSV
+
+  /* ================= Identificação da leitura =================
+     Equipamento (varios), localizacao e conta. Tudo fica salvo no
+     localStorage deste navegador para nao precisar digitar de novo. */
+  const REF = "syoxvywvlwftdkpebogn";
+  const SB_URL = "https://" + REF + ".supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5b3h2eXd2bHdmdGRrcGVib2duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNDM3ODksImV4cCI6MjEwMjkxOTc4OX0.AjXevRAIevIOZpD5DBWJm-kM1QubOlbvugN7F_lWzpY";
+  const K_EQ = "acquasafe_equipamentos";
+  const K_ATIVO = "acquasafe_equipamento_ativo";
+  const K_LOCAL = "acquasafe_localizacao";
+  const K_USER = "acquasafe_usuario";
+  const EQ_PADRAO = [
+    { id: "sensor-01", nome: "Sensor 01 · pH E201-9", local: "Bancada / Laboratório" },
+    { id: "sensor-02", nome: "Sensor 02 · pH E201-9", local: "" }
+  ];
+  let equipamentos = [], ativo = "";
+
+  function guardar(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lembrar(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function atualizarCtx() {
+    const eq = equipamentos.find(x => x.id === ativo);
+    const local = $("local").value.trim() || "sem localização";
+    const user = $("usuario").value.trim() || "sem conta";
+    const nome = eq ? eq.nome : "—";
+    $("ctxTxt").textContent = nome + " · " + local + " · " + user;
+    $("linhaCtx").textContent = "📍 " + local + "   |   " + nome + "   |   " + user;
+  }
+
+  function carregarEquipamentos() {
+    try {
+      const x = JSON.parse(lembrar(K_EQ));
+      equipamentos = (Array.isArray(x) && x.length) ? x : EQ_PADRAO.map(o => Object.assign({}, o));
+    } catch (e) { equipamentos = EQ_PADRAO.map(o => Object.assign({}, o)); }
+    ativo = lembrar(K_ATIVO) || equipamentos[0].id;
+    if (!equipamentos.some(e => e.id === ativo)) ativo = equipamentos[0].id;
+  }
+
+  function renderEquip() {
+    const s = $("equip");
+    s.innerHTML = "";
+    equipamentos.forEach(e => {
+      const o = document.createElement("option");
+      o.value = e.id;
+      o.textContent = e.nome;
+      s.appendChild(o);
+    });
+    s.value = ativo;
+  }
+
+  function aplicarEquip() {
+    const eq = equipamentos.find(x => x.id === ativo);
+    if (eq && eq.local && !$("local").value) $("local").value = eq.local;
+    guardar(K_ATIVO, ativo);
+    atualizarCtx();
+  }
+
+  async function detectarUsuario() {
+    // 1) valor ja digitado antes neste navegador
+    $("usuario").value = lembrar(K_USER) || "";
+
+    // 2) tenta pegar a conta logada no site (mesma origem = mesmo localStorage)
+    let token = null;
+    try {
+      const raw = lembrar("sb-" + REF + "-auth-token");
+      if (raw) token = JSON.parse(raw).access_token;
+    } catch (e) {}
+    if (token) {
+      try {
+        const r = await fetch(SB_URL + "/auth/v1/user", {
+          headers: { apikey: SB_KEY, Authorization: "Bearer " + token }
+        });
+        if (r.ok) {
+          const u = await r.json();
+          const nome = (u.user_metadata && u.user_metadata.nome_completo) || u.email;
+          if (nome) {
+            $("usuario").value = nome;
+            guardar(K_USER, nome);
+            $("fonteUsuario").textContent = "✓ conta logada: " + (u.email || nome);
+            $("fonteUsuario").style.color = "#34d399";
+            atualizarCtx();
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 3) arquivo offline nao tem login: campo manual (salvo)
+    $("fonteUsuario").textContent = $("usuario").value
+      ? "conta informada manualmente (salva neste navegador)"
+      : "sem login neste arquivo — digite o nome da conta";
+    $("fonteUsuario").style.color = "#fbbf24";
+    atualizarCtx();
+  }
+
+  function removerEquipamento() {
+    if (equipamentos.length <= 1) {
+      log("Não dá para remover o último equipamento — mantenha ao menos um.", "#fbbf24");
+      return;
+    }
+    const eq = equipamentos.find(x => x.id === ativo);
+    if (!eq) return;
+    if (!confirm('Remover o equipamento "' + eq.nome + '"?\n\n' +
+                 'As leituras já capturadas continuam no CSV com os dados originais.')) return;
+
+    equipamentos = equipamentos.filter(x => x.id !== ativo);
+    guardar(K_EQ, JSON.stringify(equipamentos));
+    ativo = equipamentos[0].id;
+    renderEquip();
+    $("local").value = equipamentos[0].local || "";
+    guardar(K_LOCAL, $("local").value);
+    aplicarEquip();
+    log("Equipamento removido: " + eq.nome + ". Restam " + equipamentos.length + ".", "#fbbf24");
+  }
+
+  function initIdentificacao() {
+    carregarEquipamentos();
+    renderEquip();
+    const eq0 = equipamentos.find(x => x.id === ativo);
+    $("local").value = lembrar(K_LOCAL) || (eq0 ? eq0.local : "") || "";
+    aplicarEquip();
+    detectarUsuario();
+
+    $("equip").addEventListener("change", e => {
+      ativo = e.target.value;
+      const eq = equipamentos.find(x => x.id === ativo);
+      $("local").value = (eq && eq.local) ? eq.local : "";
+      guardar(K_LOCAL, $("local").value);
+      aplicarEquip();
+      log("Equipamento selecionado: " + (eq ? eq.nome : ativo));
+    });
+
+    $("local").addEventListener("input", () => {
+      const eq = equipamentos.find(x => x.id === ativo);
+      if (eq) { eq.local = $("local").value.trim(); guardar(K_EQ, JSON.stringify(equipamentos)); }
+      guardar(K_LOCAL, $("local").value);
+      atualizarCtx();
+    });
+
+    $("usuario").addEventListener("input", () => {
+      guardar(K_USER, $("usuario").value);
+      $("fonteUsuario").textContent = "conta informada manualmente (salva neste navegador)";
+      $("fonteUsuario").style.color = "#fbbf24";
+      atualizarCtx();
+    });
+
+    $("bNovo").addEventListener("click", () => { $("novoEquip").style.display = "flex"; });
+    $("bRemover").addEventListener("click", removerEquipamento);
+    $("neCancelar").addEventListener("click", () => { $("novoEquip").style.display = "none"; });
+    $("neSalvar").addEventListener("click", () => {
+      const nome = $("neNome").value.trim();
+      let id = ($("neId").value.trim() || "sensor-" + String(equipamentos.length + 1).padStart(2, "0"))
+        .toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+      const local = $("neLocal").value.trim();
+      if (!nome) { alert("Informe o nome do equipamento."); return; }
+      if (equipamentos.some(e => e.id === id)) { alert("Já existe um equipamento com esse ID."); return; }
+      equipamentos.push({ id: id, nome: nome, local: local });
+      guardar(K_EQ, JSON.stringify(equipamentos));
+      ativo = id;
+      renderEquip();
+      $("local").value = local;
+      guardar(K_LOCAL, local);
+      aplicarEquip();
+      $("novoEquip").style.display = "none";
+      $("neNome").value = $("neId").value = $("neLocal").value = "";
+      log("Equipamento adicionado: " + nome + " (" + id + ")", "#34d399");
+    });
+  }
+
+  /* -------------------- Exportar CSV -------------------- */
+  function csvCell(v) {
+    return '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  }
+
+  function exportarCSV() {
+    if (!registros.length) {
+      log("Nada para exportar — conecte o Arduino e receba ao menos 1 leitura.", "#fbbf24");
+      return;
+    }
+    const cab = ["data_hora", "equipamento_id", "equipamento", "localizacao",
+                 "conta_usuario", "ph", "raw_adc", "mv", "calibrado", "sinal"];
+    const linhas = [cab.map(csvCell).join(";")];
+    registros.forEach(r => linhas.push([
+      r.hora, r.equipamento_id, r.equipamento, r.localizacao, r.conta,
+      r.ph, r.raw, r.mv, r.calibrado, r.sinal
+    ].map(csvCell).join(";")));
+
+    // BOM + CRLF + ";" + decimal "," = abre direto no Excel pt-BR.
+    const csv = "\uFEFF" + linhas.join("\r\n") + "\r\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const d = new Date(), p2 = n => String(n).padStart(2, "0");
+    const stamp = d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) +
+                  "_" + p2(d.getHours()) + "-" + p2(d.getMinutes());
+    a.href = url;
+    a.download = "acquasafe_" + (ativo || "sensor") + "_" + stamp + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    log("CSV exportado: " + registros.length + " leituras → " + a.download, "#34d399");
+  }
+
+  function log(txt, cor) {
+    const d = document.createElement("div");
+    d.style.color = cor || "#94a3b8";
+    d.textContent = "[" + new Date().toLocaleTimeString("pt-BR") + "] " + txt;
+    $("log").appendChild(d);
+    $("log").scrollTop = $("log").scrollHeight;
+    while ($("log").children.length > 100) $("log").removeChild($("log").firstChild);
+  }
+
+  function status(txt, classe) {
+    $("status").textContent = txt;
+    $("dot").className = "dot" + (classe ? " " + classe : "");
+  }
+
+  function botoes(con) {
+    $("bCon").disabled = con;
+    $("bDes").disabled = !con;
+  }
+
+  function desenhar() {
+    const c = $("chart"), g = c.getContext("2d");
+    const W = c.width, H = c.height;
+    g.clearRect(0, 0, W, H);
+    g.strokeStyle = "#ffffff12"; g.lineWidth = 1;
+    for (let i = 0; i <= 14; i += 2) {
+      const y = H - (i / 14) * H;
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+    if (pontos.length < 2) return;
+    g.strokeStyle = "#22d3ee"; g.lineWidth = 2; g.beginPath();
+    pontos.forEach((v, i) => {
+      const x = (i / 59) * W;
+      const y = H - (v / 14) * H;
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    });
+    g.stroke();
+  }
+
+  // Sonda desconectada = entrada BNC flutuando = A0 tende a 0 V ou 5 V.
+  // Como a conversao e inversa (tensao CAI -> pH SOBE), o numero normalmente
+  // dispara para o extremo alcalino em vez de zerar. Nao e medicao: e lixo.
+  const ultimosRaw = [];
+  function validar(o) {
+    const mv = Number(o.mv), raw = Number(o.raw);
+    let msg, cor, plausivel = false;
+
+    if (Number.isNaN(mv) || mv < 1000 || mv > 4000) {
+      msg = "⚠️ sonda desconectada / fora da faixa — NÃO é medição";
+      cor = "#fbbf24";
+    } else {
+      ultimosRaw.push(raw);
+      if (ultimosRaw.length > 12) ultimosRaw.shift();
+      const travado = ultimosRaw.length === 12 && ultimosRaw.every(v => v === ultimosRaw[0]);
+      if (travado) {
+        msg = "⚠️ sinal travado — confira o BNC e o fio do A0";
+        cor = "#fbbf24";
+      } else {
+        msg = "✅ sinal plausível (sonda conectada)";
+        cor = "#34d399";
+        plausivel = true;
+      }
+    }
+    $("valid").textContent = msg;
+    $("valid").style.color = cor;
+    $("ph").style.color = cor === "#34d399" ? "#67e8f9" : "#fbbf24";
+    return plausivel;
+  }
+
+  function novaLeitura(o) {
+    total++;
+    $("n").textContent = total;
+    const ph = Number(o.ph);
+    if (!Number.isNaN(ph)) {
+      $("ph").textContent = ph.toFixed(2);
+      pontos.push(ph);
+      if (pontos.length > 60) pontos.shift();
+      desenhar();
+    }
+    $("raw").textContent = o.raw ?? "--";
+    $("mv").textContent = (o.mv ?? "--") + " mV";
+    $("hora").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
+    const plausivel = validar(o);
+
+    // Cada linha guarda o contexto do momento da leitura: se o usuario trocar
+    // de equipamento/local/conta no meio da sessao, as linhas antigas nao mudam.
+    const eq = equipamentos.find(x => x.id === ativo);
+    const agora = new Date();
+    registros.push({
+      hora: agora.toLocaleString("pt-BR"),
+      equipamento_id: ativo,
+      equipamento: eq ? eq.nome : "",
+      localizacao: $("local").value.trim(),
+      conta: $("usuario").value.trim(),
+      ph: Number.isNaN(ph) ? "" : String(ph.toFixed(2)).replace(".", ","),
+      raw: o.raw ?? "",
+      mv: o.mv ?? "",
+      calibrado: o.cal === true ? "sim" : "nao",
+      sinal: plausivel ? "plausivel" : "invalido"
+    });
+    $("qtdReg").textContent = registros.length;
+    $("bExport").disabled = false;
+
+    if (o.cal === true) {
+      $("cal").textContent = "calibrado";
+      $("cal").style.color = "#34d399";
+    }
+    if (total === 1) {
+      $("aviso").style.display = "none";
+      log("Primeira leitura recebida · " + $("ctxTxt").textContent, "#34d399");
+    }
+  }
+
+  function linha(txt) {
+    ultimaLinha = Date.now();
+    if (avisou) { $("aviso").style.display = "none"; avisou = false; }
+    let o;
+    try { o = JSON.parse(txt); } catch (e) { log("Serial: " + txt); return; }
+    if (o.tipo === "leitura") novaLeitura(o);
+    else log((o.ok ? "OK: " : "ERRO: ") + (o.msg || o.cmd || ""), o.ok ? "#34d399" : "#f87171");
+  }
+
+  function vigiar() {
+    ultimaLinha = Date.now(); avisou = false;
+    if (watchdog) clearInterval(watchdog);
+    watchdog = setInterval(() => {
+      if (!lendo) return;
+      if (Date.now() - ultimaLinha > 4000 && !avisou) {
+        $("aviso").innerHTML = "<b>Conectou, mas não chegou nenhum dado em 4 s.</b><br>" +
+          "Você gravou o sketch no Uno? Confira: placa <b>Arduino Uno</b>, porta correta, " +
+          "<b>9600 baud</b>, <b>Monitor Serial fechado</b>. Um Uno novo não envia nada sozinho.";
+        $("aviso").style.display = "block";
+        log("Nenhum JSON recebido — verifique o upload do sketch.", "#fbbf24");
+        avisou = true;
+      }
+    }, 2000);
+  }
+
+  async function conectar() {
+    if (!("serial" in navigator)) {
+      $("erro").innerHTML = "<b>Este navegador não tem Web Serial.</b> Abra este arquivo no " +
+        "<b>Chrome ou Edge</b> (desktop). Firefox e Safari não funcionam.";
+      $("erro").style.display = "block";
+      return;
+    }
+    try {
+      porta = await navigator.serial.requestPort();
+      await porta.open({ baudRate: BAUD });
+      lendo = true; buffer = "";
+      botoes(true); status("conectado · 9600 baud", "ok");
+      log("Porta aberta. Aguardando leituras...", "#34d399");
+      vigiar();
+      await ler();
+    } catch (e) {
+      log("Falha ao conectar: " + e.message, "#f87171");
+      status("falha na conexão", "bad");
+      botoes(false); porta = null;
+    }
+  }
+
+  async function ler() {
+    let pipe;
+    try {
+      const dec = new TextDecoderStream();
+      pipe = porta.readable.pipeTo(dec.writable);
+      leitor = dec.readable.getReader();
+      while (lendo) {
+        const { value, done } = await leitor.read();
+        if (done) break;
+        buffer += value;
+        let p;
+        while ((p = buffer.indexOf("\n")) >= 0) {
+          const l = buffer.slice(0, p).replace(/\r$/, "").trim();
+          buffer = buffer.slice(p + 1);
+          if (l) linha(l);
+        }
+      }
+    } catch (e) {
+      if (lendo) log("Leitura interrompida: " + e.message, "#f87171");
+    } finally {
+      try { if (leitor) await leitor.cancel(); } catch (e) {}
+      try { if (pipe) await pipe.catch(() => {}); } catch (e) {}
+      leitor = null;
+    }
+  }
+
+  async function desconectar() {
+    lendo = false;
+    if (watchdog) { clearInterval(watchdog); watchdog = null; }
+    try { if (leitor) await leitor.cancel(); } catch (e) {}
+    try { if (porta) await porta.close(); } catch (e) {}
+    porta = null; leitor = null;
+    botoes(false); status("desconectado", "");
+    $("aviso").style.display = "none";
+    log("Porta fechada.", "#fbbf24");
+  }
+
+  $("bCon").addEventListener("click", conectar);
+  $("bDes").addEventListener("click", desconectar);
+  $("bExport").addEventListener("click", exportarCSV);
+  if ("serial" in navigator) {
+    navigator.serial.addEventListener("disconnect", () => {
+      log("Arduino desconectado.", "#fbbf24"); desconectar();
+    });
+  }
+  initIdentificacao();
+  desenhar();
+  botoes(false);
+  log("Abra no Chrome/Edge e clique em 'Conectar Arduino'.");
+})();
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcquaSafe – Teste do Sensor de pH</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal.css">
+  <style>body { font-family: "DM Sans", sans-serif; }</style>
+</head>
+<body class="h-full bg-[#0a0f1a] text-white overflow-auto">
+
+<!-- Navbar -->
+<header class="w-full px-6 py-4 flex items-center justify-between border-b border-white/10 bg-[#0a0f1a]/95 backdrop-blur-md sticky top-0 z-50">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+      <i data-lucide="cpu" class="w-5 h-5 text-white"></i>
+    </div>
+    <span class="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
+      AcquaSafe · Bancada
+    </span>
+  </div>
+  <div class="flex items-center gap-4 text-sm">
+    <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+    <span id="status-texto" class="text-slate-400">Desconectado</span>
+    <a href="portal.html?real=1" class="text-cyan-400 hover:text-cyan-300">Ver no painel →</a>
+  </div>
+</header>
+
+<div class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-bold">Sensor de pH E201-9 · Arduino Uno R3</h1>
+    <p class="text-slate-400 text-sm mt-1">
+      Leitura direta pela porta USB (Web Serial). Sem WiFi, sem servidor e sem gateway.
+    </p>
+  </div>
+
+  <!-- Aviso de navegador incompativel -->
+  <div id="sem-webserial" class="hidden rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+    <strong>Web Serial não disponível aqui.</strong> Use <b>Chrome ou Edge desktop</b>, abra esta página em
+    <b>aba própria</b> (não dentro de um iframe) e em <b>HTTPS ou localhost</b>.
+    Alternativa sem navegador: <code class="font-mono">bridge/ph_serial_bridge.py</code>.
+  </div>
+
+  <!-- Aviso: conectou mas nao chegou nenhuma linha JSON -->
+  <div id="sem-dados" class="hidden rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+    <strong>Conectado, mas nenhuma linha JSON chegou em 4 s.</strong>
+    O Uno ligado no USB ainda não está falando. Confira:
+    <b>fez o upload de <code class="font-mono">arduino/acquasafe_ph/acquasafe_ph.ino</code></b> pela IDE do Arduino?
+    Placa = <b>Arduino Uno</b>, porta correta, <b>9600 baud</b> e <b>Monitor Serial fechado</b>.
+    Um Uno novo de fábrica não envia nada sozinho — só estar plugado não basta.
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Leitura atual -->
+    <div class="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-slate-400">pH em tempo real</p>
+          <div class="flex items-end gap-3 mt-2">
+            <span id="valor-ph" class="text-7xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent tabular-nums">--</span>
+            <span class="text-slate-400 mb-3 text-sm">pH</span>
+          </div>
+          <p id="valor-hora" class="text-xs text-slate-500 mt-2">Aguardando conexão…</p>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span id="ph-badge" class="text-[11px] px-2.5 py-1 rounded-full border bg-slate-500/15 text-slate-300 border-white/10">—</span>
+          <span id="cal-badge" class="text-[11px] px-2.5 py-1 rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/25">0/2 pontos · curva nominal (aproximada)</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/10">
+        <div>
+          <p class="text-xs text-slate-400">ADC bruto (0–1023)</p>
+          <p id="valor-raw" class="text-2xl font-semibold tabular-nums mt-1">--</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Tensão no pino A0</p>
+          <p id="valor-mv" class="text-2xl font-semibold tabular-nums mt-1">-- mV</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conexao -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <h2 class="font-semibold flex items-center gap-2"><i data-lucide="usb" class="w-4 h-4 text-cyan-400"></i> Conexão USB</h2>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Feche o <b>Monitor Serial da IDE</b> antes de conectar (a porta é exclusiva).
+        Use um cabo USB que transmita dados, não apenas carga.
+      </p>
+      <div class="flex gap-2">
+        <button id="btn-conectar" class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 disabled:opacity-40 transition">
+          Conectar Arduino
+        </button>
+        <button id="btn-desconectar" class="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 disabled:opacity-40 transition">
+          Sair
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-2 pt-2">
+        <button id="btn-get" disabled class="py-2 rounded-lg text-xs bg-white/5 hover:bg-white/10 disabled:opacity-40 transition">GET</button>
+        <button id="btn-raw" disabled class="py-2 rounded-lg text-xs bg-white/5 hover:bg-white/10 disabled:opacity-40 transition">RAW</button>
+        <button id="btn-status" disabled class="py-2 rounded-lg text-xs bg-white/5 hover:bg-white/10 disabled:opacity-40 transition">STATUS</button>
+      </div>
+      <p class="text-[11px] text-slate-500 leading-relaxed">
+        9600 baud · 1 linha JSON/s · Arduino Uno R3 aparece como <code class="font-mono">COMx</code> (Windows),
+        <code class="font-mono">/dev/ttyACM0</code> (Linux) ou <code class="font-mono">/dev/cu.usbmodem*</code> (macOS).
+      </p>
+    </div>
+  </div>
+
+  <!-- Grafico -->
+  <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold">Últimas 60 leituras</h2>
+      <span class="text-xs text-slate-500">Faixa considerada normal: pH 6,0 – 8,5</span>
+    </div>
+    <div class="h-64"><canvas id="chart-ph"></canvas></div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Calibracao -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <h2 class="font-semibold flex items-center gap-2"><i data-lucide="flask-conical" class="w-4 h-4 text-cyan-400"></i> Calibração em 2 pontos</h2>
+      <ol class="text-sm text-slate-300 space-y-1 list-decimal list-inside leading-relaxed">
+        <li>Enxague o bulbo com água destilada e seque <u>com leves batidas</u> (não esfregue).</li>
+        <li>Mergulhe no <b>buffer pH 7,00</b>, espere 30–60 s estabilizar, clique em <b>CAL:7.00</b>.</li>
+        <li>Enxague, mergulhe no <b>buffer pH 4,00</b>, espere estabilizar, clique em <b>CAL:4.00</b>.</li>
+        <li>O badge passa a “Calibrado” e a curva nominal é substituída pela reta real do seu sensor.</li>
+      </ol>
+      <div class="flex flex-wrap gap-2">
+        <button id="btn-cal7" disabled class="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 disabled:opacity-40 transition">CAL:7.00</button>
+        <button id="btn-cal4" disabled class="px-4 py-2 rounded-lg text-sm font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 disabled:opacity-40 transition">CAL:4.00</button>
+        <button id="btn-reset" disabled class="px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-40 transition">RESET</button>
+      </div>
+      <p class="text-[11px] text-slate-500">
+        A calibração fica na EEPROM do Arduino. Antes dos 2 pontos, o pH exibido vem de uma curva
+        genérica (~2,5 V em pH 7 / ~0,18 V por pH) e serve só para conferir que o sensor reage.
+      </p>
+    </div>
+
+    <!-- Supabase -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <h2 class="font-semibold flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-cyan-400"></i> Gravar no site</h2>
+      <label class="flex items-center gap-3 text-sm cursor-pointer">
+        <input id="chk-gravar" type="checkbox" class="w-4 h-4 accent-cyan-500">
+        Enviar leituras para a tabela <code class="font-mono text-cyan-300">leituras</code> do Supabase
+      </label>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-400">sensor_id</label>
+          <input id="sensor-id" value="sensor-01" class="mt-1 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">Intervalo de gravação</label>
+          <select id="intervalo" class="mt-1 w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+            <option value="1">1 s</option>
+            <option value="5" selected>5 s</option>
+            <option value="30">30 s</option>
+            <option value="60">60 s</option>
+          </select>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400">
+        Leituras gravadas: <b id="contador-envios" class="text-cyan-300">0</b>.
+        Antes de ativar, execute <code class="font-mono">supabase/leituras.sql</code> no SQL Editor do Supabase.
+      </p>
+      <a href="portal.html?real=1" class="inline-flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300">
+        Abrir o painel em modo sensor real <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+      <p class="text-[11px] text-slate-500">
+        O modo <code class="font-mono">?real=1</code> desliga o gerador de leituras falsas do portal e
+        passa a apenas ler o banco a cada 10 s.
+      </p>
+    </div>
+  </div>
+
+  <!-- Console -->
+  <div class="rounded-2xl border border-white/10 bg-black/30 p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-sm">Console serial</h2>
+      <button id="btn-limpar-log" class="text-xs text-slate-400 hover:text-white">Limpar</button>
+    </div>
+    <div id="console-log" class="font-mono text-[11px] leading-relaxed h-40 overflow-y-auto space-y-0.5"></div>
+  </div>
+
+  <p class="text-center text-xs text-slate-500 pb-4">
+    Guia completo de ligação, calibração e alternativas (WiFi / ponte Python):
+    <a href="SENSOR_PH.md" class="text-cyan-400 hover:text-cyan-300">SENSOR_PH.md</a>
+  </p>
+</div>
+
+<script src="sensor.js"></script>
+<script src="voltar.js"></script>
+</body>
+</html>
+
+
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
