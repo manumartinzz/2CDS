@@ -35,8 +35,8 @@
 <div class="max-w-7xl mx-auto px-6 py-10">
 
     <header class="mb-8">
-        <h2 class="text-4xl font-bold text-white mb-2">Doenças e Patógenos da Água</h2>
-        <p class="text-slate-400">Banco de dados completo de agentes associados à qualidade da água e às doenças de veiculação hídrica. O catálogo original foi preservado e ampliado.</p>
+        <h2 class="text-4xl font-bold text-white mb-2">Doenças e Patógenos por Cultura</h2>
+        <p class="text-slate-400">Patógenos que atingem a lavoura da sua conta, pesquisados um a um em fontes oficiais (Embrapa, Fundecitrus, EPPO/CABI), acrescidos dos agentes de veiculação hídrica monitorados pelo sensor. As fontes estão ao final desta página.</p>
     </header>
 
     <!-- Filtros -->
@@ -52,6 +52,8 @@
             <option value="Protozoário">Protozoário</option>
             <option value="Nematoide">Nematoide</option>
             <option value="Helminto">Helminto</option>
+            <option value="Inseto vetor">Inseto vetor</option>
+            <option value="Referência">Referência</option>
         </select>
         <button onclick="limparFiltros()"
                 class="px-5 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
@@ -69,10 +71,11 @@
                 <tr class="bg-white/5 text-left">
                     <th class="px-5 py-4">Patógeno</th>
                     <th class="px-5 py-4">Tipo</th>
-                    <th class="px-5 py-4">Nível de risco</th>
+                    <th class="px-5 py-4">Risco na lavoura</th>
                     <th class="px-5 py-4">Doença Associada</th>
                     <th class="px-5 py-4">Parte afetada</th>
-                    <th class="px-5 py-4 text-center">Nível BSL</th>
+                    <th class="px-5 py-4 text-center">Risco à saúde</th>
+                    <th class="px-5 py-4">Controle / solução</th>
                 </tr>
             </thead>
             <tbody id="tabelaPatogenos" class="text-slate-300"></tbody>
@@ -80,13 +83,17 @@
     </div>
 
     <p class="text-xs text-slate-600 mt-4">
-        Catálogo de referência para triagem e monitoramento; confirme diagnóstico, tratamento e dosagens com responsável técnico e normas sanitárias aplicáveis.
+        Catálogo de referência para triagem e monitoramento; confirme diagnóstico, tratamento e dosagens com responsável técnico e normas sanitárias aplicáveis. Nenhuma dose ou marca comercial é recomendada aqui.
     </p>
+
+    <!-- Fontes ao final do banco de dados -->
+    <section id="bloco-fontes" data-fontes class="glass-card rounded-2xl p-6 mt-8 border border-cyan-500/20"></section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="lavoura.js"></script>
+<script src="pesquisa-culturas.js"></script>
 <script src="patogenos.js"></script>
   <script src="./pwa.js"></script>
 <script src="voltar.js"></script>

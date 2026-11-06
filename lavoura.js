@@ -2,14 +2,19 @@
   lavoura.js — AcquaSafe
   Regra única do "tipo de lavoura" escolhido no cadastro.
 
-  Hoje o banco só está completo para SOJA (doenças, periculosidade e
-  soluções químicas). Para qualquer outra lavoura, os três catálogos
-  ficam VAZIOS, com uma explicação em vez de dados da soja.
+  ANTES: só a soja tinha catálogo; as demais culturas ficavam vazias.
+  AGORA: todas as culturas do cadastro têm catálogo pesquisado em
+  pesquisa-culturas.js (patógenos, soluções químicas, níveis de
+  periculosidade e fontes oficiais). Visitante sem sessão continua
+  vendo a soja em modo demonstração.
 
-  Visitante sem sessão continua vendo o catálogo de soja (modo demonstração).
+  As funções catalogoDisponivel() e renderCatalogoVazio() ficam mantidas
+  por compatibilidade com versões antigas das páginas, mas nenhum catálogo
+  é mais esvaziado.
 */
 
 const LAVOURA_COM_DADOS = "soja";
+const LAVOURA_PADRAO = "soja";
 
 async function obterLavouraDoUsuario() {
   if (typeof supabaseClient === "undefined") return null;
@@ -25,28 +30,35 @@ async function obterLavouraDoUsuario() {
       .maybeSingle();
     if (perfil?.tipo_lavoura) tipo = perfil.tipo_lavoura;
 
-    return String(tipo || LAVOURA_COM_DADOS).trim().toLowerCase();
+    return String(tipo || LAVOURA_PADRAO).trim().toLowerCase();
   } catch (err) {
     console.warn("Não foi possível ler a lavoura do usuário:", err.message);
-    return LAVOURA_COM_DADOS;
+    return LAVOURA_PADRAO;
   }
 }
 
-/** true = pode exibir o catálogo; false = deixar as tabelas vazias. */
-async function catalogoDisponivel() {
-  const lavoura = await obterLavouraDoUsuario();
-  return lavoura === null || lavoura === LAVOURA_COM_DADOS;
+/** Cultura normalizada para uso nos catálogos (nunca lança, nunca vazia). */
+async function obterCulturaAtual() {
+  const bruta = await obterLavouraDoUsuario();
+  if (typeof normalizarCultura === "function") return normalizarCultura(bruta || LAVOURA_PADRAO);
+  return String(bruta || LAVOURA_PADRAO).trim().toLowerCase();
 }
 
-/** Renderiza o estado vazio de um catálogo, sem dados da soja. */
+/** Compatibilidade: hoje TODAS as culturas têm catálogo. */
+async function catalogoDisponivel() {
+  await obterLavouraDoUsuario();
+  return true;
+}
+
+/** Compatibilidade: mantida, mas não é mais usada para esvaziar catálogos. */
 function renderCatalogoVazio(tbodyId, colunas, contagemId) {
   const tbody = document.getElementById(tbodyId);
   if (tbody) {
     tbody.innerHTML =
       `<tr><td colspan="${colunas}" class="px-6 py-10 text-center text-slate-400">` +
-      `Ainda não há dados desta lavoura. O catálogo completo está disponível para soja.` +
+      `Nenhum registro encontrado para esta busca.` +
       `</td></tr>`;
   }
   const contagem = document.getElementById(contagemId);
-  if (contagem) contagem.textContent = "0 registros para esta lavoura";
+  if (contagem) contagem.textContent = "0 registros encontrados";
 }

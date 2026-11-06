@@ -25,7 +25,7 @@
         </div>
         <div class="flex gap-8 text-sm">
             <a href="solucoes.html"       class="hover:text-cyan-400 transition-colors">Soluções</a>
-            <a href="pat%C3%B3genos.html"      class="hover:text-cyan-400 transition-colors">Patógenos</a>
+            <a href="pat%C3%B3genos.html" class="hover:text-cyan-400 transition-colors">Patógenos</a>
             <a href="periculosidade.html" class="text-cyan-400 font-medium">Periculosidade</a>
             <a href="index.html"          class="text-red-400 hover:text-red-300">Sair</a>
         </div>
@@ -35,82 +35,149 @@
 <div class="max-w-7xl mx-auto px-6 py-10">
     <header class="mb-10">
         <h2 class="text-4xl font-bold text-white mb-2">Níveis de Periculosidade</h2>
-        <p class="text-slate-400">Classificação de risco biológico (BSL) e medidas de contenção</p>
+        <p class="text-slate-400">Três escalas distintas e complementares: risco biológico à saúde humana, impacto fitossanitário na lavoura e classificação toxicológica dos produtos químicos.</p>
+        <p class="text-xs text-slate-500 mt-3">Correção técnica: BSL e as classes de risco do Ministério da Saúde / NR-32 / OMS classificam agentes que adoecem <strong>humanos e animais</strong>. Fungos, oomicetos e nematoides de plantas não recebem BSL — para eles usamos o impacto na lavoura descrito pela Embrapa.</p>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <!-- Tabela BSL -->
-        <div class="glass-card rounded-2xl overflow-hidden">
+    <!-- Eixo 1: saúde humana -->
+    <section class="mb-10">
+        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">
+            <i data-lucide="heart-pulse" class="w-5 h-5 text-rose-400"></i>
+            1 · Risco biológico à saúde humana
+        </h3>
+        <p class="text-sm text-slate-400 mb-4">Classes 1 a 4 — Portaria GM/MS 3.398/2021, Portaria 2.349/2017, NR-32 e Manual de Biossegurança Laboratorial da OMS (4ª ed., 2020).</p>
+        <div class="glass-card rounded-2xl overflow-x-auto">
             <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-white/5">
-                        <th class="px-6 py-5 text-left">Nível</th>
-                        <th class="px-6 py-5 text-left">Descrição</th>
-                        <th class="px-6 py-5 text-left">Exemplo</th>
-                        <th class="px-6 py-5 text-center">EPI Recomendado</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelaPerigo" class="text-slate-300"></tbody>
+                <thead><tr class="bg-white/5 text-left">
+                    <th class="px-6 py-4">Classe</th>
+                    <th class="px-6 py-4">Descrição</th>
+                    <th class="px-6 py-4">Exemplo</th>
+                    <th class="px-6 py-4">Conduta / EPI</th>
+                </tr></thead>
+                <tbody id="tabelaRiscoHumano" class="text-slate-300"></tbody>
             </table>
         </div>
+    </section>
 
-        <!-- Legenda -->
-        <div class="glass-card p-6 rounded-2xl">
-            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
-                Legenda de Risco
-            </h3>
-            <div class="space-y-3">
-                <div class="flex items-center gap-3 p-4 bg-red-500/10 rounded-xl">
-                    <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">4</div>
-                    <div><strong class="text-white">Risco Muito Alto</strong> – Patógenos letais sem tratamento disponível</div>
-                </div>
-                <div class="flex items-center gap-3 p-4 bg-orange-500/10 rounded-xl">
-                    <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">3</div>
-                    <div><strong class="text-white">Risco Alto</strong> – Agentes infecciosos graves / transmissíveis</div>
-                </div>
-                <div class="flex items-center gap-3 p-4 bg-yellow-500/10 rounded-xl">
-                    <div class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">2</div>
-                    <div><strong class="text-white">Risco Moderado</strong> – Patógenos com tratamento disponível</div>
-                </div>
-                <div class="flex items-center gap-3 p-4 bg-green-500/10 rounded-xl">
-                    <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
-                    <div><strong class="text-white">Risco Mínimo</strong> – Sem risco ao ser humano saudável</div>
-                </div>
+    <!-- Eixo 2: lavoura -->
+    <section class="mb-10">
+        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">
+            <i data-lucide="sprout" class="w-5 h-5 text-emerald-400"></i>
+            2 · Impacto fitossanitário na lavoura
+        </h3>
+        <p class="text-sm text-slate-400 mb-4">Leitura qualitativa da severidade e das perdas descritas pela Embrapa e pelo Fundecitrus, combinada com as listas de pragas quarentenárias do MAPA. <strong>Não é classificação oficial do MAPA.</strong></p>
+        <div class="glass-card rounded-2xl overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="bg-white/5 text-left">
+                    <th class="px-6 py-4">Nível</th>
+                    <th class="px-6 py-4">Critério</th>
+                    <th class="px-6 py-4">Exemplo</th>
+                    <th class="px-6 py-4">Conduta</th>
+                </tr></thead>
+                <tbody id="tabelaRiscoLavoura" class="text-slate-300"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Eixo 3: químicos -->
+    <section class="mb-10">
+        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">
+            <i data-lucide="flask-conical" class="w-5 h-5 text-amber-400"></i>
+            3 · Classificação toxicológica de agrotóxicos
+        </h3>
+        <p class="text-sm text-slate-400 mb-4">Sistema Globalmente Harmonizado (GHS) conforme Anvisa RDC 294/2019. A categoria é definida <strong>por produto formulado</strong>, não por ingrediente ativo — confirme no rótulo/bula e no AGROFIT.</p>
+        <div class="glass-card rounded-2xl overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead><tr class="bg-white/5 text-left">
+                    <th class="px-6 py-4">Categoria</th>
+                    <th class="px-6 py-4">Faixa no rótulo</th>
+                    <th class="px-6 py-4">Significado</th>
+                    <th class="px-6 py-4">Conduta</th>
+                </tr></thead>
+                <tbody id="tabelaGHS" class="text-slate-300"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Legenda -->
+    <section class="glass-card p-6 rounded-2xl mb-10">
+        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+            Legenda rápida · risco à saúde humana
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="flex items-center gap-3 p-4 bg-red-500/10 rounded-xl">
+                <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">4</div>
+                <div><strong class="text-white">Classe 4</strong> – doença grave, alta transmissibilidade, sem profilaxia/terapia eficaz</div>
+            </div>
+            <div class="flex items-center gap-3 p-4 bg-orange-500/10 rounded-xl">
+                <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">3</div>
+                <div><strong class="text-white">Classe 3</strong> – doença potencialmente letal, geralmente há profilaxia/terapia</div>
+            </div>
+            <div class="flex items-center gap-3 p-4 bg-yellow-500/10 rounded-xl">
+                <div class="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                <div><strong class="text-white">Classe 2</strong> – risco individual moderado, propagação limitada, tratamento disponível</div>
+            </div>
+            <div class="flex items-center gap-3 p-4 bg-green-500/10 rounded-xl">
+                <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                <div><strong class="text-white">Classe 1</strong> – não causa doença em humanos ou animais adultos sadios</div>
             </div>
         </div>
+    </section>
 
-    </div>
+    <!-- Fontes ao final do banco de dados -->
+    <section id="bloco-fontes" data-fontes class="glass-card rounded-2xl p-6 border border-cyan-500/20"></section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="lavoura.js"></script>
+<script src="pesquisa-culturas.js"></script>
 <script>
 if (window.lucide) lucide.createIcons();
 
-const perigos = [
-    { nivel: "BSL-1", desc: "Risco mínimo",       exemplo: "Bactérias não patogênicas",      epi: "Luvas, jaleco" },
-    { nivel: "BSL-2", desc: "Risco moderado",      exemplo: "E. coli patogênica, Phakopsora", epi: "Luvas, jaleco, óculos" },
-    { nivel: "BSL-3", desc: "Risco alto",           exemplo: "Heterodera glycines, M. tuberculosis", epi: "Respirador N95, roupa completa" },
-    { nivel: "BSL-4", desc: "Risco muito alto",     exemplo: "Vírus Ebola",                    epi: "Traje pressurizado" },
+const riscoHumano = [
+    { nivel: "Classe 1", desc: "Baixo risco individual e para a comunidade; não causa doença em adultos sadios", exemplo: "Lactobacillus spp., Bacillus subtilis", epi: "Boas práticas; luvas e jaleco" },
+    { nivel: "Classe 2", desc: "Risco individual moderado, disseminação limitada, profilaxia/terapia eficazes", exemplo: "Schistosoma mansoni, vírus da rubéola, E. coli, Salmonella spp.", epi: "Luvas, jaleco, óculos; descontaminação" },
+    { nivel: "Classe 3", desc: "Alto risco individual, pode disseminar-se, geralmente há profilaxia/terapia", exemplo: "Bacillus anthracis, HIV, Salmonella Typhi", epi: "Cabine de segurança, respirador, acesso controlado" },
+    { nivel: "Classe 4", desc: "Alto risco individual e coletivo; sem medida profilática ou terapêutica eficaz", exemplo: "Vírus Ebola, Marburg, arenavírus Lassa/Junin/Machupo/Sabia", epi: "Contenção máxima, traje pressurizado" },
 ];
 
-window.onload = async () => {
-    // Só a lavoura de soja tem catálogo completo nesta versão.
-    if (!(await catalogoDisponivel())) {
-        renderCatalogoVazio("tabelaPerigo", 4, "");
-        return;
-    }
-    document.getElementById("tabelaPerigo").innerHTML = perigos.map(p => `
-        <tr class="border-t border-white/10 hover:bg-white/5">
-            <td class="px-6 py-4 font-bold text-cyan-400">${p.nivel}</td>
+const riscoLavoura = [
+    { nivel: "Altíssimo", desc: "Sem cura descrita ou perdas próximas a 100% em materiais suscetíveis", exemplo: "HLB dos citros; ferrugem alaranjada da cana; brusone do arroz", epi: "Erradicação, mudas certificadas, troca de variedade" },
+    { nivel: "Alto", desc: "Perdas elevadas documentadas pela Embrapa (faixa de 40% a 80%)", exemplo: "Ferrugem-asiática da soja; cercosporiose do milho; ferrugem da folha do trigo", epi: "Monitoramento, cultivares resistentes, fungicidas registrados" },
+    { nivel: "Moderado", desc: "Danos localizados, em geral controláveis por manejo cultural", exemplo: "Oídio da soja, mancha angular do feijão, mancha parda do arroz", epi: "Rotação de culturas, restos culturais, acompanhamento" },
+    { nivel: "Baixo", desc: "Sem histórico de perdas econômicas relevantes", exemplo: "Manchas foliares sem dano econômico (Embrapa Feijão)", epi: "Acompanhamento; não se recomenda controle químico" },
+];
+
+const classificacaoGHS = [
+    { nivel: "Categoria 1", desc: "Faixa vermelha", exemplo: "Produto Extremamente Tóxico", epi: "EPI completo, receituário agronômico, treinamento" },
+    { nivel: "Categoria 2", desc: "Faixa vermelha", exemplo: "Produto Altamente Tóxico", epi: "EPI completo, receituário agronômico, treinamento" },
+    { nivel: "Categoria 3", desc: "Faixa amarela", exemplo: "Produto Moderadamente Tóxico", epi: "EPI, leitura da bula, intervalo de segurança" },
+    { nivel: "Categoria 4", desc: "Faixa azul", exemplo: "Produto Pouco Tóxico", epi: "EPI básico e boas práticas de aplicação" },
+    { nivel: "Categoria 5", desc: "Faixa azul", exemplo: "Improvável de Causar Dano Agudo", epi: "Boas práticas de aplicação" },
+    { nivel: "Não classificado", desc: "Faixa verde", exemplo: "Baixíssimo potencial de dano (ex.: produtos biológicos)", epi: "Boas práticas; verificar registro no AGROFIT" },
+];
+
+function preencher(id, linhas, cor) {
+    const tbody = document.getElementById(id);
+    if (!tbody) return;
+    tbody.innerHTML = linhas.map(p => `
+        <tr class="border-t border-white/10 hover:bg-white/5 align-top">
+            <td class="px-6 py-4 font-bold ${cor}">${p.nivel}</td>
             <td class="px-6 py-4">${p.desc}</td>
-            <td class="px-6 py-4">${p.exemplo}</td>
-            <td class="px-6 py-4 text-sm text-center">${p.epi}</td>
-        </tr>
-    `).join("");
+            <td class="px-6 py-4 text-sm">${p.exemplo}</td>
+            <td class="px-6 py-4 text-sm text-slate-400">${p.epi}</td>
+        </tr>`).join("");
+}
+
+window.onload = async () => {
+    preencher("tabelaRiscoHumano", riscoHumano, "text-rose-400");
+    preencher("tabelaRiscoLavoura", riscoLavoura, "text-emerald-400");
+    preencher("tabelaGHS", classificacaoGHS, "text-amber-400");
+    const cultura = typeof obterCulturaAtual === "function" ? await obterCulturaAtual() : "soja";
+    window.ACQUASAFE_CULTURA = cultura;
+    if (typeof renderFontesCultura === "function") renderFontesCultura(cultura, "#bloco-fontes");
 };
 </script>
 <script src="voltar.js"></script>
