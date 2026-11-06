@@ -44,28 +44,27 @@
             <a href="admin-bloqueios.html" class="btn-gradient inline-block">Gerenciar bloqueios</a>
         </section>
 
-        <button id="add">+ Leitor Phh</button>
-<nav id="abas"></nav>
-<div id="paginas"></div>
-
-<script>
-let n = 0;
-document.getElementById('add').onclick = () => {
-  n++;
-  const aba = document.createElement('button');
-  aba.textContent = 'Página ' + n;
-  const pagina = document.createElement('section');
-  pagina.id = 'p' + n;
-  pagina.innerHTML = `<h2>Página ${n}</h2><p>sensor ph ${n}.</p>`;
-  aba.onclick = () => {
-    document.querySelectorAll('#paginas section').forEach(s => s.hidden = true);
-    pagina.hidden = false;
-  };
-  document.getElementById('abas').append(aba);
-  document.getElementById('paginas').append(pagina);
-  aba.click();
-};
-</script>
+    <!-- Botão do Sensor no topo direito do admin -->
+<div style="position: fixed; top: 10px; right: 20px; z-index: 9999;">
+  <a href="./sensor.html"
+     style="
+       display: inline-block;
+       padding: 10px 20px;
+       background-color: #4CAF50;
+       color: white;
+       text-decoration: none;
+       border-radius: 8px;
+       font-size: 16px;
+       font-weight: bold;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+       transition: background-color 0.3s;
+     "
+     onmouseover="this.style.backgroundColor='#45a049'"
+     onmouseout="this.style.backgroundColor='#4CAF50'"
+  >
+    📡 Ver Sensor
+  </a>
+</div>
 
     </main>
 
