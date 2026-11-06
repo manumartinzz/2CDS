@@ -19,6 +19,12 @@ function filtrarSolucoes() { const t=document.getElementById("search").value.toL
 function limparFiltros() { document.getElementById("search").value=""; renderSolucoes(solucoes); }
 document.addEventListener("DOMContentLoaded", async () => {
   if (window.lucide) lucide.createIcons();
+  // Só a lavoura de soja tem catálogo completo nesta versão.
+  if (!(await catalogoDisponivel())) {
+    renderCatalogoVazio("tabelaSolucoes", 6, "");
+    document.getElementById("search").addEventListener("input", () => renderCatalogoVazio("tabelaSolucoes", 6, ""));
+    return;
+  }
   const {data,error}=await supabaseClient.from("solucoes").select("nome, concentracao, solvente, uso, uso_principal, validade_dias, observacoes").order("nome");
   solucoes=(error || !data || !data.length ? fallbackSolucoes : data).map(normalizar);
   renderSolucoes(solucoes);

@@ -403,6 +403,13 @@ let patogenos = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (window.lucide) lucide.createIcons();
+  // Só a lavoura de soja tem catálogo completo nesta versão.
+  if (!(await catalogoDisponivel())) {
+    renderCatalogoVazio("tabelaPatogenos", 6, "contagem");
+    document.getElementById("searchPat").addEventListener("input", () => renderCatalogoVazio("tabelaPatogenos", 6, "contagem"));
+    document.getElementById("filterTipo").addEventListener("change", () => renderCatalogoVazio("tabelaPatogenos", 6, "contagem"));
+    return;
+  }
   const { data, error } = await supabaseClient.from("doencas")
     .select("nome, tipo, grupo_risco, doenca_associada, orgao_afetado, nivel_bsl")
     .order("nome", { ascending: true });

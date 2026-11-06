@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nomeCompleto = document.getElementById("cad-nome").value.trim();
     const login = document.getElementById("cad-login").value.trim();
     const senha = document.getElementById("cad-senha").value;
+    const tipoLavoura = document.getElementById("cad-lavoura").value.trim().toLowerCase();
 
     const apenasNumeros = login.replace(/\D/g, "");
     const ehCpf = apenasNumeros.length === 11;
@@ -30,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
       email: login,
       password: senha,
       options: {
-        data: { nome_completo: nomeCompleto }
+        data: { nome_completo: nomeCompleto, tipo_lavoura: tipoLavoura }
       }
     });
 
@@ -38,6 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
       erroBox.textContent = "Erro ao cadastrar: " + error.message;
       erroBox.classList.remove("hidden");
       return;
+    }
+
+    // O gatilho handle_new_user() grava tipo_lavoura em profiles.
+    // Este update é um reforço para bancos que ainda não rodaram schema.sql.
+    if (data?.user?.id) {
+      const { error: erroPerfil } = await supabaseClient
+        .from("profiles").update({ tipo_lavoura: tipoLavoura }).eq("id", data.user.id);
+      if (erroPerfil) console.warn("Não foi possível gravar a lavoura no perfil:", erroPerfil.message);
     }
 
     // Cadastro OK -> segue o fluxo do site (tela de pagamento)

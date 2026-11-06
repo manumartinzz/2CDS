@@ -29,13 +29,13 @@
             <span id="nav-brand" class="font-heading font-bold text-xl">Acquasafe</span>
           </div>
           <div class="hidden md:flex items-center gap-8 text-sm text-gray-300">
-            <a href="#sobre" class="hover:text-cyan-400 transition">Sobre</a>
-            <a href="#funcionalidades" class="hover:text-cyan-400 transition">Funcionalidades</a>
-            <a href="#beneficios" class="hover:text-cyan-400 transition">Benefícios</a>
+            <a href="#prototipo" class="hover:text-cyan-400 transition">Protótipo</a>
+            <a href="#planos" class="hover:text-cyan-400 transition">Planos</a>
+            <a href="#detalhes" class="hover:text-cyan-400 transition">Detalhes</a>
           </div>
           <div class="flex items-center gap-4">
             <a href="login.html" class="text-sm font-medium hover:text-cyan-400 transition">Login</a>
-            <a href="https://wa.me/5541996366813" target="_blank" rel="noopener noreferrer" class="hidden md:block bg-gradient-to-r from-cyan-500 to-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-cyan-500/30 transition">Whatsapp</a>
+            <a href="cadastro.html" class="hidden md:block bg-gradient-to-r from-cyan-500 to-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-lg hover:shadow-cyan-500/30 transition">Assinar</a>
           </div>
         </div>
       </nav>
@@ -51,120 +51,50 @@
 
           <!-- Coluna de texto -->
           <div class="text-center lg:text-left animate-fade-up">
-            <span class="inline-block bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">🌱 Monitoramento Inteligente 24h</span>
+            <span class="inline-block bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">🌱 Proteja sua safra 24h</span>
 
-            <h1 id="hero-title" class="font-heading font-900 text-5xl md:text-6xl lg:text-7xl leading-tight mb-5 animate-fade-up delay-1 gradient-text">Acquasafe</h1>
+            <h1 id="hero-title" class="font-heading font-900 text-5xl md:text-6xl lg:text-7xl leading-tight mb-5 animate-fade-up delay-1 gradient-text">Água segura.<br>Colheita garantida.</h1>
 
-            <p id="hero-subtitle" class="text-lg md:text-xl text-gray-300 max-w-xl mx-auto lg:mx-0 mb-8 animate-fade-up delay-2">
-              Sensores inteligentes monitoram sua água 24h por dia e protegem sua lavoura contra contaminação — em tempo real.
+            <p id="hero-subtitle" class="text-lg md:text-xl text-gray-300 max-w-xl mx-auto lg:mx-0 mb-6 animate-fade-up delay-2">
+              Sensores IoT, alertas em menos de 5 minutos. A partir de <strong class="text-white">R$ 49/mês</strong>.
             </p>
 
-            <!-- Chips de recurso (substitui o parágrafo longo original) -->
+            <!-- 3 botões: levam cada um à sua explicação -->
             <div class="flex flex-wrap justify-center lg:justify-start gap-3 mb-9 animate-fade-up delay-2">
-              <span class="flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+              <a href="#det-sensores" class="flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:border-cyan-400/50 hover:text-cyan-300 transition">
                 <i data-lucide="activity" class="w-3.5 h-3.5 text-cyan-400"></i> Sensores IoT
-              </span>
-              <span class="flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+              </a>
+              <a href="#det-alertas" class="flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:border-emerald-400/50 hover:text-emerald-300 transition">
                 <i data-lucide="bell-ring" class="w-3.5 h-3.5 text-emerald-400"></i> Alertas &lt;5min
-              </span>
-              <span class="flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+              </a>
+              <a href="#det-conformidade" class="flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full hover:border-cyan-400/50 hover:text-cyan-300 transition">
                 <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i> Conformidade Legal
-              </span>
+              </a>
             </div>
 
             <div class="animate-fade-up delay-3 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <a href="#contato" id="cta-btn" class="bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-base px-7 py-3.5 rounded-full hover:shadow-xl hover:shadow-cyan-500/30 hover:scale-105 transition-all">Fale com a gente</a>
-              <a href="cadastro.html" class="border border-emerald-500/40 text-emerald-400 font-medium px-7 py-3.5 rounded-full hover:bg-emerald-500/10 transition flex items-center gap-2">
-                <i data-lucide="users" class="w-5 h-5"></i> Junte-se a Nós
+              <a href="cadastro.html" id="cta-btn" class="bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-base px-7 py-3.5 rounded-full hover:shadow-xl hover:shadow-cyan-500/30 hover:scale-105 transition-all">Começar agora</a>
+              <a href="#planos" class="border border-emerald-500/40 text-emerald-400 font-medium px-7 py-3.5 rounded-full hover:bg-emerald-500/10 transition flex items-center gap-2">
+                <i data-lucide="credit-card" class="w-5 h-5"></i> Ver planos
               </a>
             </div>
+            <p class="text-gray-500 text-xs mt-4 animate-fade-up delay-3">Sem fidelidade · Instalação em 1 dia · Suporte dedicado</p>
           </div>
 
-          <!-- Coluna do "comercial" animado -->
-          <div class="relative animate-fade-up delay-3">
+          <!-- Área da imagem do protótipo (temporária, trocar depois) -->
+          <div id="prototipo" class="relative animate-fade-up delay-3">
             <div class="flex items-center gap-2 mb-3 justify-center lg:justify-start">
               <span class="w-2 h-2 rounded-full bg-red-400 pulse-dot"></span>
-              <span class="text-xs font-semibold text-white/50 tracking-wider uppercase">Acquasafe em ação</span>
+              <span class="text-xs font-semibold text-white/50 tracking-wider uppercase">Protótipo AcquaSafe</span>
             </div>
 
             <div class="relative rounded-3xl overflow-hidden glass border border-cyan-500/20 shadow-2xl shadow-cyan-500/10 aspect-video">
+              <img src="images/prototipo.jpg" alt="Protótipo do sensor de qualidade de água AcquaSafe"
+                   class="w-full h-full object-cover" loading="eager"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+              <div style="display:none" class="w-full h-full absolute inset-0 items-center justify-center text-sm text-slate-400">Imagem do protótipo em breve</div>
 
-              <svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-                <defs>
-                  <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#0c4a6e"/>
-                    <stop offset="100%" stop-color="#082f49"/>
-                  </linearGradient>
-                  <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#14532d"/>
-                    <stop offset="100%" stop-color="#052e16"/>
-                  </linearGradient>
-                </defs>
-
-                <rect width="600" height="230" fill="url(#skyGrad)"/>
-                <rect y="220" width="600" height="200" fill="url(#groundGrad)"/>
-
-                <circle cx="500" cy="70" r="55" fill="#22d3ee" opacity="0.12">
-                  <animate attributeName="r" values="55;70;55" dur="4s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="500" cy="70" r="24" fill="#67e8f9"/>
-
-                <g opacity="0.3" fill="#e0f2fe">
-                  <ellipse cx="110" cy="55" rx="40" ry="13"/>
-                  <ellipse cx="140" cy="48" rx="26" ry="10"/>
-                  <animateTransform attributeName="transform" type="translate" values="0 0;36 0;0 0" dur="16s" repeatCount="indefinite"/>
-                </g>
-
-                <!-- Fileira de plantação -->
-                <g>
-                  <g transform="translate(60,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(130,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(200,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(270,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(340,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(410,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(480,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-                  <g transform="translate(550,300)"><rect x="-1.5" y="-24" width="3" height="24" fill="#15803d"/><ellipse cx="0" cy="-26" rx="9" ry="14" fill="#22c55e"/></g>
-
-                  <g transform="translate(95,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                  <g transform="translate(165,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                  <g transform="translate(235,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                  <g transform="translate(305,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                  <g transform="translate(375,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                  <g transform="translate(445,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                  <g transform="translate(515,318)"><rect x="-1.3" y="-20" width="2.6" height="20" fill="#166534"/><ellipse cx="0" cy="-22" rx="7.5" ry="11" fill="#16a34a"/></g>
-                </g>
-
-                <!-- Aspersores de irrigação -->
-                <g>
-                  <g transform="translate(100,340)">
-                    <rect x="-1.5" y="-14" width="3" height="14" fill="#64748b"/>
-                    <circle cy="-16" r="2.5" fill="#22d3ee"/>
-                    <circle cx="-6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0s" repeatCount="indefinite"/></circle>
-                    <circle cx="6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.5s" repeatCount="indefinite"/></circle>
-                  </g>
-                  <g transform="translate(250,340)">
-                    <rect x="-1.5" y="-14" width="3" height="14" fill="#64748b"/>
-                    <circle cy="-16" r="2.5" fill="#22d3ee"/>
-                    <circle cx="-6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.3s" repeatCount="indefinite"/></circle>
-                    <circle cx="6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.8s" repeatCount="indefinite"/></circle>
-                  </g>
-                  <g transform="translate(400,340)">
-                    <rect x="-1.5" y="-14" width="3" height="14" fill="#64748b"/>
-                    <circle cy="-16" r="2.5" fill="#22d3ee"/>
-                    <circle cx="-6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.15s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.15s" repeatCount="indefinite"/></circle>
-                    <circle cx="6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.65s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.65s" repeatCount="indefinite"/></circle>
-                  </g>
-                  <g transform="translate(520,340)">
-                    <rect x="-1.5" y="-14" width="3" height="14" fill="#64748b"/>
-                    <circle cy="-16" r="2.5" fill="#22d3ee"/>
-                    <circle cx="-6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.4s" repeatCount="indefinite"/></circle>
-                    <circle cx="6" cy="-12" r="2" fill="#67e8f9" opacity="0"><animate attributeName="cy" values="-16;18" dur="1.8s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.9s" repeatCount="indefinite"/></circle>
-                  </g>
-                </g>
-              </svg>
-
-              <!-- Painel do medidor (dados do sensor) -->
+              <!-- Painel do medidor -->
               <div class="absolute top-4 right-4 glass rounded-2xl px-4 py-3 border border-cyan-500/20 shadow-lg">
                 <div class="flex items-center gap-3">
                   <div class="relative w-14 h-14">
@@ -189,7 +119,6 @@
                 </div>
               </div>
 
-              <!-- Legenda / frase de efeito -->
               <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4">
                 <p id="hero-caption" class="text-white font-semibold text-sm sm:text-base transition-opacity duration-500">Água monitorada em tempo real.</p>
               </div>
@@ -219,14 +148,79 @@
         </div>
       </section>
 
-      <!-- Sobre -->
+      <!-- Planos / compra -->
+      <section id="planos" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto text-center mb-12">
+          <span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Planos</span>
+          <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">Escolha e comece hoje</h2>
+          <p class="text-gray-400 text-sm mt-3">Cancele quando quiser. Sem taxa de adesão.</p>
+        </div>
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+          <div class="glass rounded-2xl p-8 text-center flex flex-col">
+            <h3 class="font-heading font-semibold text-xl">Básico</h3>
+            <p class="text-4xl font-heading font-bold text-cyan-400 my-5">R$ 49<span class="text-sm text-gray-400 font-normal">/mês</span></p>
+            <p class="text-gray-400 text-sm mb-6">1 sensor · pH e turbidez · alertas por e-mail</p>
+            <a href="cadastro.html" class="mt-auto w-full py-3 rounded-xl border border-cyan-500/40 text-cyan-300 font-semibold text-sm hover:bg-cyan-500/10 transition">Assinar</a>
+          </div>
+          <div class="glass rounded-2xl p-8 text-center flex flex-col border border-emerald-400/40">
+            <span class="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-2">Mais escolhido</span>
+            <h3 class="font-heading font-semibold text-xl">Profissional</h3>
+            <p class="text-4xl font-heading font-bold text-emerald-400 my-5">R$ 89<span class="text-sm text-gray-400 font-normal">/mês</span></p>
+            <p class="text-gray-400 text-sm mb-6">Até 5 sensores · painel completo · relatórios e suporte</p>
+            <a href="cadastro.html" class="mt-auto w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold text-sm hover:shadow-lg hover:shadow-cyan-500/30 transition">Assinar agora</a>
+          </div>
+          <div class="glass rounded-2xl p-8 text-center flex flex-col">
+            <h3 class="font-heading font-semibold text-xl">Empresarial</h3>
+            <p class="text-4xl font-heading font-bold text-cyan-400 my-5">R$ 199<span class="text-sm text-gray-400 font-normal">/mês</span></p>
+            <p class="text-gray-400 text-sm mb-6">Sensores ilimitados · API · gestão de equipes</p>
+            <a href="cadastro.html" class="mt-auto w-full py-3 rounded-xl border border-cyan-500/40 text-cyan-300 font-semibold text-sm hover:bg-cyan-500/10 transition">Falar com vendas</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Detalhes dos 3 botões do início -->
+      <section id="detalhes" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto text-center mb-12">
+          <span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Detalhes</span>
+          <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">O que você leva</h2>
+        </div>
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+          <div id="det-sensores" class="glass rounded-2xl p-8 scroll-mt-24">
+            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5">
+              <i data-lucide="activity" class="w-7 h-7 text-cyan-400"></i>
+            </div>
+            <h3 class="font-heading font-semibold text-xl mb-3">Sensores IoT</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Sonda submersa mede pH, turbidez e temperatura 24h. Leitura a cada segundo, sem coleta manual.</p>
+            <p class="text-cyan-300 text-xs mt-4">Instalação em menos de 1 dia.</p>
+          </div>
+          <div id="det-alertas" class="glass rounded-2xl p-8 scroll-mt-24">
+            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5">
+              <i data-lucide="bell-ring" class="w-7 h-7 text-emerald-400"></i>
+            </div>
+            <h3 class="font-heading font-semibold text-xl mb-3">Alertas &lt;5min</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Parâmetro fora do padrão? Notificação sonora e no painel em menos de 5 minutos.</p>
+            <p class="text-emerald-300 text-xs mt-4">Histórico completo de ocorrências.</p>
+          </div>
+          <div id="det-conformidade" class="glass rounded-2xl p-8 scroll-mt-24">
+            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5">
+              <i data-lucide="shield-check" class="w-7 h-7 text-cyan-400"></i>
+            </div>
+            <h3 class="font-heading font-semibold text-xl mb-3">Conformidade Legal</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Relatórios prontos para ANVISA e CONAMA, com data, sensor e responsável.</p>
+            <p class="text-cyan-300 text-xs mt-4">Exportação em CSV.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sobre (texto reduzido) -->
       <section id="sobre" class="py-20 px-6">
         <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
             <span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Sobre Nós</span>
-            <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3 mb-6">Água segura,<br>colheita garantida.</h2>
-            <p class="text-gray-300 text-lg leading-relaxed mb-6">A Acquasafe nasceu da necessidade real dos agricultores brasileiros: saber se a água que irriga suas plantações está livre de contaminantes prejudiciais.</p>
-            <p class="text-gray-400 leading-relaxed">Nossos sensores IoT analisam parâmetros como pH, turbidez, metais pesados e agrotóxicos em tempo real, enviando alertas instantâneos caso algo fora do padrão seja detectado.</p>
+            <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3 mb-6">Feito para o campo.</h2>
+            <p class="text-gray-300 text-lg leading-relaxed mb-4">Sabemos o que a água contaminada custa: uma safra inteira.</p>
+            <p class="text-gray-400 leading-relaxed">A Acquasafe avisa antes do problema chegar às raízes.</p>
+            <a href="cadastro.html" class="inline-block mt-8 bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold px-6 py-3 rounded-full hover:shadow-lg hover:shadow-cyan-500/30 transition">Quero proteger minha lavoura</a>
           </div>
           <div class="flex justify-center">
             <div class="relative w-72 h-72 md:w-80 md:h-80">
@@ -253,101 +247,37 @@
         </div>
       </section>
 
-      <!-- Funcionalidades -->
-      <section id="funcionalidades" class="py-20 px-6">
-        <div class="max-w-6xl mx-auto text-center mb-14">
-          <span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Funcionalidades</span>
-          <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">Tecnologia que protege sua lavoura</h2>
-        </div>
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
-          <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition">
-              <i data-lucide="activity" class="w-7 h-7 text-cyan-400"></i>
-            </div>
-            <h3 class="font-heading font-semibold text-xl mb-3">Sensores IoT</h3>
-            <p class="text-gray-400 text-sm leading-relaxed">Sensores submersos analisam pH, turbidez, temperatura e presença de contaminantes continuamente.</p>
-          </div>
-          <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition">
-              <i data-lucide="bell-ring" class="w-7 h-7 text-emerald-400"></i>
-            </div>
-            <h3 class="font-heading font-semibold text-xl mb-3">Alertas Instantâneos</h3>
-            <p class="text-gray-400 text-sm leading-relaxed">Receba notificações no celular em menos de 5 minutos quando qualquer parâmetro sair do normal.</p>
-          </div>
-          <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition">
-              <i data-lucide="bar-chart-3" class="w-7 h-7 text-cyan-400"></i>
-            </div>
-            <h3 class="font-heading font-semibold text-xl mb-3">Relatórios Detalhados</h3>
-            <p class="text-gray-400 text-sm leading-relaxed">Dashboards intuitivos com histórico completo, gráficos e recomendações de ação.</p>
-          </div>
-          <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition">
-              <i data-lucide="shield-check" class="w-7 h-7 text-emerald-400"></i>
-            </div>
-            <h3 class="font-heading font-semibold text-xl mb-3">Conformidade Legal</h3>
-            <p class="text-gray-400 text-sm leading-relaxed">Relatórios prontos para atender normas da ANVISA e do CONAMA sobre qualidade da água.</p>
-          </div>
-          <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-5 group-hover:bg-cyan-500/20 transition">
-              <i data-lucide="smartphone" class="w-7 h-7 text-cyan-400"></i>
-            </div>
-            <h3 class="font-heading font-semibold text-xl mb-3">App Mobile</h3>
-            <p class="text-gray-400 text-sm leading-relaxed">Acompanhe tudo pelo celular. Interface simples pensada para o dia a dia do agricultor.</p>
-          </div>
-          <div class="glass rounded-2xl p-8 hover:border-cyan-500/40 transition group">
-            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:bg-emerald-500/20 transition">
-              <i data-lucide="zap" class="w-7 h-7 text-emerald-400"></i>
-            </div>
-            <h3 class="font-heading font-semibold text-xl mb-3">Instalação Rápida</h3>
-            <p class="text-gray-400 text-sm leading-relaxed">Equipamentos plug-and-play. Nossa equipe instala em menos de 1 dia na sua propriedade.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Benefícios -->
+      <!-- Benefícios (textos reduzidos) -->
       <section id="beneficios" class="py-20 px-6">
         <div class="max-w-6xl mx-auto">
           <div class="text-center mb-14">
             <span class="text-cyan-400 text-sm font-medium uppercase tracking-wider">Benefícios</span>
-            <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">Por que escolher a Acquasafe?</h2>
+            <h2 class="font-heading font-bold text-3xl md:text-5xl mt-3">Por que assinar?</h2>
           </div>
           <div class="grid md:grid-cols-2 gap-8">
             <div class="flex gap-4 items-start">
               <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1">
                 <i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
               </div>
-              <div>
-                <h4 class="font-heading font-semibold text-lg mb-1">Reduza perdas em até 40%</h4>
-                <p class="text-gray-400 text-sm">Detecte contaminação antes que ela chegue às raízes, evitando perdas massivas de safra.</p>
-              </div>
+              <div><h4 class="font-heading font-semibold text-lg mb-1">Menos perdas</h4><p class="text-gray-400 text-sm">Detecte contaminação antes das raízes.</p></div>
             </div>
             <div class="flex gap-4 items-start">
               <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1">
                 <i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
               </div>
-              <div>
-                <h4 class="font-heading font-semibold text-lg mb-1">Tranquilidade 24 horas</h4>
-                <p class="text-gray-400 text-sm">Durma tranquilo sabendo que seus sensores estão vigilantes mesmo de madrugada.</p>
-              </div>
+              <div><h4 class="font-heading font-semibold text-lg mb-1">Tranquilidade 24h</h4><p class="text-gray-400 text-sm">Monitoramento mesmo de madrugada.</p></div>
             </div>
             <div class="flex gap-4 items-start">
               <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1">
                 <i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
               </div>
-              <div>
-                <h4 class="font-heading font-semibold text-lg mb-1">Valorize seu produto</h4>
-                <p class="text-gray-400 text-sm">Certificação de qualidade da água agrega valor e diferencia seu produto no mercado.</p>
-              </div>
+              <div><h4 class="font-heading font-semibold text-lg mb-1">Produto mais valorizado</h4><p class="text-gray-400 text-sm">Laudos agregam valor à venda.</p></div>
             </div>
             <div class="flex gap-4 items-start">
               <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-1">
                 <i data-lucide="check" class="w-5 h-5 text-emerald-400"></i>
               </div>
-              <div>
-                <h4 class="font-heading font-semibold text-lg mb-1">Suporte técnico dedicado</h4>
-                <p class="text-gray-400 text-sm">Equipe especializada pronta para atender você por telefone, chat ou presencialmente.</p>
-              </div>
+              <div><h4 class="font-heading font-semibold text-lg mb-1">Suporte dedicado</h4><p class="text-gray-400 text-sm">Equipe pronta por telefone ou chat.</p></div>
             </div>
           </div>
         </div>
@@ -356,8 +286,8 @@
       <!-- CTA / Contato -->
       <section id="contato" class="py-20 px-6">
         <div class="max-w-3xl mx-auto glass rounded-3xl p-10 md:p-14 text-center">
-          <h2 class="font-heading font-bold text-3xl md:text-4xl mb-4">Pronto para proteger sua lavoura?</h2>
-          <p class="text-gray-300 mb-8 max-w-xl mx-auto">Entre em contato e descubra como a Acquasafe pode transformar a segurança hídrica da sua propriedade.</p>
+          <h2 class="font-heading font-bold text-3xl md:text-4xl mb-4">Pronto para começar?</h2>
+          <p class="text-gray-300 mb-8 max-w-xl mx-auto">Assine online ou fale com a gente pelo WhatsApp.</p>
           <form id="contact-form" class="max-w-md mx-auto space-y-4 text-left">
             <div>
               <label for="name" class="text-sm text-gray-400 block mb-1">Nome</label>
@@ -374,6 +304,7 @@
             <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-semibold py-3.5 rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 transition">Enviar Mensagem</button>
             <p id="form-success" class="text-emerald-400 text-sm text-center hidden">✓ Abrimos o WhatsApp com sua mensagem — conclua o envio por lá.</p>
           </form>
+          <a href="cadastro.html" class="inline-block mt-8 text-cyan-300 text-sm font-semibold hover:text-cyan-200 transition">Ou assine agora →</a>
         </div>
       </section>
 
@@ -387,16 +318,17 @@
             <span class="font-heading font-bold">Acquasafe</span>
           </div>
           <div class="flex items-center gap-6 text-sm text-gray-300">
-            <a href="#sobre" class="hover:text-cyan-400 transition">Sobre</a>
-            <a href="#funcionalidades" class="hover:text-cyan-400 transition">Funcionalidades</a>
-            <a href="#beneficios" class="hover:text-cyan-400 transition">Benefícios</a>
+            <a href="#prototipo" class="hover:text-cyan-400 transition">Protótipo</a>
+            <a href="#planos" class="hover:text-cyan-400 transition">Planos</a>
+            <a href="#detalhes" class="hover:text-cyan-400 transition">Detalhes</a>
           </div>
-          <p class="text-gray-500 text-sm">© 2025 Acquasafe. Todos os direitos reservados.</p>
+          <p class="text-gray-500 text-sm">© 2026 Acquasafe. Todos os direitos reservados.</p>
         </div>
       </footer>
 
     </div>
     <script src="script.js"></script>
+    <script src="voltar.js"></script>
     <script src="./pwa.js"></script>
-</body>
+  </body>
 </html>

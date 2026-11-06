@@ -34,12 +34,22 @@ em [`supabase/schema.sql`](supabase/schema.sql).
 ### 2.1 Banco de dados (obrigatório)
 
 1. Crie um projeto em <https://app.supabase.com>.
-2. Abra **SQL Editor → New query**, cole todo o conteúdo de
-   [`supabase/schema.sql`](supabase/schema.sql) e execute.
-   O script é idempotente e cria: `profiles`, `planos`, `assinaturas`,
-   `pagamentos`, `leituras`, `doencas`, `solucoes`, o gatilho de criação de
-   perfil, as funções `is_admin()`, `admin_listar_clientes()` e
-   `obter_codigo_acesso()`, todas as policies de RLS e a publicação Realtime.
+2. **Forma mais simples:** abra **SQL Editor → New query**, cole **todo** o
+   conteúdo de [`supabase/instalar-tudo.sql`](supabase/instalar-tudo.sql) e
+   clique em **Run** uma vez. Ele já contém `schema.sql` + `admins.sql` na
+   ordem correta e termina com uma tabela de conferência em português.
+   O script é idempotente, seguro para bancos que já têm dados (limpa
+   assinaturas ativas duplicadas antes de criar o índice único) e cria:
+   `profiles`, `planos`, `assinaturas`, `pagamentos`, `leituras`, `doencas`,
+   `solucoes`, o gatilho de criação de perfil, as funções `is_admin()`,
+   `admin_listar_clientes()` e `obter_codigo_acesso()`, todas as policies de
+   RLS, a publicação Realtime e as **4 contas administradoras**.
+   - Funciona tanto em banco **novo** quanto no **schema antigo** do projeto
+     (`planos.preco_mensal`, `pagamentos.criado_em`, enums, sem `leituras`):
+     cria só o que falta e converte as colunas sem apagar dados.
+   - Alternativa em 2 passos: `schema.sql` primeiro, depois `admins.sql`.
+   - Não execute `select * from admin_listar_clientes()` no SQL Editor: a RPC
+     usa `auth.uid()` e lá não há usuário logado. Teste pelo site.
 3. (Opcional) Para criar **apenas** a tabela de leituras do sensor, use
    [`supabase/leituras.sql`](supabase/leituras.sql). Ele é um recorte do schema.
 
@@ -134,6 +144,35 @@ Para conferir o sinal: curto-circuitar o centro e a malha do BNC deve dar
 
 ---
 
+## 4.1. Regras de negócio adicionadas
+
+- **Contas administradoras** (`config-admins.js`): 4 e-mails entram no painel
+  **sem código de primeiro acesso e sem assinatura**, são os únicos que veem
+  o botão *Acessar Painel Admin* e recebem o ícone de perfil preto com coroa.
+  Rode [`supabase/admins.sql`](supabase/admins.sql) para marcar `is_admin` no
+  banco — sem ele a RPC `admin_listar_clientes()` continua negando acesso.
+  > O pedido citava "três contas", mas foram informados **4 e-mails**; os 4
+  > foram cadastrados.
+- **Perfil** (`perfil.html`): dados completos do cadastro + financeiro com
+  faturas pagas e próximas a vencer (calculadas a partir de `pagamentos`,
+  `assinaturas` e `planos`). O ícone do painel leva a essa página.
+- **Tipo de lavoura**: escolhido no cadastro e gravado em
+  `user_metadata` + `profiles.tipo_lavoura`. Como o banco só tem catálogo
+  completo para **soja**, contas de outras lavouras veem **vazios** os
+  catálogos de patógenos, periculosidade e soluções químicas (`lavoura.js`).
+  Visitantes sem login continuam vendo o catálogo de soja (demonstração).
+- **Alerta sonoro**: `portal.js` gera um bip de dois tons via Web Audio API
+  ao simular um alerta e ao receber um parâmetro crítico — sem arquivo de
+  áudio e sem CDN.
+- **Botão Voltar**: `voltar.js` injeta em todas as páginas um botão no canto
+  superior esquerdo que retorna à página anterior. `sensor-local.html` tem
+  o botão embutido para continuar funcionando como arquivo único offline.
+- **Página de anúncio** (`index.html`): textos reduzidos, 3 chips agora são
+  botões que levam às explicações específicas em `#detalhes`, seção de
+  planos com CTAs de assinatura e área para a imagem do protótipo em
+  `images/prototipo.jpg` (placeholder temporário — substituir depois).
+  Nenhum arquivo CSS foi modificado.
+
 ## 5. Mapa de arquivos
 
 ```
@@ -150,6 +189,13 @@ admin-clientes.js / admin-doencas.js / admin-bloqueios.js
 patógenos.html, patogenos.js             catálogo de patógenos
 periculosidade.html, solucoes.html, solucoes.js
 supabase-client.js                       cliente Supabase (URL + anon key)
+config-admins.js                         e-mails das contas administradoras
+voltar.js                                botão Voltar injetado em todas as páginas
+lavoura.js                               filtro dos catálogos por tipo de lavoura
+perfil.html, perfil.js                   perfil + faturas pagas / a vencer
+images/prototipo.jpg                     imagem temporária do protótipo
+supabase/instalar-tudo.sql               um único SQL: schema + admins + conferência
+supabase/admins.sql                      marca as 4 contas como is_admin
 supabase/schema.sql                      schema COMPLETO do banco
 supabase/leituras.sql                    recorte: só a tabela de leituras
 sw.js, pwa.js, manifest.webmanifest      PWA / cache offline

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcquaSafe – Meu Perfil</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal.css">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0a0f1a">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+</head>
+<body class="h-full bg-[#0a0f1a] text-white overflow-auto">
+
+<header class="w-full px-6 py-4 flex items-center justify-between border-b border-white/10 bg-[#0a0f1a]/95 backdrop-blur-md sticky top-0 z-50">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+      <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
+    </div>
+    <span class="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">AcquaSafe</span>
+  </div>
+  <button id="btn-perfil-icone" type="button" title="Meu perfil"
+          class="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 bg-gradient-to-br from-cyan-500/30 to-emerald-500/30 text-white">
+    <i data-lucide="user" class="w-5 h-5"></i>
+  </button>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+
+  <div>
+    <h1 class="text-3xl font-bold">Meu Perfil</h1>
+    <p class="text-slate-400 text-sm mt-1">Seus dados de cadastro e seu histórico financeiro.</p>
+  </div>
+
+  <!-- Dados do cadastro -->
+  <section class="glass-card rounded-2xl border border-white/10 p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <i data-lucide="id-card" class="w-5 h-5 text-cyan-400"></i> Dados do cadastro
+      </h2>
+      <span id="perfil-tipo-conta" class="text-xs px-3 py-1 rounded-full border border-white/15 bg-white/5 text-slate-300">—</span>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Nome completo</p><p id="perfil-nome" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">E-mail</p><p id="perfil-email" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">CPF</p><p id="perfil-cpf" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Telefone</p><p id="perfil-telefone" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Tipo de lavoura</p><p id="perfil-lavoura" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Plano</p><p id="perfil-plano" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Situação da assinatura</p><p id="perfil-status" class="font-medium">—</p></div>
+      <div><p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Cliente desde</p><p id="perfil-desde" class="font-medium">—</p></div>
+    </div>
+    <p id="perfil-aviso" class="hidden mt-5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3"></p>
+  </section>
+
+  <!-- Financeiro -->
+  <section class="glass-card rounded-2xl border border-white/10 p-6">
+    <h2 class="text-lg font-semibold flex items-center gap-2 mb-6">
+      <i data-lucide="wallet" class="w-5 h-5 text-emerald-400"></i> Financeiro
+    </h2>
+
+    <h3 class="text-sm font-semibold text-slate-300 mb-3">Faturas pagas</h3>
+    <div class="overflow-x-auto rounded-xl border border-white/10">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-white/5 text-slate-400 text-xs uppercase">
+          <tr><th class="px-4 py-3">Competência</th><th class="px-4 py-3">Valor</th><th class="px-4 py-3">Pago em</th><th class="px-4 py-3">Status</th></tr>
+        </thead>
+        <tbody id="tbody-pagas"><tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3 class="text-sm font-semibold text-slate-300 mt-8 mb-3">Próximas faturas</h3>
+    <div class="overflow-x-auto rounded-xl border border-white/10">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-white/5 text-slate-400 text-xs uppercase">
+          <tr><th class="px-4 py-3">Competência</th><th class="px-4 py-3">Valor</th><th class="px-4 py-3">Vencimento</th><th class="px-4 py-3">Status</th></tr>
+        </thead>
+        <tbody id="tbody-vencer"><tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+    <p id="financeiro-aviso" class="hidden mt-5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3"></p>
+  </section>
+
+  <!-- Ações que antes ficavam no topo do painel -->
+  <section class="flex flex-wrap gap-3">
+    <a href="portal.html" class="px-5 py-2.5 rounded-xl border border-cyan-500/30 text-cyan-300 text-sm font-semibold hover:bg-cyan-500/10 transition">Voltar ao Painel</a>
+    <a href="sensor.html" class="px-5 py-2.5 rounded-xl border border-white/15 text-slate-300 text-sm font-semibold hover:bg-white/10 transition">Testar Sensor</a>
+    <a href="pagamento.html" class="px-5 py-2.5 rounded-xl border border-white/15 text-slate-300 text-sm font-semibold hover:bg-white/10 transition">Assinar Plano</a>
+    <button onclick="sairPerfil()" class="px-5 py-2.5 rounded-xl border border-red-500/30 text-red-300 text-sm font-semibold hover:bg-red-500/10 transition">Sair</button>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="config-admins.js"></script>
+<script src="perfil.js"></script>
+<script src="voltar.js"></script>
+<script src="./pwa.js"></script>
+</body>
+</html>

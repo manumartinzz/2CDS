@@ -139,7 +139,43 @@ function setUpdatedAt() {
   if (el) el.textContent = "Atualizado " + new Date().toLocaleTimeString("pt-BR");
 }
 
+/* -------------------- Som de notificação -------------------- */
+/* Web Audio API: não precisa de arquivo de áudio nem de CDN. O clique do
+   usuário no botão é o gesto que permite ao navegador reproduzir o som. */
+let audioCtx = null;
+let ultimoSom = 0;
+
+function tocarSomAlerta() {
+  const agora = Date.now();
+  if (agora - ultimoSom < 1200) return; // evita bip duplo no mesmo evento
+  ultimoSom = agora;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    audioCtx = audioCtx || new Ctx();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+
+    const t0 = audioCtx.currentTime;
+    [[880, 0], [660, 0.22]].forEach(([freq, atraso]) => {
+      const osc = audioCtx.createOscillator();
+      const ganho = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, t0 + atraso);
+      ganho.gain.setValueAtTime(0.0001, t0 + atraso);
+      ganho.gain.exponentialRampToValueAtTime(0.22, t0 + atraso + 0.02);
+      ganho.gain.exponentialRampToValueAtTime(0.0001, t0 + atraso + 0.18);
+      osc.connect(ganho);
+      ganho.connect(audioCtx.destination);
+      osc.start(t0 + atraso);
+      osc.stop(t0 + atraso + 0.2);
+    });
+  } catch (err) {
+    console.warn("Não foi possível reproduzir o som do alerta:", err.message);
+  }
+}
+
 function mostrarAlerta(nivel, mensagem) {
+  if (nivel === "critico") tocarSomAlerta();
   const cores = {
     info: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
     atencao: "border-amber-500/30 bg-amber-500/10 text-amber-300",
@@ -152,6 +188,29 @@ function mostrarAlerta(nivel, mensagem) {
   box.textContent = mensagem;
   container.appendChild(box);
   setTimeout(() => box.remove(), 8000);
+}
+
+/* -------------------- Permissões visuais -------------------- */
+/* Só as contas em config-admins.js veem o botão do painel administrativo.
+   O botão já nasce com "hidden" no HTML: se este JS falhar, ele não aparece
+   para ninguém (fail-closed). */
+function aplicarPermissoesVisuais(usuario) {
+  const admin = typeof emailAdmin === "function" && emailAdmin(usuario.email);
+
+  const btnAdmin = $("btn-painel-admin");
+  if (btnAdmin) btnAdmin.classList.toggle("hidden", !admin);
+
+  const btnPerfil = $("btn-perfil");
+  if (btnPerfil) {
+    btnPerfil.className = admin
+      ? "w-10 h-10 rounded-full flex items-center justify-center border border-amber-400/40 bg-black text-amber-300 hover:border-amber-300 transition"
+      : "w-10 h-10 rounded-full flex items-center justify-center border border-white/20 bg-gradient-to-br from-cyan-500/30 to-emerald-500/30 text-white hover:border-cyan-400/50 transition";
+    btnPerfil.innerHTML = admin
+      ? '<i data-lucide="crown" class="w-5 h-5"></i>'
+      : '<i data-lucide="user" class="w-5 h-5"></i>';
+    btnPerfil.title = admin ? "Perfil · Administrador" : "Meu perfil";
+    if (window.lucide) lucide.createIcons();
+  }
 }
 
 /* -------------------- Chart.js (UMA instância) -------------------- */
@@ -261,6 +320,7 @@ async function tick() {
 }
 
 async function simularAlerta() {
+  tocarSomAlerta(); // som imediato no clique (gesto do usuário)
   contaminationTicks = 6;
   // Texto e comportamento vindos do commit "botão alerta" da main: o clique
   // gera uma leitura contaminada AGORA (await tick()), não só nas próximas.
@@ -312,6 +372,7 @@ async function init() {
   const usuario = await verificarAcesso();
   if (!usuario) return;
 
+  aplicarPermissoesVisuais(usuario);
   initChart();
 
   try {
