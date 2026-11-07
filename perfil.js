@@ -137,6 +137,13 @@ async function init() {
 
   aplicarIcone(user);
 
+  // Conta de teste: o pHmetro já está ligado direto ao gráfico no portal,
+  // então não deve existir uma página extra de leitura para essa conta.
+  if (typeof ehContaPhDireto === "function" && ehContaPhDireto(user.email)) {
+    const link = $("link-testar-sensor");
+    if (link) link.classList.add("hidden");
+  }
+
   const { data: perfil, error: erroPerfil } = await supabaseClient
     .from("profiles").select("*").eq("id", user.id).maybeSingle();
   if (erroPerfil) {

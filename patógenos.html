@@ -35,13 +35,13 @@
 <div class="max-w-7xl mx-auto px-6 py-10">
 
     <header class="mb-8">
-        <h2 class="text-4xl font-bold text-white mb-2">Doenças e Patógenos por Cultura</h2>
-        <p class="text-slate-400">Patógenos que atingem a lavoura da sua conta, pesquisados um a um em fontes oficiais (Embrapa, Fundecitrus, EPPO/CABI), acrescidos dos agentes de veiculação hídrica monitorados pelo sensor. As fontes estão ao final desta página.</p>
+        <h2 class="text-4xl font-bold text-white mb-2">Doenças transmitidas pela água</h2>
+        <p class="text-slate-400"><strong class="text-cyan-300">Só aparecem aqui doenças que contaminam a plantação pela água</strong> — irrigação contaminada, enxurrada, respingos de chuva/aspersão ou zoósporos móveis. Ferrugens, oídios, viroses e HLB (vetores/vento) foram removidos; a justificativa e as fontes estão ao final desta página, junto das fontes oficiais (Embrapa, Fundecitrus, MAPA, EPPO).</p>
     </header>
 
     <!-- Filtros -->
     <div class="flex flex-wrap gap-4 mb-6">
-        <input id="searchPat" type="text" placeholder="Buscar patógeno, doença ou tipo…"
+        <input id="searchPat" type="text" placeholder="Buscar doença, patógeno, via hídrica ou tipo…"
                class="px-4 py-3 w-80 rounded-lg bg-white/5 border border-white/10 focus:border-cyan-400 outline-none text-white placeholder-white/40">
         <select id="filterTipo" class="px-4 py-3 rounded-lg bg-white/5 border border-white/10 focus:border-cyan-400 outline-none text-white">
             <option value="">Todos os tipos</option>
@@ -72,7 +72,8 @@
                     <th class="px-5 py-4">Patógeno</th>
                     <th class="px-5 py-4">Tipo</th>
                     <th class="px-5 py-4">Risco na lavoura</th>
-                    <th class="px-5 py-4">Doença Associada</th>
+                    <th class="px-5 py-4">Doença associada</th>
+                    <th class="px-5 py-4">Via hídrica (como contamina)</th>
                     <th class="px-5 py-4">Parte afetada</th>
                     <th class="px-5 py-4 text-center">Risco à saúde</th>
                     <th class="px-5 py-4">Controle / solução</th>
@@ -83,7 +84,7 @@
     </div>
 
     <p class="text-xs text-slate-600 mt-4">
-        Catálogo de referência para triagem e monitoramento; confirme diagnóstico, tratamento e dosagens com responsável técnico e normas sanitárias aplicáveis. Nenhuma dose ou marca comercial é recomendada aqui.
+        Cada doença listada tem exatamente uma solução correspondente na página Soluções. Catálogo de referência para triagem e monitoramento; confirme diagnóstico, tratamento e dosagens com responsável técnico. Nenhuma dose ou marca comercial é recomendada aqui.
     </p>
 
     <!-- Fontes ao final do banco de dados -->
