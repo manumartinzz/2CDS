@@ -34,12 +34,12 @@
 
 <div class="max-w-7xl mx-auto px-6 py-10">
     <header class="mb-10">
-        <h2 class="text-4xl font-bold text-white mb-2">Soluções Químicas por Cultura</h2>
-        <p class="text-slate-400">Classes de controle registradas para a lavoura da sua conta (Embrapa + AGROFIT) e o bloco universal de tratamento e calibração da água. As fontes estão ao final desta página.</p>
+        <h2 class="text-4xl font-bold text-white mb-2">Uma solução para cada doença</h2>
+        <p class="text-slate-400"><strong class="text-cyan-300">Cada solução traz o nome da doença que trata</strong> e corresponde a exatamente uma doença transmitida pela água do catálogo de Patógenos. As classes de controle vêm de Embrapa + AGROFIT; as fontes estão ao final desta página.</p>
     </header>
 
     <div class="flex flex-wrap gap-4 mb-6">
-        <input id="search" type="text" placeholder="Buscar solução…"
+        <input id="search" type="text" placeholder="Buscar solução, doença ou patógeno…"
                class="px-4 py-3 w-80 rounded-lg bg-white/5 border border-white/10 focus:border-cyan-400 outline-none text-white placeholder-white/40">
         <button onclick="limparFiltros()"
                 class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors">
@@ -53,20 +53,20 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="bg-white/5">
-                    <th class="px-6 py-5 text-left">Nome da Solução</th>
-                    <th class="px-6 py-5 text-left">Concentração</th>
-                    <th class="px-6 py-5 text-left">Solvente</th>
-                    <th class="px-6 py-5 text-left">Uso Principal</th>
-                    <th class="px-6 py-5 text-left">Validade (dias)</th>
-                    <th class="px-6 py-5 text-left">Classe toxicológica (GHS)</th>
-                    <th class="px-6 py-5 text-left">Cultura / alvo</th>
+                    <th class="px-5 py-5 text-left">Nome da solução (com o nome da doença)</th>
+                    <th class="px-5 py-5 text-left">Doença tratada</th>
+                    <th class="px-5 py-5 text-left">Patógeno</th>
+                    <th class="px-5 py-5 text-left">Via hídrica</th>
+                    <th class="px-5 py-5 text-left">Como age / concentração</th>
+                    <th class="px-5 py-5 text-left">Classe toxicológica (GHS)</th>
+                    <th class="px-5 py-5 text-left">Cultura / alvo · fonte</th>
                 </tr>
             </thead>
             <tbody id="tabelaSolucoes" class="text-slate-300"></tbody>
         </table>
     </div>
 
-    <p class="text-xs text-slate-600 mt-4">A categoria GHS é definida por produto formulado (Anvisa RDC 294/2019). Não fornecemos doses nem marcas: consulte o AGROFIT por cultura + alvo e siga o receituário agronômico.</p>
+    <p class="text-xs text-slate-600 mt-4">A categoria GHS é definida por produto formulado (Anvisa RDC 294/2019). Não fornecemos doses nem marcas: consulte o AGROFIT por cultura + alvo e siga o receituário agronômico. Regra 1:1 verificada automaticamente: nº de soluções = nº de doenças.</p>
 
     <!-- Fontes ao final do banco de dados -->
     <section id="bloco-fontes" data-fontes class="glass-card rounded-2xl p-6 mt-8 border border-cyan-500/20"></section>

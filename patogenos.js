@@ -1,6 +1,8 @@
-// Catálogo de doenças e patógenos — pesquisa por cultura + fontes oficiais.
-// O banco Supabase (tabela doencas) continua sendo consultado e serve de
-// enriquecimento; o catálogo pesquisado em pesquisa-culturas.js é a base.
+// Catálogo de doenças — SOMENTE patógenos que contaminam a lavoura pela ÁGUA.
+// Fonte única dos dados: pesquisa-culturas.js (pesquisa por cultura + fontes
+// oficiais). As tabelas do Supabase (doencas/solucoes) NÃO são mais lidas
+// aqui: elas contêm doenças de dispersão aérea, por vetores e por mudas,
+// que não atendem ao critério de via hídrica.
 const corTipo = {
   Fungo: "bg-purple-500/20 text-purple-300", Oomiceto: "bg-blue-500/20 text-blue-300",
   Bactéria: "bg-yellow-500/20 text-yellow-300", Vírus: "bg-red-500/20 text-red-300",
@@ -17,25 +19,12 @@ const corImpacto = {
   "Água": "bg-cyan-500/20 text-cyan-300"
 };
 
-/* Nomes legados de veiculação hídrica presentes na tabela doencas. */
-const NOMES_AGUA_LEGADO = new Set([
-  "vibrio cholerae", "leptospira interrogans", "giardia duodenalis",
-  "cryptosporidium parvum", "hepatitis a virus (hav)",
-  "salmonella enterica serovar typhi", "shigella sonnei", "schistosoma mansoni",
-  "escherichia coli", "coliformes termotolerantes"
-]);
-
 let patogenos = [];
 
-function _norm(nome) { return String(nome || "").trim().toLowerCase(); }
-
-function mesclarSemDuplicar(base, extras) {
-  const vistos = new Set(base.map(p => _norm(p.nome)));
-  (extras || []).forEach(p => {
-    const k = _norm(p.nome);
-    if (k && !vistos.has(k)) { vistos.add(k); base.push(p); }
-  });
-  return base;
+function _esc(t) {
+  return String(t == null ? "" : t)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -44,32 +33,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const cultura = typeof obterCulturaAtual === "function" ? await obterCulturaAtual() : "soja";
   window.ACQUASAFE_CULTURA = cultura;
 
-  // Base pesquisada: patógenos da cultura + patógenos de veiculação hídrica.
-  let lista = typeof patogenosDaCultura === "function"
+  // Catálogo pesquisado: doenças da cultura transmitidas pela água +
+  // agentes universais de veiculação hídrica.
+  patogenos = typeof patogenosDaCultura === "function"
     ? patogenosDaCultura(cultura).map(p => ({ ...p }))
     : [];
 
-  // Enriquecimento com o banco (preserva a integração Supabase anterior).
-  try {
-    const { data, error } = await supabaseClient.from("doencas")
-      .select("nome, tipo, grupo_risco, doenca_associada, orgao_afetado, nivel_bsl")
-      .order("nome", { ascending: true });
-    if (!error && data && data.length) {
-      const doBanco = data
-        .filter(d => cultura === "soja" || NOMES_AGUA_LEGADO.has(_norm(d.nome)))
-        .map(d => ({
-          nome: d.nome, tipo: d.tipo, impacto: "Água",
-          doenca: d.doenca_associada, orgao: d.orgao_afetado,
-          saude: d.nivel_bsl && String(d.nivel_bsl).startsWith("BSL-2") ? "Classe 2 (MS)" : "Não aplicável",
-          controle: "Ver catálogo de soluções e fontes ao final da página"
-        }));
-      lista = mesclarSemDuplicar(lista, doBanco);
-    }
-  } catch (err) {
-    console.warn("Catálogo pesquisado exibido sem enriquecimento do banco:", err.message);
+  // Trava de integridade: se alguma doença sem via hídrica entrar aqui,
+  // o catálogo avisa em vez de exibir dados incorretos em silêncio.
+  if (typeof validarCatalogo === "function") {
+    const erros = validarCatalogo();
+    if (erros.length) console.warn("Catálogo inconsistente:", erros);
   }
 
-  patogenos = lista;
   renderPatogenos(patogenos);
   document.getElementById("searchPat").addEventListener("input", filtrar);
   document.getElementById("filterTipo").addEventListener("change", filtrar);
@@ -84,19 +60,24 @@ function renderPatogenos(lista) {
     ? obterPesquisaCultura(cultura).nome : "Soja";
   tbody.innerHTML = lista.length ? lista.map(p => `
     <tr class="border-t border-white/10 hover:bg-white/5 transition-colors align-top">
-      <td class="px-5 py-4 font-medium italic">${p.nome || "—"}</td>
-      <td class="px-5 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${corTipo[p.tipo] || "bg-white/10 text-white"}">${p.tipo || "—"}</span></td>
-      <td class="px-5 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${corImpacto[p.impacto] || "bg-white/10 text-slate-300"}">${p.impacto || "—"}</span></td>
-      <td class="px-5 py-4">${p.doenca || "—"}</td>
-      <td class="px-5 py-4 text-slate-400">${p.orgao || "—"}</td>
-      <td class="px-5 py-4 text-center text-xs font-semibold ${p.saude === "Não aplicável" ? "text-slate-500" : "text-amber-300"}">${p.saude || "—"}</td>
-      <td class="px-5 py-4 text-xs text-slate-400 max-w-xs">${p.controle || "—"}</td>
-    </tr>`).join("") : `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">Nenhum resultado encontrado.</td></tr>`;
-  cont.textContent = `${lista.length} patógeno${lista.length !== 1 ? "s" : ""} · ${nomeCultura} + água de irrigação`;
+      <td class="px-5 py-4 font-medium italic">${_esc(p.nome)}</td>
+      <td class="px-5 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${corTipo[p.tipo] || "bg-white/10 text-white"}">${_esc(p.tipo)}</span></td>
+      <td class="px-5 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${corImpacto[p.impacto] || "bg-white/10 text-slate-300"}">${_esc(p.impacto)}</span></td>
+      <td class="px-5 py-4 font-medium">${_esc(p.doenca)}</td>
+      <td class="px-5 py-4 text-xs text-cyan-300/90 max-w-xs">
+        ${_esc(p.via)}<br>
+        <a href="${_esc(p.url)}" target="_blank" rel="noopener noreferrer"
+           class="text-[11px] text-slate-400 hover:text-cyan-300 underline">${_esc(p.fonte)} ↗</a>
+      </td>
+      <td class="px-5 py-4 text-slate-400">${_esc(p.orgao)}</td>
+      <td class="px-5 py-4 text-center text-xs font-semibold ${p.saude === "Não aplicável" ? "text-slate-500" : "text-amber-300"}">${_esc(p.saude)}</td>
+      <td class="px-5 py-4 text-xs text-slate-400 max-w-xs">${_esc(p.controle)}</td>
+    </tr>`).join("") : `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-500">Nenhum resultado encontrado.</td></tr>`;
+  cont.textContent = `${lista.length} doença${lista.length !== 1 ? "s" : ""} transmitida${lista.length !== 1 ? "s" : ""} pela água · ${nomeCultura}`;
 }
 function filtrar() {
   const termo = document.getElementById("searchPat").value.toLowerCase();
   const tipo = document.getElementById("filterTipo").value;
-  renderPatogenos(patogenos.filter(p => (!tipo || p.tipo === tipo) && (!termo || [p.nome,p.doenca,p.tipo,p.orgao,p.controle].some(v => (v||"").toLowerCase().includes(termo)))));
+  renderPatogenos(patogenos.filter(p => (!tipo || p.tipo === tipo) && (!termo || [p.nome,p.doenca,p.tipo,p.orgao,p.controle,p.via].some(v => (v||"").toLowerCase().includes(termo)))));
 }
 function limparFiltros() { document.getElementById("searchPat").value = ""; document.getElementById("filterTipo").value = ""; renderPatogenos(patogenos); }

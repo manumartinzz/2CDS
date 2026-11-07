@@ -184,15 +184,37 @@ Para conferir o sinal: curto-circuitar o centro e a malha do BNC deve dar
 
 As **11 opções de lavoura** do cadastro (`soja`, `cafe`, `trigo`, `laranja`,
 `algodao`, `milho`, `cana`, `arroz`, `feijao`, `hortalicas`, `outra`) têm
-catálogo próprio de patógenos, classes de controle químico e impacto na
-lavoura em `pesquisa-culturas.js`. As fontes oficiais (Embrapa, Fundecitrus,
-MAPA/AGROFIT, Anvisa, Ministério da Saúde, OMS, CONAMA, EPPO e CABI) estão
-documentadas em [`PESQUISA_FONTES.md`](PESQUISA_FONTES.md) e renderizadas
-**ao final de cada banco de dados** — páginas Patógenos, Soluções e
-Periculosidade — e no Perfil da conta. Um seletor permite consultar as
-fontes de qualquer uma das 11 culturas sem trocar de conta.
+catálogo próprio em `pesquisa-culturas.js`. As fontes oficiais (Embrapa,
+Fundecitrus, MAPA/AGROFIT, Anvisa, Ministério da Saúde, OMS, CONAMA, EPPO,
+CABI e EPPO/APS) estão documentadas em
+[`PESQUISA_FONTES.md`](PESQUISA_FONTES.md) e renderizadas **ao final de cada
+banco de dados** — páginas Patógenos, Soluções e Periculosidade — e no Perfil
+da conta. Um seletor permite consultar as fontes de qualquer uma das 11
+culturas sem trocar de conta.
 
-Três cuidados técnicos:
+**Filtro de via hídrica:** só entram no sistema doenças que contaminam a
+plantação **pela água** (irrigação contaminada, enxurrada, respingos de
+chuva/aspersão, zoósporos móveis, escleródios flutuantes). Ferrugens,
+oídios, viroses de vetor e HLB foram **removidos** e aparecem em
+`DOENCAS_EXCLUIDAS` com justificativa e fonte. O bloco comum reúne os 10
+agentes universais de veiculação hídrica (Portaria GM/MS 888/2021 e CONAMA
+357/2005).
+
+**Regra 1:1:** cada doença gera **exatamente uma solução**, cujo nome começa
+com o nome da doença tratada. `validarCatalogo()` verifica a contagem, o
+vínculo e a presença de nomes vetados; os testes automatizados falham se
+algo divergir. `patogenos.js` e `solucoes.js` **não consultam mais** as
+tabelas `doencas`/`solucoes` do Supabase, que contêm doenças sem via hídrica.
+
+**Outros pontos:** o botão **Curiosidades** do painel mostra fatos da lavoura
+da conta logada, cada um com sua fonte; o gráfico foi dividido em **quatro
+painéis de barras verticais**, um por parâmetro e com escala própria (as 4
+caixas de valor exato permanecem intactas). A conta de teste
+`manucordeiro326@gmail.com` lê o pHmetro **direto pelo Web Serial dentro do
+próprio portal**, sem página extra, com os outros três parâmetros zerados —
+isolamento estrito por e-mail, sem senha no código.
+
+Cuidados técnicos:
 
 * **BSL / classes de risco** só se aplicam a agentes que adoecem humanos e
   animais; fitopatógenos são avaliados por impacto na lavoura.
@@ -211,7 +233,7 @@ pagamento.html, pagamento.js             checkout simulado + código de acesso
 email-config.js                          integração EmailJS
 login.html, login.js                     login de cliente e modal admin
 login-admin.html, login-admin.js         login administrativo
-portal.html, portal.js, portal.css       dashboard (um único Chart)
+portal.html, portal.js, portal.css       dashboard (4 gráficos de barras + curiosidades)
 admin.html, admin.js                     hub administrativo
 admin-guard.js                           guarda de sessão/permissão das telas admin
 admin-clientes.js / admin-doencas.js / admin-bloqueios.js
@@ -221,7 +243,7 @@ supabase-client.js                       cliente Supabase (URL + anon key)
 config-admins.js                         e-mails das contas administradoras
 voltar.js                                botão Voltar (exceto index.html)
 lavoura.js                               cultura da conta logada
-pesquisa-culturas.js                     dados das 11 culturas + bloco de fontes
+pesquisa-culturas.js                     doenças via água, soluções 1:1, curiosidades, fontes
 PESQUISA_FONTES.md                       relatório auditável das fontes oficiais
 perfil.html, perfil.js                   perfil + faturas pagas / a vencer
 images/prototipo.jpg                     imagem temporária do protótipo

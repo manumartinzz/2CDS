@@ -75,6 +75,12 @@
                         <i data-lucide="siren" class="w-3.5 h-3.5"></i>
                         Simular alerta
                     </button>
+                    <!-- Só aparece na conta de teste com pHmetro direto. -->
+                    <button id="btn-conectar-ph" type="button"
+                            class="hidden items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 transition-colors">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                        Conectar pHmetro
+                    </button>
                 </div>
             </div>
 
@@ -110,16 +116,42 @@
                 </div>
             </div>
 
-            <div class="h-[320px]">
-                <canvas id="qualityChart"></canvas>
+            <!-- Quatro painéis de barras verticais: um parâmetro por painel,
+                 cada um com a sua própria escala, cor e faixa normal. -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-semibold text-cyan-300">pH <span class="text-[11px] font-normal text-slate-400">· normal 6,0–8,5</span></h4>
+                        <span class="text-[10px] text-slate-500">escala 3–10</span>
+                    </div>
+                    <div class="h-[150px]"><canvas id="chart-ph"></canvas></div>
+                </div>
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-semibold text-blue-300">Flúor <span class="text-[11px] font-normal text-slate-400">· até 1,5 mg/L</span></h4>
+                        <span class="text-[10px] text-slate-500">escala 0–4 mg/L</span>
+                    </div>
+                    <div class="h-[150px]"><canvas id="chart-fluor"></canvas></div>
+                </div>
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-semibold text-emerald-300">Cloro <span class="text-[11px] font-normal text-slate-400">· 0,2–2,0 mg/L</span></h4>
+                        <span class="text-[10px] text-slate-500">escala 0–4 mg/L</span>
+                    </div>
+                    <div class="h-[150px]"><canvas id="chart-cloro"></canvas></div>
+                </div>
+                <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-semibold text-amber-300">Turbidez <span class="text-[11px] font-normal text-slate-400">· até 10 NTU</span></h4>
+                        <span class="text-[10px] text-slate-500">escala 0–30 NTU</span>
+                    </div>
+                    <div class="h-[150px]"><canvas id="chart-turbidez"></canvas></div>
+                </div>
             </div>
-            <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">
-                Leitura mais recente à direita. Cada barra agrupa os 4 parâmetros medidos no mesmo horário.
-                <strong class="text-cyan-300/80">pH</strong> usa a escala da esquerda (3–10);
-                <strong class="text-blue-300/80">Flúor</strong>, <strong class="text-emerald-300/80">Cloro</strong> e
-                <strong class="text-amber-300/80">Turbidez</strong> usam a escala da direita (0–30 mg/L / NTU).
-                A faixa verde indica o intervalo de pH considerado normal pelo painel (6,0–8,5).
-                Passe o mouse sobre uma barra para ver valor, unidade e situação.
+            <p id="nota-grafico" class="text-[11px] text-slate-500 mt-3 leading-relaxed">
+                Um painel por parâmetro, cada um com a sua própria escala e cor — sem misturar pH com mg/NTU no mesmo eixo.
+                A leitura mais recente fica à direita. Passe o mouse sobre uma barra para ver valor, unidade e situação.
+                As quatro caixas acima mostram o valor exato da leitura atual.
             </p>
         </div>
 
@@ -152,6 +184,23 @@
                 </div>
             </div>
 
+            <!-- Ocupa o espaço em branco logo abaixo de Soluções. -->
+            <button id="btn-curiosidades" type="button" data-curiosidades-btn aria-expanded="false"
+                    class="w-full glass-card glow-border rounded-3xl p-5 flex items-center justify-between hover:scale-[1.02] transition-all text-left">
+                <span class="flex items-center gap-4">
+                    <span class="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center shrink-0">
+                        <i data-lucide="lightbulb" class="w-6 h-6 text-violet-300"></i>
+                    </span>
+                    <span>
+                        <span class="font-semibold block">Curiosidades</span>
+                        <span class="text-sm text-slate-400">Sobre a sua lavoura</span>
+                    </span>
+                </span>
+                <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 shrink-0"></i>
+            </button>
+            <div id="painel-curiosidades" data-curiosidades
+                 class="hidden glass-card rounded-2xl p-5 border border-violet-500/20"></div>
+
             <div onclick="window.location.href='periculosidade.html'"
                  class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all nav-card">
                 <div class="flex items-center gap-4">
@@ -180,6 +229,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="config-admins.js"></script>
+<script src="lavoura.js"></script>
+<script src="pesquisa-culturas.js"></script>
 <script src="portal.js"></script>
 <script src="voltar.js"></script>
 
