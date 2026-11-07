@@ -214,6 +214,30 @@ caixas de valor exato permanecem intactas). A conta de teste
 próprio portal**, sem página extra, com os outros três parâmetros zerados —
 isolamento estrito por e-mail, sem senha no código.
 
+## 4.3. Painel: ciclo de 24 h, carrossel e relatório diário
+
+* **Ciclo de medição de 24 h:** uma coleta a cada 30 min = **48 coletas por
+  dia**. O histórico em memória retém até 30 dias (`MAX_COLETAS`).
+* **Largura mínima da barra:** `LARGURA_MIN_BARRA = 26 px`. Os gráficos só
+  desenham a *janela* que cabe nessa largura (`calcularBarrasVisiveis()`),
+  entre 6 e 20 barras; por isso a barra nunca afina com o acúmulo de coletas.
+* **Carrossel horizontal:** botões `‹ ›`, "Mais recentes" e arraste com
+  mouse/toque sobre os painéis. Os 4 gráficos são sincronizados (mesmo
+  intervalo de tempo) e voltam automaticamente para a coleta mais nova —
+  a menos que o usuário esteja navegando.
+* **Botão Relatório** (sidebar, entre *Periculosidade* e *Curiosidades*):
+  agrupa **todas** as medições por dia, com total de coletas, primeiro/último
+  horário, mín/média/máx de cada parâmetro e uma tabela expansível com cada
+  linha. É **100% em memória**: nenhuma escrita e nenhuma consulta nova ao
+  Supabase. Funciona também na conta de teste (só pH, demais zerados).
+* **Selo do canto superior direito:** verde **"Sistema Ativo"** somente com
+  sensor físico conectado e leitura recente (< 2 min): pHmetro Web Serial ou
+  `?real=1` com leitura fresca. Sem sensor, desconectado ou em simulação,
+  fica vermelho **"Sistema inativo"** (um watchdog reavalia a cada 30 s).
+* **Esquadro:** a coluna da direita tem a mesma altura do card do gráfico
+  (`items-stretch` + `h-full`) e todos os seus botões usam `flex-1` com a
+  mesma altura mínima. Nenhum arquivo `.css` foi alterado.
+
 Cuidados técnicos:
 
 * **BSL / classes de risco** só se aplicam a agentes que adoecem humanos e
@@ -233,7 +257,7 @@ pagamento.html, pagamento.js             checkout simulado + código de acesso
 email-config.js                          integração EmailJS
 login.html, login.js                     login de cliente e modal admin
 login-admin.html, login-admin.js         login administrativo
-portal.html, portal.js, portal.css       dashboard (4 gráficos de barras + curiosidades)
+portal.html, portal.js, portal.css       dashboard (4 painéis + carrossel 24 h + relatório)
 admin.html, admin.js                     hub administrativo
 admin-guard.js                           guarda de sessão/permissão das telas admin
 admin-clientes.js / admin-doencas.js / admin-bloqueios.js
