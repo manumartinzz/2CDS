@@ -19,14 +19,33 @@
                              três parâmetros ficam zerados. Nenhuma gravação
                              no banco e nenhum valor simulado nesse modo.
 
+  Ciclo de medição: 24 h (48 coletas de 30 min). O gráfico mostra uma janela
+  de barras com largura mínima garantida e um carrossel horizontal percorre
+  todas as coletas. O botão "Relatório" agrupa as medições por dia.
+
   Precisa ser carregado DEPOIS de: chart.js, supabase-js, supabase-client.js
 */
 
 const TABELA = "leituras";
 const SENSOR_ID = "sensor-01";
-const MAX_PONTOS = 40;
-const TICK_MS = 30 * 60 * 1000;   // 30 min no modo simulação
+
+/* Ciclo de medição de 24 h: uma coleta a cada 30 min = 48 coletas por dia. */
+const CICLO_24H_MS = 24 * 60 * 60 * 1000;
+const INTERVALO_COLETA_MS = 30 * 60 * 1000;
+const COLETAS_POR_CICLO = Math.round(CICLO_24H_MS / INTERVALO_COLETA_MS); // 48
+const DIAS_RETIDOS = 30;
+const MAX_COLETAS = COLETAS_POR_CICLO * DIAS_RETIDOS;
+const LIMITE_CONSULTA = 1000;     // UMA única consulta ao histórico
+
+/* Largura mínima da barra: é o LIMITE de quanto ela pode diminuir.
+   Nunca desenhamos mais barras do que cabem com essa largura. */
+const LARGURA_MIN_BARRA = 26;     // px
+const MIN_BARRAS_VISIVEIS = 6;
+const MAX_BARRAS_VISIVEIS = 20;
+
+const TICK_MS = INTERVALO_COLETA_MS;
 const POLL_MS = 10 * 1000;        // 10 s no modo sensor real
+const STALE_SENSOR_MS = 2 * 60 * 1000;  // sem leitura há 2 min = desconectado
 const MODO_REAL = new URLSearchParams(location.search).get("real") === "1";
 
 const $ = (id) => document.getElementById(id);
@@ -42,6 +61,15 @@ let MODO_PH_DIRETO = false;
 const BAUD_PH = 9600;
 let portaPh = null, leitorPh = null, lendoPh = false, bufferPh = "";
 let ultimoAlertaPh = 0;
+
+/* Histórico em memória (o relatório NÃO escreve nem consulta o banco),
+   janela do carrossel e estado real do sensor. */
+let historicoLeituras = [];
+let janelaInicio = 0;
+let barrasVisiveis = 12;
+let seguirUltima = true;
+let sensorConectado = false;
+let ultimaLeituraSensor = 0;
 
 /* Estado da simulação (random walk suave) */
 const sim = { ph: 7.2, fluor: 0.8, cloro: 1.2, turbidez: 3.5 };
@@ -86,7 +114,7 @@ async function carregarHistorico() {
     .select("id, sensor_id, ph, fluor, cloro, turbidez, criado_em")
     .eq("sensor_id", SENSOR_ID)
     .order("criado_em", { ascending: false })
-    .limit(MAX_PONTOS);
+    .limit(LIMITE_CONSULTA);
 
   if (error) throw error;
   return (data || []).reverse();
@@ -282,7 +310,7 @@ function initChart() {
         scales: {
           x: {
             ticks: { color: "#94a3b8", maxRotation: 0, autoSkip: true,
-                     maxTicksLimit: 6, font: { size: 11 } },
+                     maxTicksLimit: 12, font: { size: 11 } },
             grid: { color: "rgba(255,255,255,0.04)" }
           },
           y: {
@@ -299,39 +327,292 @@ function initChart() {
   });
 }
 
-function pushToChart(r, criadoEm) {
-  const label = new Date(criadoEm || Date.now())
-    .toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  FAIXAS_PAINEL.forEach(function (f) {
-    const c = charts[f.id];
-    if (!c) return;
-    c.data.labels.push(label);
-    c.data.datasets[0].data.push(temValor(r[f.id]) ? Number(r[f.id]) : null);
-    if (c.data.labels.length > MAX_PONTOS) {
-      c.data.labels.shift();
-      c.data.datasets[0].data.shift();
-    }
-    c.update("none");
-  });
+/* ================= Ciclo de 24 h + carrossel horizontal ================= */
+/* O Chart.js comprimia cada barra conforme o nº de coletas crescia. Agora os
+   gráficos recebem SOMENTE a fatia visível (janela), calculada pela largura
+   disponível dividida por LARGURA_MIN_BARRA. O restante é navegável pelos
+   botões ou arrastando os painéis; os 4 painéis andam sempre juntos.        */
+
+function fmtHora(v) {
+  const d = new Date(v || Date.now());
+  return Number.isNaN(d.getTime())
+    ? "--:--"
+    : d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function loadHistory(rows) {
-  const labels = rows.map(function (r) {
-    return new Date(r.criado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+function fmtData(v) {
+  const d = new Date(v || Date.now());
+  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("pt-BR");
+}
+
+function chaveDia(v) {
+  const d = new Date(v || Date.now());
+  if (Number.isNaN(d.getTime())) return "sem-data";
+  return d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+}
+
+/* Guarda a leitura em memória. Nenhum INSERT/UPDATE/DELETE é feito aqui. */
+function registrarLeitura(r, criadoEm) {
+  const d = new Date(criadoEm || Date.now());
+  historicoLeituras.push({
+    criado_em: (Number.isNaN(d.getTime()) ? new Date() : d).toISOString(),
+    ph: temValor(r.ph) ? Number(r.ph) : null,
+    fluor: temValor(r.fluor) ? Number(r.fluor) : null,
+    cloro: temValor(r.cloro) ? Number(r.cloro) : null,
+    turbidez: temValor(r.turbidez) ? Number(r.turbidez) : null
   });
+  while (historicoLeituras.length > MAX_COLETAS) historicoLeituras.shift();
+}
+
+function calcularBarrasVisiveis() {
+  const canvas = $("chart-ph");
+  const pai = canvas ? canvas.parentElement : null;
+  const largura = pai && pai.clientWidth ? pai.clientWidth : 320;
+  const util = Math.max(120, largura - 56); // ~56 px de eixo Y + margens
+  return Math.max(MIN_BARRAS_VISIVEIS,
+    Math.min(MAX_BARRAS_VISIVEIS, Math.floor(util / LARGURA_MIN_BARRA)));
+}
+
+function atualizarControleCarrossel(fatia) {
+  const total = historicoLeituras.length;
+  const info = $("carrossel-info");
+  if (info) {
+    info.textContent = total
+      ? "coletas " + (janelaInicio + 1) + "–" + (janelaInicio + fatia.length) + " de " + total
+      : "sem coletas";
+  }
+  const ant = $("carrossel-ant"), prox = $("carrossel-prox");
+  if (ant) ant.disabled = janelaInicio <= 0;
+  if (prox) prox.disabled = janelaInicio + barrasVisiveis >= total;
+}
+
+function desenharJanela() {
+  barrasVisiveis = calcularBarrasVisiveis();
+  const total = historicoLeituras.length;
+  const maxInicio = Math.max(0, total - barrasVisiveis);
+  if (seguirUltima) janelaInicio = maxInicio;
+  janelaInicio = Math.max(0, Math.min(janelaInicio, maxInicio));
+  const fatia = historicoLeituras.slice(janelaInicio, janelaInicio + barrasVisiveis);
+  const labels = fatia.map(function (r) { return fmtHora(r.criado_em); });
   FAIXAS_PAINEL.forEach(function (f) {
     const c = charts[f.id];
     if (!c) return;
     c.data.labels = labels.slice();
-    c.data.datasets[0].data = rows.map(function (r) {
+    c.data.datasets[0].data = fatia.map(function (r) {
       return temValor(r[f.id]) ? Number(r[f.id]) : null;
     });
-    c.update();
+    c.update("none");
   });
-  if (rows.length) {
+  atualizarControleCarrossel(fatia);
+}
+
+function moverJanela(delta) {
+  seguirUltima = false;
+  janelaInicio += delta;
+  desenharJanela();
+  if (janelaInicio >= Math.max(0, historicoLeituras.length - barrasVisiveis)) {
+    seguirUltima = true;
+  }
+}
+
+function instalarCarrossel() {
+  const ant = $("carrossel-ant"), prox = $("carrossel-prox"), ult = $("carrossel-ultima");
+  if (ant) ant.addEventListener("click", function () { moverJanela(-barrasVisiveis); });
+  if (prox) prox.addEventListener("click", function () { moverJanela(barrasVisiveis); });
+  if (ult) ult.addEventListener("click", function () {
+    seguirUltima = true; janelaInicio = 0; desenharJanela();
+  });
+
+  const area = $("area-carrossel");
+  if (area) {
+    let ativo = false, x0 = 0, inicio = 0;
+    area.addEventListener("pointerdown", function (e) {
+      if (e.target && e.target.closest && e.target.closest("button")) return;
+      ativo = true;
+      x0 = Number(e.clientX) || 0;
+      inicio = janelaInicio;
+      if (area.setPointerCapture) {
+        try { area.setPointerCapture(e.pointerId); } catch (_) {}
+      }
+    });
+    area.addEventListener("pointermove", function (e) {
+      if (!ativo) return;
+      const passos = Math.trunc(-((Number(e.clientX) || 0) - x0) / LARGURA_MIN_BARRA);
+      if (passos === 0) return;
+      seguirUltima = false;
+      janelaInicio = inicio + passos;
+      desenharJanela();
+    });
+    const fim = function () { ativo = false; };
+    area.addEventListener("pointerup", fim);
+    area.addEventListener("pointercancel", fim);
+    area.addEventListener("pointerleave", fim);
+  }
+  window.addEventListener("resize", function () { desenharJanela(); });
+  desenharJanela();
+}
+
+function pushToChart(r, criadoEm) {
+  registrarLeitura(r, criadoEm);
+  desenharJanela();
+}
+
+function loadHistory(rows) {
+  historicoLeituras = [];
+  (rows || []).forEach(function (r) { registrarLeitura(r, r.criado_em); });
+  seguirUltima = true;
+  janelaInicio = 0;
+  desenharJanela();
+
+  if (rows && rows.length) {
     updateCards(rows[rows.length - 1]);
     setUpdatedAt();
+    if (MODO_REAL) {
+      const t = new Date(rows[rows.length - 1].criado_em).getTime();
+      const fresco = Number.isFinite(t) && (Date.now() - t < STALE_SENSOR_MS);
+      sensorConectado = fresco;
+      ultimaLeituraSensor = fresco ? t : 0;
+      definirStatusSistema(fresco);
+    }
+  } else if (MODO_REAL) {
+    sensorConectado = false;
+    ultimaLeituraSensor = 0;
+    definirStatusSistema(false);
   }
+}
+
+/* ================= Relatório diário ================= */
+/* 100% em memória: nenhuma escrita e nenhuma consulta nova ao Supabase. */
+
+const CORES_TEXTO = {
+  ph: "text-cyan-300", fluor: "text-blue-300",
+  cloro: "text-emerald-300", turbidez: "text-amber-300"
+};
+
+function resumoParametro(itens, chave) {
+  const vals = itens.map(function (r) { return r[chave]; })
+    .filter(temValor).map(Number);
+  if (!vals.length) return "sem dados";
+  const min = Math.min.apply(null, vals);
+  const max = Math.max.apply(null, vals);
+  const media = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+  const casas = chave === "turbidez" ? 1 : 2;
+  const f = function (v) {
+    return v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+  };
+  return "mín " + f(min) + " · média " + f(media) + " · máx " + f(max);
+}
+
+function agruparPorDia(itens) {
+  const mapa = new Map();
+  itens.forEach(function (r) {
+    const k = chaveDia(r.criado_em);
+    if (!mapa.has(k)) mapa.set(k, { chave: k, titulo: fmtData(r.criado_em), itens: [] });
+    mapa.get(k).itens.push(r);
+  });
+  return Array.from(mapa.values()).sort(function (a, b) {
+    return a.chave.localeCompare(b.chave);
+  });
+}
+
+function renderizarRelatorio() {
+  const alvo = $("painel-relatorio");
+  if (!alvo) return;
+  const grupos = agruparPorDia(historicoLeituras);
+  const total = historicoLeituras.length;
+  if (!total) {
+    alvo.innerHTML = '<p class="text-xs text-slate-400">Nenhuma medição registrada nesta sessão. Conecte o sensor ou aguarde a primeira coleta.</p>';
+    return;
+  }
+  const blocos = grupos.map(function (g) {
+    const linhas = g.itens.map(function (r) {
+      const v = function (k) {
+        return temValor(r[k])
+          ? Number(r[k]).toLocaleString("pt-BR", { maximumFractionDigits: 2 })
+          : "—";
+      };
+      return '<tr class="border-t border-white/5">' +
+        '<td class="py-1 pr-2 text-slate-400">' + fmtHora(r.criado_em) + '</td>' +
+        '<td class="py-1 pr-2 text-cyan-300">' + v("ph") + '</td>' +
+        '<td class="py-1 pr-2 text-blue-300">' + v("fluor") + '</td>' +
+        '<td class="py-1 pr-2 text-emerald-300">' + v("cloro") + '</td>' +
+        '<td class="py-1 text-amber-300">' + v("turbidez") + '</td></tr>';
+    }).join("");
+    const resumos = FAIXAS_PAINEL.map(function (f) {
+      return '<div class="flex justify-between gap-3 py-0.5">' +
+        '<span class="' + CORES_TEXTO[f.id] + '">' + f.nome + '</span>' +
+        '<span class="text-slate-300 text-right">' + resumoParametro(g.itens, f.id) +
+        (f.unidade ? " " + f.unidade : "") + '</span></div>';
+    }).join("");
+    return '<div class="mb-4 last:mb-0">' +
+      '<div class="flex items-center justify-between gap-2 mb-1 flex-wrap">' +
+      '<h5 class="text-xs font-semibold text-white">📅 ' + g.titulo + '</h5>' +
+      '<span class="text-[10px] text-slate-500">' + g.itens.length + ' coletas · ' +
+      fmtHora(g.itens[0].criado_em) + ' → ' +
+      fmtHora(g.itens[g.itens.length - 1].criado_em) + '</span></div>' +
+      '<div class="text-[11px] leading-relaxed mb-2">' + resumos + '</div>' +
+      '<details class="text-[11px]"><summary class="cursor-pointer text-cyan-400/80 hover:text-cyan-300">' +
+      'ver todas as ' + g.itens.length + ' medições</summary>' +
+      '<table class="w-full mt-2 text-left"><thead><tr class="text-slate-500">' +
+      '<th class="pr-2 font-normal">Hora</th><th class="pr-2 font-normal">pH</th>' +
+      '<th class="pr-2 font-normal">Flúor</th><th class="pr-2 font-normal">Cloro</th>' +
+      '<th class="font-normal">Turbidez</th></tr></thead><tbody>' +
+      linhas + '</tbody></table></details></div>';
+  }).join("");
+
+  alvo.innerHTML =
+    '<div class="flex items-center justify-between gap-3 mb-3">' +
+    '<h4 class="font-semibold text-sm flex items-center gap-2">' +
+    '<i data-lucide="file-text" class="w-4 h-4 text-cyan-300"></i> Relatório diário</h4>' +
+    '<span class="text-[10px] text-slate-500">ciclo de 24 h</span></div>' +
+    '<p class="text-[11px] text-slate-400 mb-3">Total: <strong class="text-white">' +
+    total + '</strong> medições em <strong class="text-white">' + grupos.length +
+    '</strong> dia(s). Cada ciclo de 24 h comporta até ' + COLETAS_POR_CICLO +
+    ' coletas (intervalo de 30 min).</p>' + blocos;
+  if (window.lucide) { try { lucide.createIcons(); } catch (_) {} }
+}
+
+function instalarRelatorio() {
+  const btn = $("btn-relatorio"), painel = $("painel-relatorio");
+  if (!btn || !painel) return;
+  btn.addEventListener("click", function () {
+    const abrindo = painel.classList.contains("hidden");
+    painel.classList.toggle("hidden", !abrindo);
+    btn.setAttribute("aria-expanded", String(abrindo));
+    if (abrindo) renderizarRelatorio();
+  });
+}
+
+/* ================= 4) Selo "Sistema Ativo" ================= */
+/* Verde SOMENTE com sensor físico conectado e leitura recente.
+   Simulação, pHmetro desconectado ou silêncio > 2 min = vermelho. */
+
+function definirStatusSistema(ativo) {
+  const selo = $("badge-sistema"), ponto = $("ponto-sistema"), texto = $("texto-sistema");
+  if (!selo) return;
+  selo.className = "flex items-center gap-2 px-4 py-2 rounded-xl " +
+    (ativo
+      ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+      : "bg-red-500/10 border border-red-500/20 text-red-400");
+  if (ponto) {
+    ponto.className = "w-2 h-2 rounded-full " +
+      (ativo ? "bg-emerald-400 animate-pulse" : "bg-red-400");
+  }
+  if (texto) texto.textContent = ativo ? "Sistema Ativo" : "Sistema inativo";
+}
+
+function marcarLeituraSensor() {
+  sensorConectado = true;
+  ultimaLeituraSensor = Date.now();
+  definirStatusSistema(true);
+}
+
+function avaliarStatusSistema() {
+  const fresco = ultimaLeituraSensor > 0 &&
+    (Date.now() - ultimaLeituraSensor < STALE_SENSOR_MS);
+  if (!sensorConectado || !fresco) definirStatusSistema(false);
 }
 
 /* -------------------- Conta de teste: pHmetro DIRETO -------------------- */
@@ -366,6 +647,7 @@ function aplicarLeituraPh(ph) {
       (alerta ? "bg-red-500/15 text-red-300 border-red-500/25"
               : "bg-emerald-500/15 text-emerald-300 border-emerald-500/25");
   }
+  marcarLeituraSensor();
   zerarCardsSecundarios();
   pushToChart({ ph: n, fluor: 0, cloro: 0, turbidez: 0 }, new Date().toISOString());
   setUpdatedAt();
@@ -396,6 +678,7 @@ async function conectarPhmetro() {
     await portaPh.open({ baudRate: BAUD_PH });
     lendoPh = true;
     bufferPh = "";
+    marcarLeituraSensor(); // sensor físico conectado -> selo verde
     definirStatusPh("pHmetro conectado · 9600 baud");
     const btn = $("btn-conectar-ph");
     if (btn) btn.textContent = "pHmetro conectado";
@@ -425,8 +708,12 @@ async function conectarPhmetro() {
     mostrarAlerta("atencao", "Falha ao conectar o pHmetro: " + erro.message);
     definirStatusPh("pHmetro desconectado");
   } finally {
-    lendoPh = false;
-    leitorPh = null;
+    desconectarPhmetro();
+    const btn = $("btn-conectar-ph");
+    if (btn) {
+      btn.innerHTML = '<i data-lucide="cpu" class="w-3.5 h-3.5"></i> Conectar pHmetro';
+      if (window.lucide) { try { lucide.createIcons(); } catch (_) {} }
+    }
   }
 }
 
@@ -436,9 +723,13 @@ function desconectarPhmetro() {
   try { if (portaPh) portaPh.close(); } catch (_) {}
   leitorPh = null;
   portaPh = null;
+  sensorConectado = false;
+  ultimaLeituraSensor = 0;
+  definirStatusSistema(false);
 }
 
 function iniciarModoPhDireto() {
+  definirStatusSistema(false); // sem conexão serial ainda = inativo
   const el = $("val-ph");
   if (el) el.innerHTML = '<span class="text-slate-500">—</span>';
   const badge = $("badge-ph");
@@ -462,7 +753,9 @@ function iniciarModoPhDireto() {
   if (nota) {
     nota.innerHTML = "Nesta conta o <strong class=\"text-cyan-300/80\">pH é lido diretamente do pHmetro</strong> " +
       "(Web Serial, 9600 baud) e enviado para os gráficos sem página extra. " +
-      "Flúor, Cloro e Turbidez permanecem <strong>zerados</strong>.";
+      "Flúor, Cloro e Turbidez permanecem <strong>zerados</strong>. " +
+      "Cada barra tem largura mínima de 26 px; use ‹ › ou arraste os painéis " +
+      "para percorrer as coletas do ciclo de 24 h.";
   }
   definirStatusPh("pHmetro direto · aguardando conexão");
 }
@@ -534,6 +827,7 @@ function inscreverRealtime() {
         { event: "INSERT", schema: "public", table: TABELA, filter: `sensor_id=eq.${SENSOR_ID}` },
         (payload) => {
           const r = payload.new;
+          marcarLeituraSensor();
           pushToChart(r, r.criado_em);
           updateCards(r);
           setUpdatedAt();
@@ -579,6 +873,10 @@ async function init() {
 
   aplicarPermissoesVisuais(usuario);
   initChart();
+  instalarCarrossel();
+  instalarRelatorio();
+  definirStatusSistema(false);  // fail-closed: sem sensor = vermelho
+  setInterval(avaliarStatusSistema, 30 * 1000);
 
   if (MODO_PH_DIRETO) {
     iniciarModoPhDireto();

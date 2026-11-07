@@ -52,14 +52,16 @@
             <h1 class="text-3xl font-bold text-white">Painel de Controle</h1>
             <p class="text-slate-400">Monitoramento técnico e parâmetros de referência</p>
         </div>
-        <span class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Sistema Ativo
+        <!-- Verde SOMENTE com sensor conectado. Sem sensor: vermelho "Sistema inativo". -->
+        <span id="badge-sistema" aria-live="polite"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+            <span id="ponto-sistema" class="w-2 h-2 rounded-full bg-red-400"></span>
+            <span id="texto-sistema">Sistema inativo</span>
         </span>
     </section>
 
     <!-- Grid Principal -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
         <!-- Gráfico Principal -->
         <div class="lg:col-span-2 glass-card glow-border rounded-3xl p-6">
@@ -116,9 +118,26 @@
                 </div>
             </div>
 
+            <!-- Ciclo de 24 h + carrossel horizontal de coletas.
+                 A janela limita o nº de barras desenhadas para garantir a largura mínima. -->
+            <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[11px] font-semibold text-slate-300">Ciclo de 24 h · 48 coletas</span>
+                    <span id="carrossel-info" class="text-[10px] text-slate-500">sem coletas</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button id="carrossel-ant" type="button" aria-label="Coletas anteriores"
+                            class="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">&#8249;</button>
+                    <button id="carrossel-prox" type="button" aria-label="Próximas coletas"
+                            class="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">&#8250;</button>
+                    <button id="carrossel-ultima" type="button"
+                            class="h-7 px-2 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300 hover:bg-white/10">Mais recentes</button>
+                </div>
+            </div>
+
             <!-- Quatro painéis de barras verticais: um parâmetro por painel,
                  cada um com a sua própria escala, cor e faixa normal. -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div id="area-carrossel" class="grid grid-cols-1 sm:grid-cols-2 gap-4 select-none touch-pan-y cursor-grab active:cursor-grabbing">
                 <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-sm font-semibold text-cyan-300">pH <span class="text-[11px] font-normal text-slate-400">· normal 6,0–8,5</span></h4>
@@ -152,14 +171,16 @@
                 Um painel por parâmetro, cada um com a sua própria escala e cor — sem misturar pH com mg/NTU no mesmo eixo.
                 A leitura mais recente fica à direita. Passe o mouse sobre uma barra para ver valor, unidade e situação.
                 As quatro caixas acima mostram o valor exato da leitura atual.
+                Cada barra tem largura mínima de 26 px: quando há mais coletas do que cabem,
+                use os botões ‹ › ou arraste os painéis para o lado para percorrer o ciclo de 24 h.
             </p>
         </div>
 
         <!-- Sidebar / Navegação Rápida -->
-        <aside class="flex flex-col gap-4">
+        <aside id="sidebar-acoes" class="flex flex-col gap-4 h-full">
 
             <div onclick="window.location.href='patógenos.html'"
-                 class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all nav-card">
+                 class="flex-1 min-h-[84px] flex items-center glass-card glow-border rounded-3xl p-5 cursor-pointer hover:scale-[1.02] transition-all nav-card">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center">
                         <i data-lucide="bug" class="w-6 h-6 text-rose-400"></i>
@@ -172,7 +193,7 @@
             </div>
 
             <div onclick="window.location.href='solucoes.html'"
-                 class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all nav-card">
+                 class="flex-1 min-h-[84px] flex items-center glass-card glow-border rounded-3xl p-5 cursor-pointer hover:scale-[1.02] transition-all nav-card">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
                         <i data-lucide="flask-conical" class="w-6 h-6 text-emerald-400"></i>
@@ -184,9 +205,39 @@
                 </div>
             </div>
 
-            <!-- Ocupa o espaço em branco logo abaixo de Soluções. -->
+            <div onclick="window.location.href='periculosidade.html'"
+                 class="flex-1 min-h-[84px] flex items-center glass-card glow-border rounded-3xl p-5 cursor-pointer hover:scale-[1.02] transition-all nav-card">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-400"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold">Periculosidade</h4>
+                        <p class="text-sm text-slate-400">Níveis de Risco</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3) Relatório: todas as medições agrupadas por dia (ciclo de 24 h). -->
+            <button id="btn-relatorio" type="button" data-relatorio-btn aria-expanded="false"
+                    class="flex-1 min-h-[84px] w-full glass-card glow-border rounded-3xl p-5 flex items-center justify-between hover:scale-[1.02] transition-all text-left">
+                <span class="flex items-center gap-4">
+                    <span class="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center shrink-0">
+                        <i data-lucide="file-text" class="w-6 h-6 text-cyan-300"></i>
+                    </span>
+                    <span>
+                        <span class="font-semibold block">Relatório</span>
+                        <span class="text-sm text-slate-400">Medições por dia · 24 h</span>
+                    </span>
+                </span>
+                <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 shrink-0"></i>
+            </button>
+            <div id="painel-relatorio"
+                 class="hidden flex-none glass-card rounded-2xl p-5 border border-cyan-500/20 max-h-[340px] overflow-y-auto"></div>
+
+            <!-- 1) Curiosidades agora fica ABAIXO de Periculosidade e do Relatório. -->
             <button id="btn-curiosidades" type="button" data-curiosidades-btn aria-expanded="false"
-                    class="w-full glass-card glow-border rounded-3xl p-5 flex items-center justify-between hover:scale-[1.02] transition-all text-left">
+                    class="flex-1 min-h-[84px] w-full glass-card glow-border rounded-3xl p-5 flex items-center justify-between hover:scale-[1.02] transition-all text-left">
                 <span class="flex items-center gap-4">
                     <span class="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center shrink-0">
                         <i data-lucide="lightbulb" class="w-6 h-6 text-violet-300"></i>
@@ -199,24 +250,11 @@
                 <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 shrink-0"></i>
             </button>
             <div id="painel-curiosidades" data-curiosidades
-                 class="hidden glass-card rounded-2xl p-5 border border-violet-500/20"></div>
-
-            <div onclick="window.location.href='periculosidade.html'"
-                 class="glass-card glow-border rounded-3xl p-6 cursor-pointer hover:scale-[1.02] transition-all nav-card">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center">
-                        <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-400"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold">Periculosidade</h4>
-                        <p class="text-sm text-slate-400">Níveis de Risco</p>
-                    </div>
-                </div>
-            </div>
+                 class="hidden flex-none glass-card rounded-2xl p-5 border border-violet-500/20 max-h-[340px] overflow-y-auto"></div>
 
             <!-- Botão Admin -->
             <button id="btn-painel-admin" onclick="window.location.href='admin.html'"
-                    class="hidden w-full bg-[#22c55e] hover:bg-[#16a34a] text-[#0f1a2e] font-semibold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-[#22c55e]/30 text-lg mt-4">
+                    class="hidden w-full flex-1 min-h-[84px] bg-[#22c55e] hover:bg-[#16a34a] text-[#0f1a2e] font-semibold px-5 rounded-3xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-lg shadow-[#22c55e]/30 text-base">
                 <i data-lucide="shield" class="w-6 h-6"></i>
                 Acessar Painel Admin
             </button>
